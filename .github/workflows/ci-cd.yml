@@ -48,6 +48,7 @@ jobs:
           retries-on-failure: 3
 
   publish-docker-images:
+    needs: build-and-test
     runs-on: ubuntu-latest
     strategy:
       matrix:
