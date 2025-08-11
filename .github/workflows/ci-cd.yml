@@ -56,6 +56,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
       - name: Build service ${{ matrix.service.name }}
         uses: DanySK/build-check-deploy-gradle-action@3.7.6
         with:
