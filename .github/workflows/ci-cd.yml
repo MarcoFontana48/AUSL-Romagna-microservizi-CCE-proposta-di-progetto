@@ -13,7 +13,7 @@ concurrency:
 
 env:
   DOCKER_REGISTRY: docker.io
-  DOCKER_REPOSITORY: marcofontana17/marcofontana17/ausl_cce_prototipo
+  DOCKER_REPOSITORY: marcofontana17/ausl_cce_prototipo
 
 jobs:
   build-and-test:
