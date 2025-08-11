@@ -31,22 +31,22 @@ spec:
 #              value: "debug"
 #            - name: LOG_ADD_SOURCE
 #              value: "false"
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 8080
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 5
-          readinessProbe:
-            httpGet:
-              path: /health
-              port: 8080
-            initialDelaySeconds: 10
-            periodSeconds: 5
-            timeoutSeconds: 3
-            failureThreshold: 5
+#          livenessProbe:
+#            httpGet:
+#              path: /health
+#              port: 8080
+#            initialDelaySeconds: 30
+#            periodSeconds: 10
+#            timeoutSeconds: 5
+#            failureThreshold: 5
+#          readinessProbe:
+#            httpGet:
+#              path: /health
+#              port: 8080
+#            initialDelaySeconds: 10
+#            periodSeconds: 5
+#            timeoutSeconds: 3
+#            failureThreshold: 5
           resources:
             requests:
               memory: "64Mi"
@@ -54,24 +54,24 @@ spec:
             limits:
               memory: "256Mi"
               cpu: "200m"
-      initContainers:
-        - name: wait-for-service
-          image: busybox:1.35
-          imagePullPolicy: Always
-          command: ['sh', '-c']
-          args:
-            - |
-              echo "Waiting for service to be ready..."
-              for i in $(seq 1 200); do
-                if wget --spider --quiet --timeout=3 --tries=1 http://service:8080/health 2>/dev/null; then
-                  echo "Service is ready!"
-                  exit 0
-                fi
-                echo "Service not ready, waiting... ($i/200)"
-                sleep 5
-              done
-              echo "Timeout waiting for service"
-              exit 1
+#      initContainers:
+#        - name: wait-for-service
+#          image: busybox:1.35
+#          imagePullPolicy: Always
+#          command: ['sh', '-c']
+#          args:
+#            - |
+#              echo "Waiting for service to be ready..."
+#              for i in $(seq 1 60); do
+#                if wget --spider --quiet --timeout=3 --tries=1 http://service:8080/health 2>/dev/null; then
+#                  echo "Service is ready!"
+#                  exit 0
+#                fi
+#                echo "Service not ready, waiting... ($i/60)"
+#                sleep 5
+#              done
+#              echo "Timeout waiting for service"
+#              exit 1
 ---
 # api-gateway-service.yaml
 apiVersion: v1
