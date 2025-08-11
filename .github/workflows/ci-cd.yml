@@ -47,7 +47,7 @@ jobs:
   push-docker-images:
     runs-on: ubuntu-24.04
     name: Build and Push Docker Images
-    needs: build-and-test
+#    needs: build-and-test
 
     strategy:
       matrix:
