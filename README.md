@@ -123,6 +123,7 @@ If you want to use docker, run those commands instead:
 
 ```bash
 docker-compose down --rmi all -v
+./gradlew :api_gateway:shadowJar
 docker-compose up --build -d
 ```
 

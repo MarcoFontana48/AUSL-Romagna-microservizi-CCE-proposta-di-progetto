@@ -23,3 +23,4 @@ include(":app")
 include(":utils")
 
 rootProject.name = "CCE_Microservizi"
+include(":api_gateway")
