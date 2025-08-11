@@ -23,6 +23,8 @@ jobs:
           - ubuntu-24.04
           - macos-14
           - windows-2022
+        java-version: [21]
+        java-distribution: [temurin]
     runs-on: ${{ matrix.os }}
     concurrency:
       group: build-${{ github.workflow }}-${{ matrix.os }}-${{ matrix.java-version }}-${{ matrix.java-distribution }}-${{ github.event.number || github.ref }}
