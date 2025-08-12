@@ -21,5 +21,5 @@ object Ports {
 object Endpoints {
     const val HEALTH = "/health"
     const val SERVICE = "/service"
-    const val SERVICE_HEALTH = HEALTH + SERVICE
+    const val METRICS = "/metrics"
 }
