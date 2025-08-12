@@ -1,59 +1,23 @@
 package ausl.cce.service.infrastructure.controller
 
 import ausl.cce.service.application.Controller
-import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.MeterRegistry
-import io.micrometer.core.instrument.Timer
-import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics
-import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics
-import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics
-import io.micrometer.core.instrument.binder.system.ProcessorMetrics
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.vertx.circuitbreaker.CircuitBreaker
 import io.vertx.core.Handler
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.RoutingContext
+import mf.cce.utils.AbstractRegistryController
 import mf.cce.utils.HttpStatus
 import org.apache.logging.log4j.LogManager
 
 class StandardController(
     private val circuitBreaker: CircuitBreaker,
-    private val meterRegistry: MeterRegistry = createPrometheusMeterRegistry()
-) : Controller {
+    override val meterRegistry: MeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+) : Controller, AbstractRegistryController("service") {
 
     private val logger = LogManager.getLogger(this::class.java)
-
-    // Metrics
-    private val healthCheckCounter = Counter.builder("health_check_requests_total")
-        .description("Total number of health check requests")
-        .register(meterRegistry)
-
-    private val healthCheckSuccessCounter = Counter.builder("health_check_success_total")
-        .description("Total number of successful health checks")
-        .register(meterRegistry)
-
-    private val healthCheckFailureCounter = Counter.builder("health_check_failure_total")
-        .description("Total number of failed health checks")
-        .register(meterRegistry)
-
-    private val healthCheckTimer = Timer.builder("health_check_duration_seconds")
-        .description("Health check request duration")
-        .register(meterRegistry)
-
-    companion object {
-        fun createPrometheusMeterRegistry(): PrometheusMeterRegistry {
-            val registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
-
-            // Register JVM metrics
-            JvmMemoryMetrics().bindTo(registry)
-            JvmGcMetrics().bindTo(registry)
-            JvmThreadMetrics().bindTo(registry)
-            ProcessorMetrics().bindTo(registry)
-
-            return registry
-        }
-    }
 
     override fun healthCheckHandler(): Handler<RoutingContext> {
         return Handler { ctx ->
@@ -114,6 +78,6 @@ class StandardController(
             .end(message.encode())
     }
 
-    // getter for the meter registry
-    fun getMeterRegistry(): MeterRegistry = meterRegistry
+    // REMOVE THIS METHOD - it conflicts with the property getter
+    // fun getMeterRegistry(): MeterRegistry = meterRegistry
 }
