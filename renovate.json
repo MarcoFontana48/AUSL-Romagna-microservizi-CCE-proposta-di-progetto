@@ -4,7 +4,14 @@
     "config:recommended"
   ],
   "baseBranches": ["dev"],
-  "requiredStatusChecks": ["build and test"],
+  "requiredStatusChecks": [
+    "build-and-test (ubuntu-24.04, 23, temurin)",
+    "build-and-test (macos-14, 23, temurin)",
+    "build-and-test (windows-2022, 23, temurin)"
+  ],
+  "ignoreStatusChecks": [
+    "publish-docker-images (api_gateway)"
+  ],
   "automergeStrategy": "merge-commit",
   "platformAutomerge": true,
   "packageRules": [
