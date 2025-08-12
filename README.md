@@ -131,7 +131,7 @@ If you want to use docker, run those commands instead:
 
 ```bash
 docker-compose down --rmi all -v
-./gradlew :api_gateway:shadowJar
+./gradlew :api_gateway:assemble
 docker-compose up --build -d
 ```
 
