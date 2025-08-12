@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: api-gateway
-          image: marcofontana17/ausl_cce_prototipo:api_gateway-latest
+          image: marcofontana17/ausl_cce_prototipo:api_gateway-dev-latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
