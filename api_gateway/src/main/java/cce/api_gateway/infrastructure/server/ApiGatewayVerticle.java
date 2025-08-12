@@ -50,8 +50,8 @@ public final class ApiGatewayVerticle extends AbstractVerticle {
         // reroute to service
         controller.rerouteTo(router, Endpoints.SERVICE + "/*", "service", client);
         
-        // health check
         router.get(Endpoints.HEALTH).handler(controller.healthCheckHandler(client));
+        router.get(Endpoints.METRICS).handler(controller.metricsHandler(client));
         
         // start HTTP server
         this.vertx.createHttpServer().requestHandler(router).listen(Ports.HTTP);
