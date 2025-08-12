@@ -1,0 +1,25 @@
+{
+  "name": "ausl-romagna-cce-microservices-project-proposal",
+  "version": "0.0.0",
+  "description": "AUSL Romagna CCE Microservices Project Proposal",
+  "main": "index.js",
+  "scripts": {
+    "semantic-release": "semantic-release"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MarcoFontana48/AUSL-Romagna-CCE-Microservices-Project-Proposal.git"
+  },
+  "keywords": [],
+  "author": "Marco Fontana",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^11.0.3",
+    "@semantic-release/npm": "^12.0.2",
+    "@semantic-release/release-notes-generator": "^14.0.3",
+    "semantic-release": "^24.2.7"
+  }
+}
