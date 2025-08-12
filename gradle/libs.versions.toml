@@ -22,6 +22,7 @@ mysql-version = "8.0.33"
 task-tree-version = "4.0.0"
 springBoot = "3.3.5"
 springCloud = "2023.0.3"
+micrometer = "1.12.0"
 
 [libraries]
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -50,6 +51,9 @@ spring-cloud-starter-gateway = { module = "org.springframework.cloud:spring-clou
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-version" }
 junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit-version" }
 log4j-slf4j-impl = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version = "2.13.3" }
+micrometer-core = { module = "io.micrometer:micrometer-core", version.ref = "micrometer" }
+micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
+micrometer-registry-jmx = { module = "io.micrometer:micrometer-registry-jmx", version.ref = "micrometer" }
 
 [bundles]
 kotlinxEcosystem = ["kotlinxDatetime", "kotlinxSerialization", "kotlinxCoroutines"]
@@ -57,6 +61,7 @@ kotlin-testing = ["kotest-junit5-jvm", "kotest-assertions-core-jvm", "mockito-co
 spring-boot-webflux = ["spring-boot-starter-webflux", "spring-boot-configuration-processor"]
 spring-cloud-gateway = ["spring-cloud-starter-gateway", "spring-cloud-starter-circuitbreaker-resilience4j"]
 junit-testing = ["junit-jupiter-api", "junit-jupiter-params"]
+micrometer = ["micrometer-core", "micrometer-registry-prometheus", "micrometer-registry-jmx"]
 
 [plugins]
 kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
