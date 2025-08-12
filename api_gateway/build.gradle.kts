@@ -1,3 +1,5 @@
+import org.gradle.internal.classpath.Instrumented.systemProperty
+
 plugins {
     kotlin("jvm")
     application
@@ -12,14 +14,21 @@ repositories {
 }
 
 dependencies {
-    testImplementation(kotlin("test"))
     implementation(libs.log4j.api)
     implementation(libs.log4j.core)
+    implementation(libs.vertx.core)
+    implementation(libs.vertx.web)
+    implementation(libs.vertx.web.client)
+    implementation(libs.vertx.kafka.client)
+    implementation(libs.vertx.circuit.breaker)
+    implementation(libs.jackson.core)
+    implementation(libs.jackson.module.kotlin)
+    testImplementation(kotlin("test"))
+    implementation(project(":utils"))
 }
 
-// Configure the application plugin
 application {
-    mainClass.set("cce.api_gateway.MainKt")
+    mainClass.set("cce.api_gateway.infrastructure.server.Main")
 }
 
 tasks.test {
