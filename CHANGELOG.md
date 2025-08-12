@@ -1,3 +1,16 @@
+# [1.1.0](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/compare/v1.0.0...v1.1.0) (2025-08-12)
+
+
+### Bug Fixes
+
+* **deps:** update dependency org.jetbrains.kotlinx:kotlinx-coroutines-core to v1.10.2 ([ca2e4f5](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/ca2e4f5dc9d0caa0734b614e601e0e59eb19b47d))
+* **deps:** update dependency org.jetbrains.kotlinx:kotlinx-datetime to v0.7.1-0.6.x-compat ([c608d91](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/c608d91839d440e9d633e221d6f565af5e5a8f48))
+
+
+### Features
+
+* **renovate:** change automerge type to branch for all update types in renovate.json ([0c64a5e](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/0c64a5ee580be6f6e8498cd3eaee617da71cb639))
+
 # 1.0.0 (2025-08-12)
 
 
