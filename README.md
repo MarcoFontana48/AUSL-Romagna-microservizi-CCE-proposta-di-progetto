@@ -6,7 +6,7 @@
 how to build and run the entire project (it also builds all images before running):
 
 - make sure to have docker installed and using dockerhub with kubernetes enabled
-- make sure to have go (version 1.22 or higher) installed and 'hey' installed (https://github.com/rakyll/hey) ```go install github.com/rakyll/hey@latest```
+- make sure to have gradle installed
 - move to the project root directory (the directory where this README.md is located)
 - run the following commands to stop any running containers and remove existing images and volumes, then build and run the project:
 
@@ -104,19 +104,27 @@ then run this command on another terminal to watch the horizontal pod autoscaler
 kubectl get hpa -n monitoring-app --watch
 ```
 
-then go back to previous terminal and run this command that uses 'hey' to runs 50 workers that concurrently send requests for 2 minutes to the health endpoint of the API Gateway and then prints metrics about the requests:
+[//]: # (then go back to previous terminal and run this command that uses 'hey' to runs 50 workers that concurrently send requests for 2 minutes to the health endpoint of the API Gateway and then prints metrics about the requests:)
 
-```bash
-hey -c 50 -z 2m http://localhost:31080/health
-```
+[//]: # ()
+[//]: # (```bash)
 
-you should be seeing the number of pods for the API Gateway increasing and decreasing based on the requests sent by 'hey' in the terminal where you ran the watch command.
+[//]: # (hey -c 50 -z 2m http://localhost:31080/health)
 
-You can also run the same command for the service:
+[//]: # (```)
 
-```bash
-hey -c 50 -z 2m http://localhost:31080/service/health
-```
+[//]: # ()
+[//]: # (you should be seeing the number of pods for the API Gateway increasing and decreasing based on the requests sent by 'hey' in the terminal where you ran the watch command.)
+
+[//]: # ()
+[//]: # (You can also run the same command for the service:)
+
+[//]: # ()
+[//]: # (```bash)
+
+[//]: # (hey -c 50 -z 2m http://localhost:31080/service/health)
+
+[//]: # (```)
 
 ## Docker (dev)
 If you want to use docker, run those commands instead:
