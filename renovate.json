@@ -15,20 +15,20 @@
     {
       "matchUpdateTypes": ["patch", "pin"],
       "automerge": true,
-      "automergeType": "pr",
+      "automergeType": "branch",
       "addLabels": ["patch-update"]
     },
     {
       "matchUpdateTypes": ["minor"],
       "matchDepTypes": ["devDependencies"],
       "automerge": true,
-      "automergeType": "pr",
+      "automergeType": "branch",
       "addLabels": ["minor-update"]
     },
     {
       "matchUpdateTypes": ["major"],
       "automerge": true,
-      "automergeType": "pr",
+      "automergeType": "branch",
       "addLabels": ["major-update"]
     }
   ]
