@@ -13,3 +13,13 @@ object HttpStatus {
     const val INTERNAL_SERVER_ERROR = 500
     const val SERVICE_UNAVAILABLE = 503
 }
+
+object Ports {
+    const val HTTP = 8080
+}
+
+object Endpoints {
+    const val HEALTH = "/health"
+    const val SERVICE = "/service"
+    const val SERVICE_HEALTH = HEALTH + SERVICE
+}
