@@ -1,3 +1,28 @@
+# [1.3.0](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/compare/v1.2.1...v1.3.0) (2025-08-12)
+
+
+### Bug Fixes
+
+* **api_gateway:** reroute to correct service ([75aacd1](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/75aacd198b3b3a549825579488efc849791bf1ce))
+
+
+### Features
+
+* **api_gateway:** add metrics handler ([d322859](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/d32285945ad47bcd8edf5a093d8fb0b395cb9aa5))
+* **api_gateway:** add metrics handler ([f86ec35](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/f86ec35b479ad93ee6daf820f14fc6a71fb398c6))
+* **api_gateway:** add micrometer dependency ([ebbe98a](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/ebbe98a9e79deacc1b4084b55699c9eab9b65efc))
+* **app:** remove module ([06c5c12](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/06c5c12d804d27112adcb7dbb0b2b247553f2dd6))
+* **app:** remove module ([4ea6ed4](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/4ea6ed41322f3412d240d9192d9c10490a191794))
+* **build:** add micrometer to TOML ([ab700fa](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/ab700fac24df824e7b7775de84d2e0ef828eec79))
+* **deploy:** add service to docker compose ([3f518a9](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/3f518a9578ad568b06738f8db4d820933cac7b81))
+* **deploy:** run kubernetes on dev images ([4f2cfa7](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/4f2cfa709920b50ac6f3170e5231c66cb3916ca9))
+* **metrics:** add prometheus to service metrics ([6aeac7f](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/6aeac7faa9b53660985f488dae477480817b7f42))
+* **service:** add metrics endpoint ([2ee508e](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/2ee508e512a7c325175b8e29d8fa3e8ab543139f))
+* **service:** add service ([7d3e334](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/7d3e3344dc7342602c120f823aa4157f4308e294))
+* **utils:** add abstract metrics controller ([bd81003](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/bd81003422b0787d84eff4bd06e4fceac80c34f1))
+* **utils:** add metrics endpoint ([5d9167d](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/5d9167d093d5b3a8d8ebe9868af95e6d708e14d5))
+* **utils:** add Ports and Endpoints ([8baf145](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/8baf14564925cbc959b3e978ed509963f9613ffb))
+
 ## [1.2.1](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/compare/v1.2.0...v1.2.1) (2025-08-12)
 
 
