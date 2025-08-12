@@ -3,33 +3,45 @@
   "extends": [
     "config:recommended"
   ],
-  "baseBranches": ["dev"],
-  "requiredStatusChecks": [
-    "build-and-test (ubuntu-24.04, 23, temurin)",
-    "build-and-test (macos-14, 23, temurin)",
-    "build-and-test (windows-2022, 23, temurin)"
+  "baseBranchPatterns": [
+    "dev"
   ],
   "automergeStrategy": "merge-commit",
   "platformAutomerge": true,
   "packageRules": [
     {
-      "matchUpdateTypes": ["patch", "pin"],
+      "matchUpdateTypes": [
+        "patch",
+        "pin"
+      ],
       "automerge": true,
       "automergeType": "branch",
-      "addLabels": ["patch-update"]
+      "addLabels": [
+        "patch-update"
+      ]
     },
     {
-      "matchUpdateTypes": ["minor"],
-      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": [
+        "minor"
+      ],
+      "matchDepTypes": [
+        "devDependencies"
+      ],
       "automerge": true,
       "automergeType": "branch",
-      "addLabels": ["minor-update"]
+      "addLabels": [
+        "minor-update"
+      ]
     },
     {
-      "matchUpdateTypes": ["major"],
+      "matchUpdateTypes": [
+        "major"
+      ],
       "automerge": true,
       "automergeType": "branch",
-      "addLabels": ["major-update"]
+      "addLabels": [
+        "major-update"
+      ]
     }
   ]
 }
