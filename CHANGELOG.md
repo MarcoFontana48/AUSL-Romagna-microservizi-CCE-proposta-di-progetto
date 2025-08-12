@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/compare/v1.2.0...v1.2.1) (2025-08-12)
+
+
+### Bug Fixes
+
+* **deps:** update dependency org.jetbrains.kotlinx:kotlinx-serialization-json to v1.9.0 ([2f2aa5f](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/2f2aa5f684f150c24f52a787521a69a3c9d57e57))
+
 # [1.2.0](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/compare/v1.1.0...v1.2.0) (2025-08-12)
 
 
