@@ -1,6 +1,5 @@
 package cce.api_gateway.application;
 
-import io.vertx.circuitbreaker.CircuitBreaker;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
