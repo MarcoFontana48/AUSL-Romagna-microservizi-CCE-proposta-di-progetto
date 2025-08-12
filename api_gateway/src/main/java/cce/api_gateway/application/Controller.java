@@ -7,5 +7,5 @@ import io.vertx.ext.web.client.WebClient;
 
 public interface Controller {
     void rerouteTo(Router router, String endpoint, String host, WebClient client);
-    Handler<RoutingContext> healthCheckHandler(WebClient client, String host);
+    Handler<RoutingContext> healthCheckHandler(WebClient client);
 }

@@ -9,6 +9,8 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.ext.web.handler.BodyHandler;
+import mf.cce.utils.Endpoints;
+import mf.cce.utils.Ports;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,7 +19,6 @@ import org.apache.logging.log4j.Logger;
  */
 public final class ApiGatewayVerticle extends AbstractVerticle {
     private static final Logger LOGGER = LogManager.getLogger(ApiGatewayVerticle.class);
-    private static final int HTTP_PORT = 8080;
     
     @Override
     public void start() {
@@ -38,7 +39,7 @@ public final class ApiGatewayVerticle extends AbstractVerticle {
         
         // === CONFIGURE_WEB_CLIENT ===
         
-        WebClient client = WebClient.create(this.vertx, new WebClientOptions().setDefaultPort(HTTP_PORT));
+        WebClient client = WebClient.create(this.vertx, new WebClientOptions().setDefaultPort(Ports.HTTP));
         
         Router router = Router.router(this.vertx);
         router.route().handler(BodyHandler.create());
@@ -47,13 +48,13 @@ public final class ApiGatewayVerticle extends AbstractVerticle {
         // === CONFIGURE_ROUTES ===
         
         // reroute to service
-        controller.rerouteTo(router, "/service/*", "service", client);
+        controller.rerouteTo(router, Endpoints.SERVICE + "/*", "service", client);
         
         // health check
-        router.get("/health").handler(controller.healthCheckHandler(client, "service"));
+        router.get(Endpoints.HEALTH).handler(controller.healthCheckHandler(client));
         
         // start HTTP server
-        this.vertx.createHttpServer().requestHandler(router).listen(HTTP_PORT);
-        LOGGER.debug("API Gateway ready to serve requests on port {}", HTTP_PORT);
+        this.vertx.createHttpServer().requestHandler(router).listen(Ports.HTTP);
+        LOGGER.debug("API Gateway ready to serve requests on port {}", Ports.HTTP);
     }
 }

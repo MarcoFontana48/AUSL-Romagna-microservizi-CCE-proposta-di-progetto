@@ -28,7 +28,12 @@ public class StandardController implements Controller {
         
         router.route(endpoint).handler(ctx -> this.circuitBreaker.<JsonObject>execute(promise -> {
             String path = ctx.request().uri();
-            LOGGER.debug("redirecting request with uri: '{}' to '{}'", path, host);
+            LOGGER.debug("redirecting request from endpoint: '{}', with uri: '{}' to '{}'", endpoint, path, host);
+            String baseEndpoint = endpoint.replace("/*", "");
+            if (path.startsWith(baseEndpoint)) {
+                path = path.substring(baseEndpoint.length());
+            }
+            LOGGER.debug("removed endpoint to uri, new uri: '{}' about to be sent to: '{}'", path, host);
             client.request(ctx.request().method(), HTTP_PORT, host, path).sendBuffer(ctx.getBody(), ar -> {
                 if (ar.succeeded()) {
                     ctx.response().setStatusCode(ar.result().statusCode())
@@ -42,24 +47,12 @@ public class StandardController implements Controller {
     }
     
     @Override
-    public Handler<RoutingContext> healthCheckHandler(WebClient client, String host) {
+    public Handler<RoutingContext> healthCheckHandler(WebClient client) {
         return ctx -> {
             LOGGER.debug("received GET request for health check");
             
-            this.circuitBreaker.<JsonObject>execute(promise -> {
-                JsonObject response = new JsonObject().put("status", "OK");
-                sendResponse(ctx, response, HttpStatus.OK);
-            }).onFailure(failure -> {
-                LOGGER.error("Health check failed: {}", failure.getMessage());
-                
-                JsonObject fallbackResponse = new JsonObject()
-                        .put("status", "degraded")
-                        .put("message", "Downstream service health check failed")
-                        .put("error", failure.getMessage())
-                        .put("timestamp", System.currentTimeMillis());
-                
-                sendResponse(ctx, fallbackResponse, HttpStatus.SERVICE_UNAVAILABLE);
-            });
+            JsonObject response = new JsonObject().put("status", "OK");
+            sendResponse(ctx, response, HttpStatus.OK);
         };
     }
     
