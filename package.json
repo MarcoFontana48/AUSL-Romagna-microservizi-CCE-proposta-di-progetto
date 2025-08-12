@@ -1,5 +1,5 @@
 {
-  "name": "ausl-romagna-cce-microservices-project-proposal",
+  "name": "ausl-romagna-microservizi-cce-proposta-di-progetto",
   "version": "0.0.0",
   "description": "AUSL Romagna CCE Microservices Project Proposal",
   "main": "index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/MarcoFontana48/AUSL-Romagna-CCE-Microservices-Project-Proposal.git"
+    "url": "https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto.git"
   },
   "keywords": [],
   "author": "Marco Fontana",
