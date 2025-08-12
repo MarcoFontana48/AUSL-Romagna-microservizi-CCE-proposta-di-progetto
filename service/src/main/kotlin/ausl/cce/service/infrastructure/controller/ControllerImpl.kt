@@ -1,6 +1,15 @@
 package ausl.cce.service.infrastructure.controller
 
 import ausl.cce.service.application.Controller
+import io.micrometer.core.instrument.Counter
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Timer
+import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics
+import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics
+import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics
+import io.micrometer.core.instrument.binder.system.ProcessorMetrics
+import io.micrometer.prometheus.PrometheusConfig
+import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.vertx.circuitbreaker.CircuitBreaker
 import io.vertx.core.Handler
 import io.vertx.core.json.JsonObject
@@ -8,26 +17,89 @@ import io.vertx.ext.web.RoutingContext
 import mf.cce.utils.HttpStatus
 import org.apache.logging.log4j.LogManager
 
-class StandardController(private val circuitBreaker: CircuitBreaker) : Controller {
+class StandardController(
+    private val circuitBreaker: CircuitBreaker,
+    private val meterRegistry: MeterRegistry = createPrometheusMeterRegistry()
+) : Controller {
+
     private val logger = LogManager.getLogger(this::class.java)
+
+    // Metrics
+    private val healthCheckCounter = Counter.builder("health_check_requests_total")
+        .description("Total number of health check requests")
+        .register(meterRegistry)
+
+    private val healthCheckSuccessCounter = Counter.builder("health_check_success_total")
+        .description("Total number of successful health checks")
+        .register(meterRegistry)
+
+    private val healthCheckFailureCounter = Counter.builder("health_check_failure_total")
+        .description("Total number of failed health checks")
+        .register(meterRegistry)
+
+    private val healthCheckTimer = Timer.builder("health_check_duration_seconds")
+        .description("Health check request duration")
+        .register(meterRegistry)
+
+    companion object {
+        fun createPrometheusMeterRegistry(): PrometheusMeterRegistry {
+            val registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+
+            // Register JVM metrics
+            JvmMemoryMetrics().bindTo(registry)
+            JvmGcMetrics().bindTo(registry)
+            JvmThreadMetrics().bindTo(registry)
+            ProcessorMetrics().bindTo(registry)
+
+            return registry
+        }
+    }
 
     override fun healthCheckHandler(): Handler<RoutingContext> {
         return Handler { ctx ->
-            circuitBreaker.execute { promise ->
-                logger.debug("received GET request for health check")
+            healthCheckCounter.increment()
 
-                val response = JsonObject()
-                    .put("status", "OK")
+            healthCheckTimer.recordCallable {
+                circuitBreaker.execute { promise ->
+                    logger.debug("received GET request for health check")
 
-                promise.complete(response)
-            }.onComplete { result ->
-                if (result.succeeded()) {
-                    logger.debug("health check successful, sending response")
-                    sendResponse(ctx, HttpStatus.OK, result.result())
-                } else {
-                    logger.error("health check failed: {}", result.cause().message)
-                    sendResponse(ctx, HttpStatus.INTERNAL_SERVER_ERROR, JsonObject().put("message", result.cause().message))
+                    val response = JsonObject()
+                        .put("status", "OK")
+
+                    promise.complete(response)
+                }.onComplete { result ->
+                    if (result.succeeded()) {
+                        logger.debug("health check successful, sending response")
+                        healthCheckSuccessCounter.increment()
+                        sendResponse(ctx, HttpStatus.OK, result.result())
+                    } else {
+                        logger.error("health check failed: {}", result.cause().message)
+                        healthCheckFailureCounter.increment()
+                        sendResponse(ctx, HttpStatus.INTERNAL_SERVER_ERROR,
+                            JsonObject().put("message", result.cause().message))
+                    }
                 }
+            }
+        }
+    }
+
+    // New handler to expose Prometheus metrics
+    override fun metricsHandler(): Handler<RoutingContext> {
+        return Handler { ctx ->
+            logger.debug("received GET request for metrics")
+
+            val prometheusRegistry = meterRegistry as? PrometheusMeterRegistry
+            if (prometheusRegistry != null) {
+                val metricsText = prometheusRegistry.scrape()
+                ctx.response()
+                    .putHeader("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
+                    .setStatusCode(HttpStatus.OK)
+                    .end(metricsText)
+            } else {
+                logger.error("Prometheus registry not available")
+                ctx.response()
+                    .setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .end("Metrics not available")
             }
         }
     }
@@ -41,4 +113,7 @@ class StandardController(private val circuitBreaker: CircuitBreaker) : Controlle
             .setStatusCode(statusCode)
             .end(message.encode())
     }
+
+    // getter for the meter registry
+    fun getMeterRegistry(): MeterRegistry = meterRegistry
 }

@@ -31,6 +31,7 @@ class ServiceVerticle : AbstractVerticle() {
         router.route().handler(BodyHandler.create())
 
         router.get(Endpoints.HEALTH).handler(controller.healthCheckHandler())
+        router.get(Endpoints.METRICS).handler(controller.metricsHandler())
 
         this.vertx.createHttpServer()
             .requestHandler(router)

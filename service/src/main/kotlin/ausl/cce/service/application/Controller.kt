@@ -5,4 +5,5 @@ import io.vertx.ext.web.RoutingContext
 
 interface Controller {
     fun healthCheckHandler(): Handler<RoutingContext>
+    fun metricsHandler(): Handler<RoutingContext>
 }
