@@ -1,3 +1,25 @@
+# [1.2.0](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/compare/v1.1.0...v1.2.0) (2025-08-12)
+
+
+### Bug Fixes
+
+* **app:** remove unnecessary app files ([be5a65c](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/be5a65c384d59101418476e6bffac0a221cc911e))
+
+
+### Features
+
+* **api_gateway:** add controller implementation ([2146b9d](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/2146b9d7065ba37a02ba137e2b3a14a8d573882b))
+* **api_gateway:** add controller interface ([54e3cf2](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/54e3cf2a09e754a29294b437c82165c7df14483f))
+* **api_gateway:** add dependency to vertx and jackson libraries, add dependency on utils module ([f0d9063](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/f0d9063f109d9f2c18068b13a2166a14373a05d5))
+* **api_gateway:** add log4j2 support ([967beaa](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/967beaa4212735a2242e0df1ee06ca3969f95b79))
+* **api_gateway:** add new main class ([a418cdf](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/a418cdf2dbe93bf2040d43f71ad29e801334b2ac))
+* **api_gateway:** add server implementation ([412e3eb](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/412e3ebbb9acd4abdd0035f60386de97ee707ae6))
+* **api_gateway:** remove dummy tests ([f4bee2e](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/f4bee2ec109b59ec1ca30b1244aa569077ee8140))
+* **api_gateway:** remove old main class ([6c5916b](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/6c5916b412912096aab150257d59b8519a77f8d8))
+* **build:** add libraries to TOML ([a92f21c](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/a92f21c8c507b2b829b3e47da27ef9892d62017c))
+* **utils:** add HTTP Status codes ([9f0bb67](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/9f0bb675e852a23fefa2b9c6e4745852d3f26cf3))
+* **utils:** update JVM to 21 ([72e456c](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/72e456cc82ea5de780c5c95c0d0918d2385e7fa1))
+
 # [1.1.0](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/compare/v1.0.0...v1.1.0) (2025-08-12)
 
 
