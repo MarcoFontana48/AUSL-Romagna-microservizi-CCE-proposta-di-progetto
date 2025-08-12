@@ -37,7 +37,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build using Gradle
-        uses: DanySK/build-check-deploy-gradle-action@3.7.6
+        uses: DanySK/build-check-deploy-gradle-action@3.7.20
         with:
 #          pre-build-command: |
 #            echo -n "${{ secrets.DB_PASSWORD }}" > db-password.txt
@@ -64,7 +64,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build service ${{ matrix.service.name }}
-        uses: DanySK/build-check-deploy-gradle-action@3.7.6
+        uses: DanySK/build-check-deploy-gradle-action@3.7.20
         with:
           java-version: 23
           java-distribution: temurin
