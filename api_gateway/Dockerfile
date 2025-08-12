@@ -1,4 +1,3 @@
-# Single-stage build - just runtime
 FROM eclipse-temurin:23-jre
 WORKDIR /app
 
