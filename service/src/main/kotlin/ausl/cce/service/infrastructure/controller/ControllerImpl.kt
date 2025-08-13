@@ -1,6 +1,6 @@
 package ausl.cce.service.infrastructure.controller
 
-import ausl.cce.service.application.Controller
+import ausl.cce.service.application.ServiceController
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
@@ -8,14 +8,14 @@ import io.vertx.circuitbreaker.CircuitBreaker
 import io.vertx.core.Handler
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.RoutingContext
-import mf.cce.utils.AbstractRegistryController
 import mf.cce.utils.HttpStatus
 import org.apache.logging.log4j.LogManager
 
 class StandardController(
     private val circuitBreaker: CircuitBreaker,
-    override val meterRegistry: MeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
-) : Controller, AbstractRegistryController("service") {
+    override val meterRegistry: MeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
+    override val serviceName: String = "service"
+) : ServiceController {
 
     private val logger = LogManager.getLogger(this::class.java)
 
@@ -39,31 +39,36 @@ class StandardController(
                     } else {
                         logger.error("health check failed: {}", result.cause().message)
                         healthCheckFailureCounter.increment()
-                        sendResponse(ctx, HttpStatus.INTERNAL_SERVER_ERROR,
-                            JsonObject().put("message", result.cause().message))
+                        sendResponse(ctx, HttpStatus.INTERNAL_SERVER_ERROR,JsonObject().put("message", result.cause().message))
                     }
                 }
             }
         }
     }
 
-    // New handler to expose Prometheus metrics
+    // handler to expose Prometheus metrics
     override fun metricsHandler(): Handler<RoutingContext> {
         return Handler { ctx ->
-            logger.debug("received GET request for metrics")
+            metricsCounter.increment()
 
-            val prometheusRegistry = meterRegistry as? PrometheusMeterRegistry
-            if (prometheusRegistry != null) {
-                val metricsText = prometheusRegistry.scrape()
-                ctx.response()
-                    .putHeader("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
-                    .setStatusCode(HttpStatus.OK)
-                    .end(metricsText)
-            } else {
-                logger.error("Prometheus registry not available")
-                ctx.response()
-                    .setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .end("Metrics not available")
+            metricsTimer.recordCallable {
+                logger.debug("received GET request for metrics")
+
+                val prometheusRegistry = meterRegistry as? PrometheusMeterRegistry
+                if (prometheusRegistry != null) {
+                    val metricsText = prometheusRegistry.scrape()
+                    metricsSuccessCounter.increment()
+                    ctx.response()
+                        .putHeader("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
+                        .setStatusCode(HttpStatus.OK)
+                        .end(metricsText)
+                } else {
+                    logger.error("Prometheus registry not available")
+                    metricsFailureCounter.increment()
+                    ctx.response()
+                        .setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .end("Metrics not available")
+                }
             }
         }
     }
@@ -77,7 +82,4 @@ class StandardController(
             .setStatusCode(statusCode)
             .end(message.encode())
     }
-
-    // REMOVE THIS METHOD - it conflicts with the property getter
-    // fun getMeterRegistry(): MeterRegistry = meterRegistry
 }

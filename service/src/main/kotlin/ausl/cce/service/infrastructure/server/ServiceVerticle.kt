@@ -1,6 +1,6 @@
 package ausl.cce.service.infrastructure.server
 
-import ausl.cce.service.application.Controller
+import ausl.cce.service.application.ServiceController
 import ausl.cce.service.infrastructure.controller.StandardController
 import io.vertx.circuitbreaker.CircuitBreaker
 import io.vertx.circuitbreaker.CircuitBreakerOptions
@@ -25,7 +25,7 @@ class ServiceVerticle : AbstractVerticle() {
 
         val circuitBreaker = CircuitBreaker.create("service-circuit-breaker", this.vertx, options)
 
-        val controller: Controller = StandardController(circuitBreaker)
+        val controller: ServiceController = StandardController(circuitBreaker)
 
         val router = Router.router(vertx)
         router.route().handler(BodyHandler.create())
