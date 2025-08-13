@@ -67,4 +67,4 @@ micrometer = ["micrometer-core", "micrometer-registry-prometheus", "micrometer-r
 kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 shadowjar = { id = "com.github.johnrengelman.shadow", version.ref = "shadowjar-version" }
 springBoot = { id = "org.springframework.boot", version.ref = "springBoot" }
-springDependencyManagement = { id = "io.spring.dependency-management", version = "1.1.4" }
+springDependencyManagement = { id = "io.spring.dependency-management", version = "1.1.7" }
