@@ -21,13 +21,13 @@ kubectl apply -f kubernetes/
 to only delete containers
 
 ```bash
-kubectl delete -f k8s-manifest.yaml
+kubectl delete -f kubernetes/
 ```
 
 to only apply the manifest and run the project:
 
 ```bash
-kubectl apply -f k8s-manifest.yaml
+kubectl apply -f kubernetes/
 ```
 
 to test if the application is running, you can use the following command (windows), if linux remove the `.exe`. It sends an health check request to the API Gateway of the application:
