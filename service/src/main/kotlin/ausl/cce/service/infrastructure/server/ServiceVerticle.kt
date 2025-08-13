@@ -20,7 +20,7 @@ class ServiceVerticle : AbstractVerticle() {
     override fun start() {
         logger.info("Starting service...")
 
-        val circuitBreaker = defineCircuiteBreaker()
+        val circuitBreaker = defineCircuitBreaker()
         val controller: ServiceController = StandardController(circuitBreaker)
         val router = Router.router(vertx)
         defineEndpoints(router, controller)
@@ -32,7 +32,7 @@ class ServiceVerticle : AbstractVerticle() {
         }
     }
 
-    private fun defineCircuiteBreaker(): CircuitBreaker {
+    private fun defineCircuitBreaker(): CircuitBreaker {
         val options = CircuitBreakerOptions()
             .setMaxFailures(5)
             .setTimeout(10000)
@@ -41,16 +41,16 @@ class ServiceVerticle : AbstractVerticle() {
         return CircuitBreaker.create("service-circuit-breaker", this.vertx, options)
     }
 
-    private fun runServer(router: Router): Future<HttpServer> {
-        return this.vertx.createHttpServer()
-            .requestHandler(router)
-            .listen(Ports.HTTP)
-    }
-
     private fun defineEndpoints(router: Router, controller: ServiceController) {
         router.route().handler(BodyHandler.create())
 
         router.get(Endpoints.HEALTH).handler(controller.healthCheckHandler())
         router.get(Endpoints.METRICS).handler(controller.metricsHandler())
+    }
+
+    private fun runServer(router: Router): Future<HttpServer> {
+        return this.vertx.createHttpServer()
+            .requestHandler(router)
+            .listen(Ports.HTTP)
     }
 }
