@@ -20,7 +20,7 @@ kover = "0.9.1"
 junit-version = "5.13.4"
 mysql-version = "8.0.33"
 task-tree-version = "4.0.0"
-springBoot = "3.3.5"
+springBoot = "3.5.4"
 springCloud = "2023.0.3"
 micrometer = "1.12.0"
 
