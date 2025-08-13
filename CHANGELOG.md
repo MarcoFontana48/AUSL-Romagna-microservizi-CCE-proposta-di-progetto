@@ -1,3 +1,14 @@
+## [1.3.1](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/compare/v1.3.0...v1.3.1) (2025-08-13)
+
+
+### Bug Fixes
+
+* **deps:** update jackson monorepo to v2.19.2 ([18e07c1](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/18e07c1f34e812bf5f99643b0e690aa93c8072ff))
+* **deps:** update junit-framework monorepo to v5.13.4 ([938cb35](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/938cb35c1a1375cf746e544a7e77670fee6bb601))
+* **deps:** update log4j2 monorepo to v2.25.1 ([d0e8550](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/d0e8550d18e3a39ecd4b49b224093a6a519b520a))
+* **deps:** update spring boot to v3.5.4 ([a0f11d7](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/a0f11d76f7a98e75a31542b00c9aa7e3f71f4940))
+* **deps:** update vertx to v4.5.17 ([ac91496](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/ac914967680afbae5ee376bd3cd4ed02e6e66fcf))
+
 # [1.3.0](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/compare/v1.2.1...v1.3.0) (2025-08-12)
 
 
