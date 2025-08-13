@@ -1,7 +1,7 @@
 package cce.api_gateway.infrastructure.server;
 
-import cce.api_gateway.application.Controller;
-import cce.api_gateway.infrastructure.controller.StandardController;
+import cce.api_gateway.application.ApiGatewayController;
+import cce.api_gateway.infrastructure.controller.StandardApiGatewayController;
 import io.vertx.circuitbreaker.CircuitBreaker;
 import io.vertx.circuitbreaker.CircuitBreakerOptions;
 import io.vertx.core.AbstractVerticle;
@@ -33,7 +33,7 @@ public final class ApiGatewayVerticle extends AbstractVerticle {
         
         CircuitBreaker circuitBreaker = CircuitBreaker.create("service-circuit-breaker", this.vertx, options);
         
-        final Controller controller = new StandardController(circuitBreaker);
+        final ApiGatewayController controller = new StandardApiGatewayController(circuitBreaker);
         
         
         
