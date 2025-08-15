@@ -1,3 +1,28 @@
+# [1.4.0](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/compare/v1.3.1...v1.4.0) (2025-08-15)
+
+
+### Bug Fixes
+
+* **deps:** update dependency com.tngtech.archunit:archunit to v1.4.1 ([f6f4fac](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/f6f4fac4e9d147ebf9e5f9c356d50b300d4824d4))
+* **deps:** update dependency org.mockito:mockito-core to v5.19.0 ([1cb0003](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/1cb0003165a4c2e1fef1658605517cc15d44f223))
+* kubernetes name in README.md ([9d5f06b](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/9d5f06b66462a9ae81c88606f65e6e3e71e29a39))
+* **service:** fix circuit breaker name ([490ff75](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/490ff75c365095786ae80855aab8e9fda45b1b3d))
+
+
+### Features
+
+* **api_gateway:** add metrics provider to controller ([527d626](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/527d62683a7b4324d126ff87e8680dc4d1a954d6))
+* **deploy:** add service to k8s ([d6bbc9e](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/d6bbc9e476b2e162f858e501fa3d1cde14726ab8))
+* **service:** add dummy domain entity class ([c627d17](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/c627d17764c06f13d6ef8c3d1244a350262afb29))
+* **service:** add metrics provider to controller ([76e9f1b](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/76e9f1b5c151d5ad662bb3775c74fb63e091d168))
+* **service:** add mongo repository implementation and test ([7d9ce23](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/7d9ce236f3dc9bae21384a8ac1caece6ba63e213))
+* **service:** add repository interface ([8176ec7](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/8176ec7636ff62504d8584b61b5781bb1acfaf9e))
+* **utils:** add credentials support for repositories ([72bc640](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/72bc6408c4d7be2fad1da64b0a32eec9c66ebcc0))
+* **utils:** add DDD support ([71febdf](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/71febdf96a245ba7085c219438775354bcc56256))
+* **utils:** add docker test abstract class ([8794cf6](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/8794cf6b0d885258578fdbd347aa7f6b676a8146))
+* **utils:** add log4j2 library dependency ([eef955c](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/eef955cf2263063d506c584328f526f9e1e672ab))
+* **utils:** add metrics registry ([b860c30](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/b860c3021dcbe32f17549949a8124074d522152c))
+
 ## [1.3.1](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/compare/v1.3.0...v1.3.1) (2025-08-13)
 
 
