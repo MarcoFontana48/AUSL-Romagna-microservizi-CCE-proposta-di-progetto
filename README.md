@@ -130,8 +130,16 @@ kubectl get hpa -n monitoring-app --watch
 If you want to use docker, run those commands instead:
 
 ```bash
-docker-compose down --rmi all -v
 ./gradlew assemble
+docker-compose down --rmi all -v
+docker-compose up --build -d
+```
+
+or not to remove images:
+
+```bash
+./gradlew assemble
+docker-compose down -v
 docker-compose up --build -d
 ```
 
