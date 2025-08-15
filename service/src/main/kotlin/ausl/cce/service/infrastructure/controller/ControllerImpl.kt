@@ -16,7 +16,6 @@ class StandardController(
     override val meterRegistry: MeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
     override val serviceName: String = "service"
 ) : ServiceController {
-
     private val logger = LogManager.getLogger(this::class.java)
 
     override fun healthCheckHandler(): Handler<RoutingContext> {
