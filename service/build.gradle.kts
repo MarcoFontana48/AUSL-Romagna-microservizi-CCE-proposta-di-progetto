@@ -18,6 +18,7 @@ dependencies {
     implementation(libs.micrometer.core)
     implementation(libs.micrometer.registry.prometheus)
     implementation(libs.micrometer.registry.jmx)
+    implementation(libs.bundles.mongodb)
     testImplementation(libs.archunit)
     testImplementation(libs.junit)
     testImplementation(kotlin("test"))

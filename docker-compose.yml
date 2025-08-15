@@ -1,4 +1,7 @@
 services:
+
+  # === METRICS ===
+
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
@@ -23,34 +26,66 @@ services:
       retries: 3
       start_period: 30s
 
+  # === SERVICE ===
+
   service:
     build:
       context: .
       dockerfile: service/Dockerfile
     container_name: service
-#    environment:
-#      - LOG_LEVEL=debug
-#      - LOG_ADD_SOURCE=true
+    #    environment:
+    #      - LOG_LEVEL=debug
+    #      - LOG_ADD_SOURCE=true
+    environment:
+      - CONFIG_SERVER_HOST_NAME=service-mongo-db
+      - CONFIG_SERVER_PORT=27017
+      - CONFIG_SERVER_DB_NAME=service-mongo-db
+      - CONFIG_SERVER_DB_USERNAME=root
+      - CONFIG_SERVER_DB_PASSWORD=password
     networks:
       - app-network
-#    healthcheck:
-#      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1"]
-#      interval: 5s
-#      timeout: 3s
-#      retries: 3
-#      start_period: 10s
+    #    healthcheck:
+    #      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1"]
+    #      interval: 5s
+    #      timeout: 3s
+    #      retries: 3
+    #      start_period: 10s
     depends_on:
       prometheus:
         condition: service_healthy
+      service-mongo-db:
+        condition: service_started
+
+  service-mongo-db:
+    image: mongo:latest
+    container_name: service-mongo-db
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    #      - MONGO_INITDB_DATABASE=service-mongo-db
+    volumes:
+      - service-mongo-data:/data/db
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # === API-GATEWAY ===
 
   api-gateway:
     build:
       context: .
       dockerfile: api_gateway/Dockerfile
     container_name: api_gateway
-#    environment:
-#      - LOG_LEVEL=debug
-#      - LOG_ADD_SOURCE=true
+    #    environment:
+    #      - LOG_LEVEL=debug
+    #      - LOG_ADD_SOURCE=true
     ports:
       - "8080:8080"
     networks:
@@ -65,3 +100,4 @@ networks:
 
 volumes:
   prometheus_data:
+  service-mongo-data:
