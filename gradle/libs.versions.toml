@@ -23,6 +23,7 @@ task-tree-version = "4.0.0"
 springBoot = "3.5.4"
 springCloud = "2023.0.3"
 micrometer = "1.12.0"
+mongodb = "5.2.1"
 
 [libraries]
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -54,6 +55,9 @@ log4j-slf4j-impl = { module = "org.apache.logging.log4j:log4j-slf4j-impl", versi
 micrometer-core = { module = "io.micrometer:micrometer-core", version.ref = "micrometer" }
 micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
 micrometer-registry-jmx = { module = "io.micrometer:micrometer-registry-jmx", version.ref = "micrometer" }
+mongodb-driver-sync = { module = "org.mongodb:mongodb-driver-sync", version.ref = "mongodb" }
+mongodb-driver-kotlin-coroutine = { module = "org.mongodb:mongodb-driver-kotlin-coroutine", version.ref = "mongodb" }
+bson-kotlin = { module = "org.mongodb:bson-kotlin", version.ref = "mongodb" }
 
 [bundles]
 kotlinxEcosystem = ["kotlinxDatetime", "kotlinxSerialization", "kotlinxCoroutines"]
@@ -62,6 +66,7 @@ spring-boot-webflux = ["spring-boot-starter-webflux", "spring-boot-configuration
 spring-cloud-gateway = ["spring-cloud-starter-gateway", "spring-cloud-starter-circuitbreaker-resilience4j"]
 junit-testing = ["junit-jupiter-api", "junit-jupiter-params"]
 micrometer = ["micrometer-core", "micrometer-registry-prometheus", "micrometer-registry-jmx"]
+mongodb = ["mongodb-driver-sync", "bson-kotlin"]
 
 [plugins]
 kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
