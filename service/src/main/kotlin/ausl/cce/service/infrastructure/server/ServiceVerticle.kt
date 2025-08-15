@@ -18,17 +18,17 @@ class ServiceVerticle : AbstractVerticle() {
     private val logger: Logger = LogManager.getLogger(this::class)
 
     override fun start() {
-        logger.info("Starting service...")
+        logger.info("Starting server...")
 
         val circuitBreaker = defineCircuitBreaker()
         val controller: ServiceController = StandardController(circuitBreaker)
         val router = Router.router(vertx)
         defineEndpoints(router, controller)
         runServer(router).onSuccess {
-            logger.info("Service started successfully, listening on port ${Ports.HTTP}")
+            logger.info("Server started successfully, listening on port ${Ports.HTTP}")
         }
         .onFailure { throwable ->
-            logger.error("Failed to start service: ${throwable.message}")
+            logger.error("Failed to start server: ${throwable.message}")
         }
     }
 
