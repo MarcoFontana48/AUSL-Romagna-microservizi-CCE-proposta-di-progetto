@@ -23,7 +23,7 @@ task-tree-version = "4.0.0"
 springBoot = "3.5.4"
 springCloud = "2023.0.3"
 micrometer = "1.12.0"
-mongodb = "5.2.1"
+mongodb = "5.5.1"
 
 [libraries]
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
