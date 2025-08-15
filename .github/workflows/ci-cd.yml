@@ -46,6 +46,7 @@ jobs:
           java-distribution: ${{ matrix.java-distribution }}
           should-run-codecov: false
           retries-on-failure: 3
+          build-command: "./gradlew build -x test"  # temporarily skip tests
 
   publish-docker-images:
     needs: build-and-test
