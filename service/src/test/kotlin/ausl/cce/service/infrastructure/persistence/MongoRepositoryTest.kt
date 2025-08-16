@@ -14,7 +14,7 @@ import org.junit.jupiter.api.assertThrows
 import java.io.File
 
 class MongoRepositoryTest : DockerTest() {
-    private val testEntity = DummyEntity.of("test-123")
+    private val testEntity = DummyEntity.of(DummyEntity.DummyId("test-123"), "dummy-field")
     private val logger = LogManager.getLogger(this::class)
     private val dockerComposePath = "/ausl/cce/service/infrastructure/persistence/mongoDbDeploy.yml"
     private lateinit var dockerComposeFile: File
@@ -74,7 +74,7 @@ class MongoRepositoryTest : DockerTest() {
     @DisplayName("Test finding a non-existent entity by its ID")
     @Timeout(5 * 60) // 5 minutes timeout
     fun findByIdNonExistent() {
-        val nonExistentEntity = DummyEntity.of("non-existent")
+        val nonExistentEntity = DummyEntity.of(DummyEntity.DummyId("non-existent"), "dummy-field")
 
         val foundEntity = serviceRepository.findById(nonExistentEntity.id)
 
@@ -94,9 +94,9 @@ class MongoRepositoryTest : DockerTest() {
         logger.trace("Testing findAll functionality")
 
         // Save multiple test entities
-        val testEntity1 = DummyEntity.of("test-123")
-        val testEntity2 = DummyEntity.of("test-456")
-        val testEntity3 = DummyEntity.of("test-789")
+        val testEntity1 = DummyEntity.of(DummyEntity.DummyId("test-123"), "dummy-field-1")
+        val testEntity2 = DummyEntity.of(DummyEntity.DummyId("test-456"), "dummy-field-2")
+        val testEntity3 = DummyEntity.of(DummyEntity.DummyId("test-789"), "dummy-field-3")
 
         serviceRepository.save(testEntity1)
         serviceRepository.save(testEntity2)
@@ -131,11 +131,11 @@ class MongoRepositoryTest : DockerTest() {
         logger.trace("Testing update functionality for existing entity")
 
         // First save an entity
-        val originalEntity = DummyEntity.of("test-123")
+        val originalEntity = DummyEntity.of(DummyEntity.DummyId("test-123"), "original-field")
         serviceRepository.save(originalEntity)
 
         // Create updated entity with same ID
-        val entityToUpdate = DummyEntity.of("test-123")
+        val entityToUpdate = DummyEntity.of(DummyEntity.DummyId("test-123"), "updated-field")
         logger.trace("Updating entity with id: ${entityToUpdate.id.value}")
 
         // Update should not throw exception for existing entity
@@ -160,7 +160,7 @@ class MongoRepositoryTest : DockerTest() {
     fun updateNonExistentEntity() {
         logger.trace("Testing update functionality for non-existent entity")
 
-        val nonExistentEntity = DummyEntity.of("non-existent-update")
+        val nonExistentEntity = DummyEntity.of(DummyEntity.DummyId("non-existent-update"), "dummy-field")
 
         // Update should throw RuntimeException for non-existent entity
         val exception = assertThrows<RuntimeException> {
@@ -186,7 +186,7 @@ class MongoRepositoryTest : DockerTest() {
         logger.trace("Testing deleteById functionality for existing entity")
 
         // First save entities to delete
-        val entityToDelete = DummyEntity.of("test-456")
+        val entityToDelete = DummyEntity.of(DummyEntity.DummyId("test-456"), "dummy-field-to-delete")
         serviceRepository.save(entityToDelete)
 
         // Delete the entity
@@ -231,9 +231,9 @@ class MongoRepositoryTest : DockerTest() {
         logger.trace("Testing complete CRUD workflow")
 
         // Create and save multiple entities
-        val entity1 = DummyEntity.of("workflow-1")
-        val entity2 = DummyEntity.of("workflow-2")
-        val entity3 = DummyEntity.of("workflow-3")
+        val entity1 = DummyEntity.of(DummyEntity.DummyId("workflow-1"), "dummy-field-1")
+        val entity2 = DummyEntity.of(DummyEntity.DummyId("workflow-2"), "dummy-field-2")
+        val entity3 = DummyEntity.of(DummyEntity.DummyId("workflow-3"), "dummy-field-3")
 
         serviceRepository.save(entity1)
         serviceRepository.save(entity2)
@@ -243,7 +243,7 @@ class MongoRepositoryTest : DockerTest() {
         val allEntities = serviceRepository.findAll().toList()
 
         // Update one entity
-        val updatedEntity2 = DummyEntity.of("workflow-2")
+        val updatedEntity2 = DummyEntity.of(DummyEntity.DummyId("workflow-2"), "updated-field-2")
         serviceRepository.update(updatedEntity2)
 
         // Delete one entity
