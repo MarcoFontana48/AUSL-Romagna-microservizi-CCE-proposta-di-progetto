@@ -55,9 +55,15 @@ class ServerVerticle(
     private fun defineEndpoints(router: Router, controller: ServiceController) {
         router.route().handler(BodyHandler.create())
 
+        /* === HEALTH CHECK ENDPOINT === */
         router.get(Endpoints.HEALTH).handler { ctx -> controller.healthCheckHandler(ctx) }
+
+        /* === METRICS ENDPOINT === */
         router.get(Endpoints.METRICS).handler { ctx -> controller.metricsHandler(ctx) }
-        router.get(Endpoints.DUMMIES).handler { ctx -> controller.getDummyHandler(ctx) }
+
+        /* === DUMMY DDD ENTITY ENDPOINT === */
+        router.get(Endpoints.DUMMIES + "/:id").handler { ctx -> controller.getDummyHandler(ctx) }
+        router.post(Endpoints.DUMMIES).handler { ctx -> controller.createDummyHandler(ctx) }
     }
 
     private fun runServer(router: Router): Future<HttpServer> {

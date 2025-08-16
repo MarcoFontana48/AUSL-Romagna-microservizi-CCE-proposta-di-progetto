@@ -205,3 +205,15 @@ curl.exe http://localhost:8080/service/metrics
 ```
 
 it is also possible to query prometheus via its browser GUI, connecting to "http://localhost:9090/"
+
+to send a post request for dummy entities
+
+```bash
+Invoke-RestMethod -Uri "http://localhost:8080/service/dummies" -Method POST -ContentType "application/json" -Body '{"id":{"value":"123"},"field":"dummy_field_value"}'
+```
+
+to send a get request about the dummy entity just created
+
+```bash
+curl.exe -X GET http://localhost:8080/service/dummies/123
+```

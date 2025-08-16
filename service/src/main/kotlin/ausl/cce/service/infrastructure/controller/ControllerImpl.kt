@@ -2,6 +2,7 @@ package ausl.cce.service.infrastructure.controller
 
 import ausl.cce.service.application.DummyService
 import ausl.cce.service.application.ServiceController
+import ausl.cce.service.domain.DummyEntity
 import ausl.cce.service.domain.DummyEntity.DummyId
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.exc.MismatchedInputException
@@ -16,6 +17,7 @@ import io.vertx.ext.web.RoutingContext
 import mf.cce.utils.HttpStatus
 import org.apache.logging.log4j.LogManager
 import java.sql.SQLIntegrityConstraintViolationException
+import kotlin.reflect.KClass
 
 class StandardController(
     private val service: DummyService,              // 'service' here refers to the DDD service
@@ -27,6 +29,9 @@ class StandardController(
     private val mapper: ObjectMapper = jacksonObjectMapper().apply {
         registerModule(KotlinModule.Builder().build())
     }
+
+    private fun <C : Any> deserializeRequestFromClass(jsonRequestBody: JsonObject, klass: KClass<C>): C =
+        mapper.readValue(jsonRequestBody.encode(), klass.java)
 
     override fun healthCheckHandler(ctx: RoutingContext) {
         healthCheckCounter.increment()
@@ -87,7 +92,7 @@ class StandardController(
         getDummyCounter.increment()
         val timerSample = Timer.start(meterRegistry)
 
-        circuitBreaker.execute<JsonObject> { promise ->
+        circuitBreaker.execute { promise ->
             // expects a request path patameter 'id': "/dummies/:id" where ':id' is the dummy entity id, i.e. "/dummies/123"
             val idParam = ctx.pathParam("id")
             if (idParam.isNullOrBlank()) {
@@ -99,14 +104,20 @@ class StandardController(
             val dummyEntity = service.getDummyEntityById(DummyId(idParam))
             logger.trace("DummyEntity retrieved: '{}'", dummyEntity)
 
-            mapper.writeValueAsString(dummyEntity)
+            val replyString = mapper.writeValueAsString(dummyEntity)
+            val replyJson = JsonObject(replyString)
+            logger.debug("Converted DummyEntity to JsonObject: '{}'", replyJson)
+
+            promise.complete(replyJson)
         }.onComplete { result ->
             timerSample.stop(getDummyTimer)
 
             if (result.succeeded()) {
+                logger.debug("DummyEntity retrieved successfully, sending response")
                 getDummySuccessCounter.increment()
                 sendResponse(ctx, HttpStatus.OK, result.result())
             } else {
+                logger.warn("Failed to retrieve DummyEntity, sending response. Error: {}", result.cause().message)
                 getDummyFailureCounter.increment()
                 sendErrorResponse(ctx, result.cause())
             }
@@ -116,7 +127,39 @@ class StandardController(
     override fun createDummyHandler(ctx: RoutingContext) {
         logger.debug("Received POST request to create dummy entity")
 
+        createDummyCounter.increment()
+        val timerSample = Timer.start(meterRegistry)
 
+        circuitBreaker.execute { promise ->
+            // expects a request body with the dummy entity data (currently, just an 'id'), i.e.: "/dummies/123"
+            val requestBody = ctx.body().asJsonObject()
+            if (requestBody.isEmpty) {
+                logger.warn("Received POST request without required body")
+                throw IllegalArgumentException("Cannot execute create request without body")
+            }
+            logger.debug("Extracted dummy entity data from request body: '{}'", requestBody)
+
+            logger.trace("About to deserialize request body to DummyEntity class")
+            val dummyEntity = deserializeRequestFromClass(requestBody, DummyEntity::class)
+            logger.debug("Deserialized DummyEntity from request: '{}'", dummyEntity)
+
+            service.addDummyEntity(dummyEntity)
+            logger.trace("DummyEntity created: '{}'", dummyEntity)
+
+            promise.complete(JsonObject().put("id", dummyEntity.id))
+        }.onComplete { result ->
+            timerSample.stop(createDummyTimer)
+
+            if (result.succeeded()) {
+                logger.trace("DummyEntity created successfully, sending response")
+                createDummySuccessCounter.increment()
+                sendResponse(ctx, HttpStatus.CREATED, result.result())
+            } else {
+                logger.warn("Failed to create DummyEntity, sending response. Error: {}", result.cause().message)
+                createDummyFailureCounter.increment()
+                sendErrorResponse(ctx, result.cause())
+            }
+        }
     }
 
     override fun updateDummyHandler(ctx: RoutingContext) {

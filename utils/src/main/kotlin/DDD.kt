@@ -71,9 +71,7 @@ interface CommandRepository<I : ID<*>, E : Entity<*>> {
 /**
  * Interface to easily identify a domain object as factory.
  */
-interface Factory<E : Entity<*>> {
-    fun of(id: String): E
-}
+interface Factory<E : Entity<*>>
 
 /**
  * Marker interface to easily identify a domain object as domain event

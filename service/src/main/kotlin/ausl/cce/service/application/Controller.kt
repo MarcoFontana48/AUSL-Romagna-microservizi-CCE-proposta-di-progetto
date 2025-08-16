@@ -79,4 +79,30 @@ interface DummyMetricsProvider {
             .description("get_dummy request duration")
             .tag("service", serviceName)
             .register(meterRegistry)
+
+    /* === CREATE === */
+
+    val createDummyCounter: Counter
+        get() = Counter.builder("create_dummy_requests_total")
+            .description("Total number of create_dummy requests")
+            .tag("service", serviceName)
+            .register(meterRegistry)
+
+    val createDummySuccessCounter: Counter
+        get() = Counter.builder("create_dummy_success_total")
+            .description("Total number of successful create_dummy")
+            .tag("service", serviceName)
+            .register(meterRegistry)
+
+    val createDummyFailureCounter: Counter
+        get() = Counter.builder("create_dummy_failure_total")
+            .description("Total number of failed create_dummy")
+            .tag("service", serviceName)
+            .register(meterRegistry)
+
+    val createDummyTimer: Timer
+        get() = Timer.builder("create_dummy_duration_seconds")
+            .description("create_dummy request duration")
+            .tag("service", serviceName)
+            .register(meterRegistry)
 }

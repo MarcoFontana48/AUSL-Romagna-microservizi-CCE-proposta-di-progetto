@@ -49,6 +49,7 @@ class MongoRepository(
             val document = Document().apply {
                 append("_id", entity.id.value)
                 append("entityId", entity.id.value)
+                append("field", entity.dummyField)
                 append("createdAt", System.currentTimeMillis())
             }
 
@@ -71,7 +72,8 @@ class MongoRepository(
             if (document != null) {
                 logger.debug("Found entity with id: ${id.value}")
                 val entityId = document.getString("entityId") ?: document.getString("_id")
-                DummyEntity.of(entityId)
+                val field = document.getString("field")
+                DummyEntity.of(DummyEntity.DummyId(entityId), field)
             } else {
                 logger.debug("No entity found with id: ${id.value}")
                 null
@@ -97,7 +99,8 @@ class MongoRepository(
                 if (deleteResult.deletedCount > 0) {
                     logger.trace("Successfully deleted entity with id: ${id.value}")
                     val entityId = document.getString("entityId") ?: document.getString("_id")
-                    DummyEntity.of(entityId)
+                    val field = document.getString("field")
+                    DummyEntity.of(DummyEntity.DummyId(entityId), field)
                 } else {
                     logger.warn("Delete operation did not remove any documents for id: ${id.value}")
                     null
@@ -122,7 +125,8 @@ class MongoRepository(
                 try {
                     val entityId = document.getString("entityId") ?: document.getString("_id")
                     if (entityId != null) {
-                        DummyEntity.of(entityId)
+                        val field = document.getString("field")
+                        DummyEntity.of(DummyEntity.DummyId(entityId), field)
                     } else {
                         logger.warn("Document found with null entityId: ${document.toJson()}")
                         null
