@@ -22,4 +22,5 @@ object Endpoints {
     const val HEALTH = "/health"
     const val SERVICE = "/service"
     const val METRICS = "/metrics"
+    const val DUMMIES = "/dummies"
 }
