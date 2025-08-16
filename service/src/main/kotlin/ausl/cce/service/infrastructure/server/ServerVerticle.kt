@@ -1,7 +1,10 @@
 package ausl.cce.service.infrastructure.server
 
+import ausl.cce.service.application.DummyService
 import ausl.cce.service.application.ServiceController
 import ausl.cce.service.infrastructure.controller.StandardController
+import io.micrometer.prometheus.PrometheusConfig
+import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.vertx.circuitbreaker.CircuitBreaker
 import io.vertx.circuitbreaker.CircuitBreakerOptions
 import io.vertx.core.AbstractVerticle
@@ -14,14 +17,17 @@ import mf.cce.utils.Ports
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
-class ServiceVerticle : AbstractVerticle() {
+class ServerVerticle(
+    private val service : DummyService
+) : AbstractVerticle() {
     private val logger: Logger = LogManager.getLogger(this::class)
 
     override fun start() {
         logger.info("Starting server...")
 
+        val meterRegistry = defineMeterRegistry()
         val circuitBreaker = defineCircuitBreaker()
-        val controller: ServiceController = StandardController(circuitBreaker)
+        val controller: ServiceController = StandardController(service, circuitBreaker, meterRegistry)
         val router = Router.router(vertx)
         defineEndpoints(router, controller)
         runServer(router).onSuccess {
@@ -30,6 +36,11 @@ class ServiceVerticle : AbstractVerticle() {
         .onFailure { throwable ->
             logger.error("Failed to start server: ${throwable.message}")
         }
+    }
+
+    private fun defineMeterRegistry(): PrometheusMeterRegistry {
+        val config = PrometheusConfig.DEFAULT
+        return PrometheusMeterRegistry(config)
     }
 
     private fun defineCircuitBreaker(): CircuitBreaker {
@@ -44,8 +55,9 @@ class ServiceVerticle : AbstractVerticle() {
     private fun defineEndpoints(router: Router, controller: ServiceController) {
         router.route().handler(BodyHandler.create())
 
-        router.get(Endpoints.HEALTH).handler(controller.healthCheckHandler())
-        router.get(Endpoints.METRICS).handler(controller.metricsHandler())
+        router.get(Endpoints.HEALTH).handler { ctx -> controller.healthCheckHandler(ctx) }
+        router.get(Endpoints.METRICS).handler { ctx -> controller.metricsHandler(ctx) }
+        router.get(Endpoints.DUMMIES).handler { ctx -> controller.getDummyHandler(ctx) }
     }
 
     private fun runServer(router: Router): Future<HttpServer> {
