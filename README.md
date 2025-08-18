@@ -10,7 +10,7 @@ how to build and run the entire project (it also builds all images before runnin
 - move to the project root directory (the directory where this README.md is located)
 - run the following commands to stop any running containers and remove existing images and volumes, then build and run the project:
 
-## Kubernetes (production)
+## Kubernetes
 If you want to deploy the project on kubernetes, run the following commands (then wait some minutes to make sure everything is up and running correctly before running other commands):
 
 ```bash
@@ -126,7 +126,7 @@ kubectl get hpa -n monitoring-app --watch
 
 [//]: # (```)
 
-## Docker (dev)
+## Docker
 If you want to use docker, run those commands instead:
 
 ```bash
