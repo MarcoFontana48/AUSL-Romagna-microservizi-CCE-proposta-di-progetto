@@ -5,16 +5,16 @@ import io.vertx.ext.web.client.WebClient
 import mf.cce.utils.KubernetesTest
 import org.apache.logging.log4j.LogManager
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.File
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import kotlin.test.assertTrue
 
-class EndToEndTest : KubernetesTest() {
+class GeneralPerformanceTest : KubernetesTest() {
     private val logger = LogManager.getLogger(this::class)
-    private val k8sYmlfilesPath = "src/test/resources/ausl/cce/endtoend"
+    private val k8sYamlFilesWithAutoscaleEnvironment = "src/test/resources/ausl/cce/endtoend/autoscale"
+    private val k8sYamlFilesWithoutAutoscaleEnvironment = "src/test/resources/ausl/cce/endtoend/noautoscale"
     private val k8sNamespace = "monitoring-app"
     private lateinit var k8sDirectory: File
 
@@ -25,41 +25,6 @@ class EndToEndTest : KubernetesTest() {
 
     private lateinit var vertx: Vertx
     private lateinit var webClient: WebClient
-
-    @BeforeEach
-    fun setUp() {
-        k8sDirectory = File(k8sYmlfilesPath)
-
-        logger.info("Starting Kubernetes resources setup...")
-        logger.info("K8s directory path: {}", k8sDirectory.absolutePath)
-
-        // Check kubectl is available and cluster is accessible
-        checkKubectlAvailability()
-
-        // Apply metrics-server first (if not already present)
-        try {
-            executeKubectlCmd(File("."), "apply", "-f", "https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml")
-            logger.info("Metrics server applied (may already exist)")
-        } catch (e: Exception) {
-            logger.warn("Could not apply metrics server, it may already exist: ${e.message}")
-        }
-
-        // Apply all YAML files and wait for resources to be ready
-        executeKubectlApplyAndWait(k8sDirectory)
-
-        // Wait for deployments and pods to be ready
-        waitForDeployments(k8sNamespace, "600s")
-        waitForPods(k8sNamespace, "600s")
-
-        // Initialize Vert.x
-        vertx = Vertx.vertx()
-        webClient = WebClient.create(vertx)
-
-        // Wait a bit more for services to be fully ready
-        Thread.sleep(30000) // 30 seconds
-
-        logger.info("Kubernetes resources are ready for testing")
-    }
 
     @AfterEach
     fun tearDown() {
@@ -78,6 +43,8 @@ class EndToEndTest : KubernetesTest() {
 
     @Test
     fun testConcurrentHealthChecksAndPrometheusMetrics() {
+        setUpEnvironment(k8sYamlFilesWithAutoscaleEnvironment)
+
         logger.info("Starting concurrent health check test...")
 
         val numberOfClients = 50
@@ -142,9 +109,6 @@ class EndToEndTest : KubernetesTest() {
 
         logger.info("95th percentile response time from Prometheus: {} ms", p95ResponseTime)
 
-        // Test assertions (always pass as requested)
-        assertTrue(true, "Test completed successfully")
-
         // Log summary
         logger.info("=== TEST SUMMARY ===")
         logger.info("Total requests sent: {}", totalRequests)
@@ -153,7 +117,50 @@ class EndToEndTest : KubernetesTest() {
         logger.info("Average throughput: {} req/s", String.format("%.2f", throughput))
         logger.info("95th percentile response time: {} ms", p95ResponseTime)
         logger.info("==================")
+
+        // Test assertions (always passes, but constrains on non-functional metrics can be added here as "expected" values to compare against)
+        assertTrue(true, "Test completed successfully")
     }
+
+    private fun setUpEnvironment(k8sFilesPath: String) {
+        k8sDirectory = File(k8sFilesPath)
+
+        logger.info("Starting Kubernetes resources setup...")
+        logger.info("K8s directory path: {}", k8sDirectory.absolutePath)
+
+        // Check kubectl is available and cluster is accessible
+        checkKubectlAvailability()
+
+        // Apply metrics-server first (if not already present)
+        try {
+            executeKubectlCmd(
+                File("."),
+                "apply",
+                "-f",
+                "https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml"
+            )
+            logger.info("Metrics server applied (may already exist)")
+        } catch (e: Exception) {
+            logger.warn("Could not apply metrics server, it may already exist: ${e.message}")
+        }
+
+        // Apply all YAML files and wait for resources to be ready
+        executeKubectlApplyAndWait(k8sDirectory)
+
+        // Wait for deployments and pods to be ready
+        waitForDeployments(k8sNamespace, "600s")
+        waitForPods(k8sNamespace, "600s")
+
+        // Initialize Vert.x
+        vertx = Vertx.vertx()
+        webClient = WebClient.create(vertx)
+
+        // wait a bit more for services to be fully ready
+        Thread.sleep(30000) // 30 seconds
+
+        logger.info("Kubernetes resources are ready for testing")
+    }
+
 
     private fun queryPrometheusFor95thPercentile(): Double {
         val endTime = System.currentTimeMillis() / 1000
@@ -211,6 +218,7 @@ class EndToEndTest : KubernetesTest() {
     }
 
     private fun tryActualServiceMetrics(endTime: Long): Double {
+/*
         val actualQueries = listOf(
             // Try histogram buckets first (only available if you enabled publishPercentileHistogram)
             """histogram_quantile(0.95, sum(rate(health_check_duration_seconds_bucket{service="service"}[5m])) by (le))""",
@@ -283,6 +291,7 @@ class EndToEndTest : KubernetesTest() {
                 logger.debug("Service metric query failed: {} - {}", query, e.message)
             }
         }
+*/
 
         // Final diagnostic attempt - list all available metrics
         try {
