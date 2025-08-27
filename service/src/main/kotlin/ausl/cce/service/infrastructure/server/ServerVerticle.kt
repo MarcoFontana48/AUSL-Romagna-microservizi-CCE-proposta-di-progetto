@@ -3,6 +3,7 @@ package ausl.cce.service.infrastructure.server
 import ausl.cce.service.application.DummyService
 import ausl.cce.service.application.ServiceController
 import ausl.cce.service.infrastructure.controller.StandardController
+import io.micrometer.core.instrument.Timer
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.vertx.circuitbreaker.CircuitBreaker
@@ -40,7 +41,16 @@ class ServerVerticle(
 
     private fun defineMeterRegistry(): PrometheusMeterRegistry {
         val config = PrometheusConfig.DEFAULT
-        return PrometheusMeterRegistry(config)
+
+        val res = PrometheusMeterRegistry(config)
+
+        Timer.builder("health_check_duration_seconds")
+            .description("Health check request duration")
+            .tag("service", "service")
+            .publishPercentileHistogram() // enables histogram buckets
+            .register(res)
+
+        return res
     }
 
     private fun defineCircuitBreaker(): CircuitBreaker {

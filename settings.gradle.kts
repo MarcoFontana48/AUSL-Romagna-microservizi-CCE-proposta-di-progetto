@@ -14,3 +14,4 @@ include(":utils")
 
 rootProject.name = "CCE_Microservizi"
 include(":api_gateway")
+include(":end_to_end_tests")
