@@ -61,6 +61,18 @@ interface MetricsProvider {
             .tag("service", serviceName)
             .register(meterRegistry)
 
+    val metricsReadRequestsCounter: Counter
+        get() = Counter.builder("metrics_read_requests_total")
+            .description("Total number of metrics requests")
+            .tag("service", serviceName)
+            .register(meterRegistry)
+
+    val metricsWriteRequestsCounter: Counter
+        get() = Counter.builder("metrics_write_requests_total")
+            .description("Total number of metrics requests")
+            .tag("service", serviceName)
+            .register(meterRegistry)
+
     val metricsTimer: Timer
         get() = Timer.builder("metrics_duration_seconds")
             .description("Metrics request duration")

@@ -175,6 +175,7 @@ public class StandardApiGatewayController implements ApiGatewayController, Healt
     public Timer getHealthCheckTimer() {
         return Timer.builder("health_check_duration_seconds")
                 .description("Health check request duration")
+                .publishPercentileHistogram()
                 .tag("service", this.getServiceName())
                 .register(this.getMeterRegistry());
     }
@@ -212,6 +213,7 @@ public class StandardApiGatewayController implements ApiGatewayController, Healt
     public Timer getMetricsTimer() {
         return Timer.builder("metrics_duration_seconds")
                 .description("Metrics request duration")
+                .publishPercentileHistogram()
                 .tag("service", this.getServiceName())
                 .register(this.getMeterRegistry());
     }

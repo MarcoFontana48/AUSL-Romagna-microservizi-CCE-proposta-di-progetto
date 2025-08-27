@@ -40,6 +40,7 @@ class StandardController(
 
         circuitBreaker.execute { promise ->
             logger.debug("received GET request for health check")
+            metricsReadRequestsCounter.increment()
 
             val response = JsonObject()
                 .put("status", "OK")
@@ -67,6 +68,7 @@ class StandardController(
 
         metricsTimer.recordCallable {
             logger.debug("received GET request for metrics")
+            metricsReadRequestsCounter.increment()
 
             val prometheusRegistry = meterRegistry as? PrometheusMeterRegistry
             if (prometheusRegistry != null) {

@@ -217,3 +217,60 @@ to send a get request about the dummy entity just created
 ```bash
 curl.exe -X GET http://localhost:8080/service/dummies/123
 ```
+
+## Visualize metrics
+Go to "http://localhost:9090/" or "http://localhost:31090/" if using kubernetes, to visualize metrics collected by prometheus. You can use the following queries to visualize some metrics:
+
+<b>All of those metrics are updated every a fixed amount of time and their evolution over time can be recorded and visualized by clicking on the 'graph' section in the prometheus GUI. Each time the result of those queries changes an update in the graph can be seen</b>
+
+See the 95th percentile of the request duration for the health check endpoint of the service over the last 5 minutes:
+```text
+histogram_quantile(0.95, sum(rate(health_check_duration_seconds_bucket{service="service"}[5m])) by (le))
+```
+
+See the average latency of requests to the health check endpoint of the service over the last 5 minutes, divided by service type (click on graph to visualize it):
+```text
+rate(health_check_duration_seconds_sum[5m]) / rate(health_check_duration_seconds_count[5m])
+```
+
+See the total number of requests to the health check endpoint of the service over the last 5 minutes, divided by service type:
+```text
+health_check_duration_seconds_count
+```
+
+See the amount of READ requests for a specific entity:
+```text
+get_dummy_requests_total
+```
+
+See the amount of WRITE requests for a specific entity:
+```text
+create_dummy_requests_total
+```
+
+See the total amount of requests for a specific entity:
+```text
+create_dummy_requests_total + get_dummy_requests_total
+```
+
+See the amount of READs over WRITEs (useful to see if a CQRS pattern can be applied and where to apply it!)
+```text
+get_dummy_requests_total / (create_dummy_requests_total + get_dummy_requests_total)
+```
+
+See the amount of failed requests for a specific entity:
+```text
+get_dummy_failure_total
+```
+
+See the amount of successful requests for a specific entity:
+```text
+get_dummy_success_total
+```
+
+See the amount of successful requests over total amount of requests for a specific entity (useful to see the reliability of the service):
+```text
+get_dummy_success_total / (get_dummy_success_total + get_dummy_failure_total)
+```
+
+It's possible to query any metric exposed by the application, this is just an example considering simply health checks, anything that is exposed can be queried.

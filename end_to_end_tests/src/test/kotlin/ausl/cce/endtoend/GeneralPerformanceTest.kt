@@ -26,100 +26,132 @@ class GeneralPerformanceTest : KubernetesTest() {
     private lateinit var vertx: Vertx
     private lateinit var webClient: WebClient
 
-    @AfterEach
-    fun tearDown() {
-        // Close Vert.x resources
-        if (::webClient.isInitialized) {
-            webClient.close()
-        }
-        if (::vertx.isInitialized) {
-            vertx.close()
-        }
+    private val serviceName = "service"
+    private val healthCheckOperation = "health_check"
 
-        logger.info("Cleaning up Kubernetes resources...")
-        executeKubectlDelete(k8sDirectory)
-        logger.info("Kubernetes resources cleaned up")
+    data class TestSummary(
+        val scenarioName: String,
+        val totalRequests: Int,
+        val totalDuration: Long,
+        val throughput: Double,
+        val p95ResponseTime: Double,
+        val successfulRequests: Int = 0,
+        val failedRequests: Int = 0
+    ) {
+        private val logger = LogManager.getLogger(this::class)
+
+        fun logSummary() {
+            logger.info("=== TEST SUMMARY FOR '$scenarioName' ===")
+            logger.info("Total requests sent: $totalRequests")
+            logger.info("Successful requests: $successfulRequests")
+            logger.info("Failed requests: $failedRequests")
+            logger.debug("Total test duration: $totalDuration ms")
+            logger.debug("Average throughput: ${String.format("%.2f", throughput)} req/s")
+            logger.info("95th percentile response time: ${String.format("%.2f", p95ResponseTime)} ms")
+            logger.info("==================")
+        }
+    }
+
+//    @AfterEach
+//    fun tearDown() {
+//        // Close Vert.x resources
+//        if (::webClient.isInitialized) {
+//            webClient.close()
+//        }
+//        if (::vertx.isInitialized) {
+//            vertx.close()
+//        }
+//
+//        logger.info("Cleaning up Kubernetes resources...")
+//        executeKubectlDelete(k8sDirectory)
+//        logger.info("Kubernetes resources cleaned up")
+//    }
+
+    @Test
+    fun performanceEvaluationWithAutoscaler() {
+        setUpEnvironment(k8sYamlFilesWithAutoscaleEnvironment)
+        val results = startPerformanceEvaluationWithFixedAmountOfRequests("Performance evaluation with Autoscaler", 25, healthEndpoint)
+        results.logSummary()
+        assertTrue(true, "Test completed successfully")
     }
 
     @Test
-    fun testConcurrentHealthChecksAndPrometheusMetrics() {
-        setUpEnvironment(k8sYamlFilesWithAutoscaleEnvironment)
+    fun performanceEvaluationWithoutAutoscaler() {
+        setUpEnvironment(k8sYamlFilesWithoutAutoscaleEnvironment)
+        val results = startPerformanceEvaluationWithFixedAmountOfRequests("Performance evaluation without Autoscaler", 25, healthEndpoint)
+        results.logSummary()
+        assertTrue(true, "Test completed successfully")
+    }
 
+    /**
+     * Start performance evaluation by sending a fixed amount of requests simulating different clients sending multiple requests over time.
+     */
+    private fun startPerformanceEvaluationWithFixedAmountOfRequests(scenarioName: String, totalRequests: Int = 20, endpoint: String): TestSummary {
         logger.info("Starting concurrent health check test...")
 
-        val numberOfClients = 50
-        val requestsPerClient = 20
-        val totalRequests = numberOfClients * requestsPerClient
+        logger.info(
+            "Sending {} requests", totalRequests
+        )
 
-        logger.info("Sending {} requests using {} concurrent clients ({} requests per client)",
-            totalRequests, numberOfClients, requestsPerClient)
-
-        // Send concurrent requests
-        val futures = mutableListOf<CompletableFuture<Void>>()
+        // create all request futures at once for true concurrency
+        val allRequestFutures = mutableListOf<CompletableFuture<Void>>()
         val startTime = System.currentTimeMillis()
 
-        for (clientId in 1..numberOfClients) {
-            val future = CompletableFuture<Void>()
-            futures.add(future)
+        var success = 0
+        var failure = 0
 
-            vertx.executeBlocking<Void>({ promise ->
-                try {
-                    for (requestId in 1..requestsPerClient) {
-                        val requestFuture = webClient
-                            .getAbs("$apiGatewayUrl$healthEndpoint")
-                            .timeout(10000) // 10 second timeout
-                            .send()
+        // send all requests concurrently (stress test)
+        for (requestId in 1..totalRequests) {
+            val requestFuture = CompletableFuture<Void>()
+            allRequestFutures.add(requestFuture)
 
-                        requestFuture.result() // Wait for response
-                        logger.trace("Client {} - Request {} completed", clientId, requestId)
-                    }
-                    promise.complete()
-                } catch (e: Exception) {
-                    logger.error("Error in client {}: {}", clientId, e.message)
-                    promise.complete() // Continue even if some requests fail
+            webClient
+                .getAbs("$apiGatewayUrl$endpoint")
+                .timeout(30000) // 30 second timeout
+                .send()
+                .onSuccess { response ->
+                    success++
+                    logger.trace("Request {} completed with status {}", requestId, response.statusCode())
+                    requestFuture.complete(null)
                 }
-            }, { result ->
-                if (result.succeeded()) {
-                    logger.debug("Client {} completed all requests", clientId)
-                } else {
-                    logger.error("Client {} failed: {}", clientId, result.cause()?.message)
+                .onFailure { error ->
+                    failure++
+                    logger.error("Request {} failed: {}", requestId, error.message)
+                    requestFuture.complete(null) // complete anyway to not block the test
                 }
-                future.complete(null)
-            })
         }
 
-        // Wait for all clients to complete
-        CompletableFuture.allOf(*futures.toTypedArray()).get(300, TimeUnit.SECONDS)
-
+        // wait for ALL requests to complete
+        logger.info("Waiting for all {} concurrent requests to complete...", totalRequests)
+        CompletableFuture.allOf(*allRequestFutures.toTypedArray()).get(300, TimeUnit.SECONDS)
 
         val endTime = System.currentTimeMillis()
         val totalDuration = endTime - startTime
 
-        logger.info("All {} requests completed in {} ms", totalRequests, totalDuration)
+        logger.info(
+            "All {} requests completed in {} ms - {}/{} successes",
+            totalRequests,
+            totalDuration,
+            success,
+            totalRequests
+        )
 
-        // Fix the formatting issue - remove {:.2f} placeholder and calculate the value
         val throughput = totalRequests.toDouble() / (totalDuration / 1000.0)
         logger.info("Average throughput: {} requests/second", String.format("%.2f", throughput))
 
-        // Wait a bit for Prometheus to scrape the metrics
+        // wait for Prometheus to scrape the metrics
         Thread.sleep(30000) // 30 seconds
 
-        // Query Prometheus for 95th percentile response time
-        val p95ResponseTime = queryPrometheusFor95thPercentile()
+        // query Prometheus for 95th percentile response time
+        val p95ResponseTime = queryPrometheusFor95thPercentile(healthCheckOperation)
 
-        logger.info("95th percentile response time from Prometheus: {} ms", p95ResponseTime)
-
-        // Log summary
-        logger.info("=== TEST SUMMARY ===")
-        logger.info("Total requests sent: {}", totalRequests)
-        logger.info("Concurrent clients: {}", numberOfClients)
-        logger.info("Total test duration: {} ms", totalDuration)
-        logger.info("Average throughput: {} req/s", String.format("%.2f", throughput))
-        logger.info("95th percentile response time: {} ms", p95ResponseTime)
-        logger.info("==================")
-
-        // Test assertions (always passes, but constrains on non-functional metrics can be added here as "expected" values to compare against)
-        assertTrue(true, "Test completed successfully")
+        return TestSummary(
+            scenarioName,
+            totalRequests,
+            totalDuration,
+            throughput,
+            p95ResponseTime
+        )
     }
 
     private fun setUpEnvironment(k8sFilesPath: String) {
@@ -162,13 +194,11 @@ class GeneralPerformanceTest : KubernetesTest() {
     }
 
 
-    private fun queryPrometheusFor95thPercentile(): Double {
+    private fun queryPrometheusFor95thPercentile(operationType: String): Double {
         val endTime = System.currentTimeMillis() / 1000
 
         return try {
-            // Query the health check endpoint since that's what your test is hitting
-            // Try histogram first, then fallback to max values
-            val query = """histogram_quantile(0.95, sum(rate(health_check_duration_seconds_bucket{service="service"}[5m])) by (le))"""
+            val query = """histogram_quantile(0.95, sum(rate(${operationType}_duration_seconds_bucket{service="$serviceName"}[5m])) by (le))"""
 
             val encodedQuery = java.net.URLEncoder.encode(query, "UTF-8")
             val prometheusQuery = "$prometheusUrl/api/v1/query?query=$encodedQuery&time=$endTime"
@@ -189,8 +219,8 @@ class GeneralPerformanceTest : KubernetesTest() {
 
                 // Check if result array is empty
                 if (body.contains(""""result":[]""")) {
-                    logger.warn("Prometheus returned empty result set for health_check_duration_seconds - trying alternatives")
-                    tryActualServiceMetrics(endTime)
+                    logger.warn("Prometheus returned empty result set for ${operationType}_duration_seconds - trying alternatives")
+                    tryActualServiceMetrics()
                 } else {
                     // Parse the JSON response to extract the value
                     val valueRegex = """"value":\s*\[\s*\d+(?:\.\d+)?,\s*"([^"]+)"\s*]""".toRegex()
@@ -204,12 +234,12 @@ class GeneralPerformanceTest : KubernetesTest() {
                         valueMilliseconds
                     } else {
                         logger.warn("Could not parse Prometheus response value from body: {}", body)
-                        tryActualServiceMetrics(endTime)
+                        tryActualServiceMetrics()
                     }
                 }
             } else {
                 logger.warn("Prometheus query failed with status: {} - {}", response.statusCode(), response.bodyAsString())
-                tryActualServiceMetrics(endTime)
+                tryActualServiceMetrics()
             }
         } catch (e: Exception) {
             logger.error("Error querying Prometheus: {}", e.message, e)
@@ -217,83 +247,7 @@ class GeneralPerformanceTest : KubernetesTest() {
         }
     }
 
-    private fun tryActualServiceMetrics(endTime: Long): Double {
-/*
-        val actualQueries = listOf(
-            // Try histogram buckets first (only available if you enabled publishPercentileHistogram)
-            """histogram_quantile(0.95, sum(rate(health_check_duration_seconds_bucket{service="service"}[5m])) by (le))""",
-            """histogram_quantile(0.95, sum(rate(health_check_duration_seconds_bucket[5m])) by (le))""",
-
-            // Fallback to max values (these should always be available with Timers)
-            """health_check_duration_seconds_max{service="service"}""",
-            """health_check_duration_seconds_max""",
-
-            // Try mean values
-            """avg_over_time(health_check_duration_seconds_sum{service="service"}[5m]) / avg_over_time(health_check_duration_seconds_count{service="service"}[5m])""",
-
-            // Check basic timer metrics to verify data is being collected
-            """health_check_duration_seconds_count{service="service"}""",
-            """health_check_duration_seconds_sum{service="service"}""",
-
-            // Check counter metrics
-            """health_check_requests_total{service="service"}""",
-            """health_check_success_total{service="service"}""",
-
-            // Check if services are being scraped
-            """up{job="service"}""",
-            """up{job="api-gateway"}"""
-        )
-
-        for (query in actualQueries) {
-            try {
-                val encodedQuery = java.net.URLEncoder.encode(query, "UTF-8")
-                val prometheusQuery = "$prometheusUrl/api/v1/query?query=$encodedQuery&time=$endTime"
-
-                logger.debug("Trying actual service query: {}", query)
-
-                val response = webClient
-                    .getAbs(prometheusQuery)
-                    .timeout(30000)
-                    .send()
-                    .toCompletionStage()
-                    .toCompletableFuture()
-                    .get(15, TimeUnit.SECONDS)
-
-                if (response.statusCode() == 200) {
-                    val body = response.bodyAsString()
-                    logger.debug("Service metric query response: {}", body)
-
-                    // Check if we got any data (not empty result array)
-                    if (!body.contains(""""result":[]""")) {
-                        // For count/up queries, just log that we found data
-                        if (query.contains("_count") || query.startsWith("up") || query.contains("_total")) {
-                            logger.info("Found metric data for: {}", query)
-                            continue
-                        }
-
-                        val valueRegex = """"value":\s*\[\s*\d+(?:\.\d+)?,\s*"([^"]+)"\s*]""".toRegex()
-                        val matchResult = valueRegex.find(body)
-
-                        if (matchResult != null) {
-                            val valueStr = matchResult.groupValues[1]
-                            val valueSeconds = valueStr.toDoubleOrNull() ?: 0.0
-                            val valueMilliseconds = valueSeconds * 1000.0
-                            logger.info("Service metric query succeeded: {} ms (query: {})", valueMilliseconds, query)
-                            return valueMilliseconds
-                        }
-                    } else {
-                        logger.debug("Service metric query returned empty result: {}", query)
-                    }
-                } else {
-                    logger.debug("Service metric query failed with status {}: {}", response.statusCode(), query)
-                }
-            } catch (e: Exception) {
-                logger.debug("Service metric query failed: {} - {}", query, e.message)
-            }
-        }
-*/
-
-        // Final diagnostic attempt - list all available metrics
+    private fun tryActualServiceMetrics(): Double {
         try {
             logger.info("All specific queries failed. Checking what metrics are actually available...")
             val metricsListQuery = "$prometheusUrl/api/v1/label/__name__/values"
