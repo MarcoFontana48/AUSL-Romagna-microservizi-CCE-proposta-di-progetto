@@ -126,6 +126,16 @@ kubectl get hpa -n monitoring-app --watch
 
 [//]: # (```)
 
+To send a post request for dummy entities
+```bash
+Invoke-RestMethod -Uri "http://localhost:31080/service/dummies" -Method POST -ContentType "application/json" -Body '{"id":{"value":"123"},"field":"dummy_field_value"}'
+```
+
+To send a get request about the dummy entity just created
+```bash
+curl.exe -X GET http://localhost:31080/service/dummies/123
+```
+
 ## Docker
 If you want to use docker, run those commands instead:
 

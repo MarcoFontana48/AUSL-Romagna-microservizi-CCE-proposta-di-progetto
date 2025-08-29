@@ -26,27 +26,33 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
-#          env:
-#            - name: LOG_LEVEL
-#              value: "debug"
-#            - name: LOG_ADD_SOURCE
-#              value: "false"
-#          livenessProbe:
-#            httpGet:
-#              path: /health
-#              port: 8080
-#            initialDelaySeconds: 30
-#            periodSeconds: 10
-#            timeoutSeconds: 5
-#            failureThreshold: 5
-#          readinessProbe:
-#            httpGet:
-#              path: /health
-#              port: 8080
-#            initialDelaySeconds: 10
-#            periodSeconds: 5
-#            timeoutSeconds: 3
-#            failureThreshold: 5
+          env:
+            - name: CONFIG_SERVER_HOST_NAME
+              value: "service-mongo-db"
+            - name: CONFIG_SERVER_PORT
+              value: "27017"
+            - name: CONFIG_SERVER_DB_NAME
+              value: "service-mongo-db"
+            - name: CONFIG_SERVER_DB_USERNAME
+              value: "root"
+            - name: CONFIG_SERVER_DB_PASSWORD
+              value: "password"
+          #          livenessProbe:
+          #            httpGet:
+          #              path: /health
+          #              port: 8080
+          #            initialDelaySeconds: 30
+          #            periodSeconds: 10
+          #            timeoutSeconds: 5
+          #            failureThreshold: 5
+          #          readinessProbe:
+          #            httpGet:
+          #              path: /health
+          #              port: 8080
+          #            initialDelaySeconds: 10
+          #            periodSeconds: 5
+          #            timeoutSeconds: 3
+          #            failureThreshold: 5
           resources:
             requests:
               memory: "64Mi"
@@ -82,7 +88,7 @@ spec:
     kind: Deployment
     name: service
   minReplicas: 1  # minimum number of replicas to scale down to
-  maxReplicas: 5  # maximum number of replicas to scale up to
+  maxReplicas: 10  # maximum number of replicas to scale up to
   metrics:
     # scale based on CPU utilization, others can be added as needed, like 'memory'
     - type: Resource
@@ -90,7 +96,7 @@ spec:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 70  # target CPU utilization percentage to trigger scaling
+          averageUtilization: 70  # target CPU utilization percentage to trigger scaling (very low for testing)
   behavior:
     # define custom scaling behavior (optional)
     scaleUp:

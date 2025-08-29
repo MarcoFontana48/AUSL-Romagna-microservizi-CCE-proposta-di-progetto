@@ -155,9 +155,9 @@ abstract class KubernetesTest {
     /**
      * Get the status of resources in a namespace
      */
-    fun getResourceStatus(namespace: String = "default"): String {
+    fun getResourceStatus(namespace: String = "default", serviceName: String = "all"): String {
         logger.trace("Getting resource status for namespace: {}", namespace)
-        val command = mutableListOf("kubectl", "get", "all", "-n", namespace)
+        val command = mutableListOf("kubectl", "get", serviceName, "-n", namespace)
 
         val processBuilder = ProcessBuilder()
             .command(command)
