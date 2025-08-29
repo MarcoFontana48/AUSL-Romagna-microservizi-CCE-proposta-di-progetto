@@ -167,10 +167,10 @@ class GeneralPerformanceTest : KubernetesTest() {
         logger.info("Starting Kubernetes resources setup...")
         logger.info("K8s directory path: {}", k8sDirectory.absolutePath)
 
-        // Check kubectl is available and cluster is accessible
+        // check kubectl is available and cluster is accessible
         checkKubectlAvailability()
 
-        // Apply metrics-server first (if not already present)
+        // apply metrics-server first (if not already present)
         try {
             executeKubectlCmd(
                 File("."),
@@ -178,7 +178,7 @@ class GeneralPerformanceTest : KubernetesTest() {
                 "-f",
                 "https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml"
             )
-            logger.info("Metrics server applied (may already exist)")
+            logger.info("Metrics server applied")
         } catch (e: Exception) {
             logger.warn("Could not apply metrics server, it may already exist: ${e.message}")
         }
@@ -191,11 +191,10 @@ class GeneralPerformanceTest : KubernetesTest() {
         waitForDeployments(k8sNamespace, "600s")
         waitForPods(k8sNamespace, "600s")
 
-        // Initialize Vert.x for Prometheus queries
         vertx = Vertx.vertx()
         webClient = WebClient.create(vertx)
 
-        // Wait for services to be fully ready
+        // wait for services to be fully ready
         Thread.sleep(30000) // 30 seconds
 
         logger.info("Kubernetes resources are ready for testing")
@@ -236,13 +235,13 @@ class GeneralPerformanceTest : KubernetesTest() {
     private fun parsePrometheusValue(body: String, metricName: String): Double {
         logger.debug("Prometheus response for {}: {}", metricName, body)
 
-        // Check if result array is empty
+        // check if result array is empty
         if (body.contains(""""result":[]""")) {
             logger.warn("Prometheus returned empty result set for $metricName")
             return 0.0
         }
 
-        // Parse the JSON response to extract the value
+        // parse the JSON response to extract the value
         val valueRegex = """"value":\s*\[\s*\d+(?:\.\d+)?,\s*"([^"]+)"\s*]""".toRegex()
         val matchResult = valueRegex.find(body)
 
