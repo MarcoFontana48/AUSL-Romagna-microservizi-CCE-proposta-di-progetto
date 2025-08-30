@@ -1,3 +1,26 @@
+# [1.5.0](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/compare/v1.4.0...v1.5.0) (2025-08-30)
+
+
+### Bug Fixes
+
+* **deps:** update dependency org.jetbrains.kotlin:kotlin-gradle-plugin to v2.2.10 ([#24](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/issues/24)) ([ac1e13d](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/ac1e13d7f23d2cce36dbd4737b03ea634c66ddeb))
+* **deps:** update kotest to v6 ([#30](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/issues/30)) ([e2246d8](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/e2246d895fb2552967c38503137f50f09459ee76))
+* **deps:** update kotest to v6.0.1 ([#32](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/issues/32)) ([8a9af90](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/8a9af90af2b010767d1ecc97505e157c44b74c44))
+* **deps:** update spring boot to v3.5.5 ([#29](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/issues/29)) ([0f0f359](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/0f0f3590a3903d4aeb82da4b993f1f05d2d85d42))
+* **deps:** update vertx to v4.5.18 ([#25](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/issues/25)) ([92cd21d](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/92cd21d8fb30a96969973ec2a352f0888b86d99f))
+
+
+### Features
+
+* add diario_clinico and anamnesi_pregressa microservices with MongoDB support and Docker configurations ([cd40128](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/cd40128be38b5c895ea68110cc9a957e42b498d5))
+* add Gatling load test for performance testing scenarios and update Kubernetes configurations ([6cda9bb](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/6cda9bb0c71b4ce9b7428ebcbda1f53d3a3b4244))
+* add k8s test and autoscaling ([e112c56](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/e112c569b120e40d4f0a4e9951b421ba65657c28))
+* add k8s test metrics ([f1edbb3](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/f1edbb3ab0bbba87f428c246b0cefa18e389a343))
+* add Terapia microservice with Docker support and MongoDB integration ([799dbaa](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/799dbaa6fdd8645e6d973030df7cb70f1abee30a))
+* enhance performance testing with new load test scenarios and improved metrics logging ([5c2bc6f](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/5c2bc6fac8461918fb367ce47e51464438ec5125))
+* **service:** add GET dummies entities implementation ([05a47fd](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/05a47fd2fa30a94d9fb2949fc40c1c9acfbb42e1))
+* **service:** add POST dummies entities implementation ([57eef69](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/57eef69177979f076ba3704b858df3693830045e))
+
 # [1.4.0](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/compare/v1.3.1...v1.4.0) (2025-08-15)
 
 
