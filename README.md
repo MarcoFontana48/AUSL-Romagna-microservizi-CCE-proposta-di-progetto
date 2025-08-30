@@ -233,6 +233,12 @@ Go to "http://localhost:9090/" or "http://localhost:31090/" if using kubernetes,
 
 <b>All of those metrics are updated every a fixed amount of time and their evolution over time can be recorded and visualized by clicking on the 'graph' section in the prometheus GUI. Each time the result of those queries changes an update in the graph can be seen</b>
 
+To see all the next queries go to (it is sufficient to refresh the page to query all the metrics below at once):
+
+```text
+http://localhost:31090/query?g0.expr=rate%28health_check_duration_seconds_sum%5B1h%5D%29+%2F+rate%28health_check_duration_seconds_count%5B1h%5D%29&g0.show_tree=0&g0.tab=graph&g0.range_input=1h&g0.res_type=auto&g0.res_density=high&g0.display_mode=stacked&g0.show_exemplars=0&g1.expr=sum%28health_check_success_total%7Bservice%3D%22service%22%7D%29+%2F+sum%28health_check_requests_total%7Bservice%3D%22service%22%7D%29&g1.show_tree=0&g1.tab=graph&g1.range_input=1h&g1.res_type=auto&g1.res_density=medium&g1.display_mode=stacked&g1.show_exemplars=0&g2.expr=sum%28health_check_success_total%7Bservice%3D%22service%22%7D%29&g2.show_tree=0&g2.tab=graph&g2.range_input=1h&g2.res_type=auto&g2.res_density=medium&g2.display_mode=stacked&g2.show_exemplars=0&g3.expr=sum%28health_check_requests_total%7Bservice%3D%22service%22%7D%29&g3.show_tree=0&g3.tab=graph&g3.range_input=1h&g3.res_type=auto&g3.res_density=medium&g3.display_mode=stacked&g3.show_exemplars=0&g4.expr=get_dummy_requests_total&g4.show_tree=0&g4.tab=graph&g4.range_input=1h&g4.res_type=auto&g4.res_density=medium&g4.display_mode=stacked&g4.show_exemplars=0&g5.expr=create_dummy_requests_total&g5.show_tree=0&g5.tab=graph&g5.range_input=1h&g5.res_type=auto&g5.res_density=medium&g5.display_mode=stacked&g5.show_exemplars=0&g6.expr=create_dummy_requests_total+%2B+get_dummy_requests_total&g6.show_tree=0&g6.tab=graph&g6.range_input=1h&g6.res_type=auto&g6.res_density=medium&g6.display_mode=stacked&g6.show_exemplars=0&g7.expr=get_dummy_requests_total+%2F+%28create_dummy_requests_total+%2B+get_dummy_requests_total%29&g7.show_tree=0&g7.tab=graph&g7.range_input=1h&g7.res_type=auto&g7.res_density=medium&g7.display_mode=stacked&g7.show_exemplars=0&g8.expr=get_dummy_failure_total&g8.show_tree=0&g8.tab=graph&g8.range_input=1h&g8.res_type=auto&g8.res_density=medium&g8.display_mode=stacked&g8.show_exemplars=0&g9.expr=get_dummy_success_total&g9.show_tree=0&g9.tab=graph&g9.range_input=1h&g9.res_type=auto&g9.res_density=medium&g9.display_mode=stacked&g9.show_exemplars=0&g10.expr=get_dummy_success_total+%2F+%28get_dummy_success_total+%2B+get_dummy_failure_total%29&g10.show_tree=0&g10.tab=graph&g10.range_input=1h&g10.res_type=auto&g10.res_density=medium&g10.display_mode=stacked&g10.show_exemplars=0
+```
+
 See the 95th percentile of the request duration for the health check endpoint of the service over the last 5 minutes:
 ```text
 histogram_quantile(0.95, sum(rate(health_check_duration_seconds_bucket{service="service"}[5m])) by (le))
@@ -253,7 +259,7 @@ See the amount of READ requests for a specific entity:
 get_dummy_requests_total
 ```
 
-See the amount of WRITE requests for a specific entity:
+See the amount of WRITE requests for a specific entity (creation only):
 ```text
 create_dummy_requests_total
 ```
@@ -263,7 +269,7 @@ See the total amount of requests for a specific entity:
 create_dummy_requests_total + get_dummy_requests_total
 ```
 
-See the amount of READs over WRITEs (useful to see if a CQRS pattern can be applied and where to apply it!)
+See the amount of READs over WRITEs (considering only creation for this example) (useful to see if a CQRS pattern can be applied and where to apply it!)
 ```text
 get_dummy_requests_total / (create_dummy_requests_total + get_dummy_requests_total)
 ```
