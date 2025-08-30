@@ -1,7 +1,7 @@
 package ausl.cce.service.infrastructure.controller
 
 import ausl.cce.service.application.DummyService
-import ausl.cce.service.application.ServiceController
+import ausl.cce.service.application.TerapiaController
 import ausl.cce.service.domain.DummyEntity
 import ausl.cce.service.domain.DummyEntity.DummyId
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -23,8 +23,8 @@ class StandardController(
     private val service: DummyService,              // 'service' here refers to the DDD service
     private val circuitBreaker: CircuitBreaker,
     override val meterRegistry: MeterRegistry,
-    override val serviceName: String = "service"    // 'service' here is the name of the microservice / server
-) : ServiceController {
+    override val serviceName: String = "terapia"    // 'service' here is the name of the microservice / server
+) : TerapiaController {
     private val logger = LogManager.getLogger(this::class.java)
     private val mapper: ObjectMapper = jacksonObjectMapper().apply {
         registerModule(KotlinModule.Builder().build())
@@ -144,8 +144,8 @@ class StandardController(
         logger.debug("Received POST request to create dummy entity")
 
         createDummyCounter.increment()
-        metricsCounter.increment()
         metricsWriteRequestsCounter.increment()
+        metricsCounter.increment()
 
         val timerSample = Timer.start(meterRegistry)
 
@@ -194,8 +194,8 @@ class StandardController(
     }
 
     override fun sendResponse(ctx: RoutingContext, statusCode: Int, message: JsonObject) {
-        logger.trace("Adding service key to response: '{}'", "service")
-        message.put("service", "service")
+        logger.trace("Adding service key to response: '{}'", serviceName)
+        message.put("service", serviceName)
 
         logger.trace("Sending response with status code: {}", statusCode)
         ctx.response()

@@ -21,6 +21,7 @@ object Ports {
 object Endpoints {
     const val HEALTH = "/health"
     const val SERVICE = "/service"
+    const val TERAPIA = "/terapia"
     const val METRICS = "/metrics"
     const val DUMMIES = "/dummies"
 }

@@ -24,6 +24,7 @@
             <option value="$PROJECT_DIR$/buildSrc" />
             <option value="$PROJECT_DIR$/end_to_end_tests" />
             <option value="$PROJECT_DIR$/service" />
+            <option value="$PROJECT_DIR$/terapia" />
             <option value="$PROJECT_DIR$/utils" />
           </set>
         </option>

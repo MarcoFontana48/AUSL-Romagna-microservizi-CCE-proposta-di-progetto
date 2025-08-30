@@ -60,6 +60,9 @@ jobs:
           - name: "service"
             dockerfile: "./service/Dockerfile"
             suffix: "service"
+          - name: "terapia"
+            dockerfile: "./terapia/Dockerfile"
+            suffix: "terapia"
     steps:
       - name: Checkout
         uses: actions/checkout@v5

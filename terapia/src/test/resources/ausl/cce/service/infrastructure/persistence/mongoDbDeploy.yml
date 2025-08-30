@@ -1,0 +1,44 @@
+services:
+
+#  terapia:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    container_name: terapia
+#    environment:
+#      - CONFIG_SERVER_HOST_NAME=terapia-mongo-db
+#      - CONFIG_SERVER_PORT=27017
+#      - CONFIG_SERVER_DB_NAME=terapia-mongo-db
+#      - CONFIG_SERVER_DB_USERNAME=root
+#      - CONFIG_SERVER_DB_PASSWORD=password
+#    networks:
+#      - app-network
+#    depends_on:
+#      terapia-mongo-db:
+#        condition: terapia_started
+
+  terapia-mongo-db:
+    image: mongo:latest
+    container_name: terapia-mongo-db
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    volumes:
+      - terapia-mongo-data:/data/db
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  terapia-mongo-data:

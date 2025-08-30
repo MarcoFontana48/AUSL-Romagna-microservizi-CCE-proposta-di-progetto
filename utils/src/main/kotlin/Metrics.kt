@@ -37,7 +37,7 @@ interface HealthCheckMetricsProvider {
 }
 
 /**
- * General metrics interface with default implementation
+ * Generic metrics interface with default implementation
  */
 interface MetricsProvider {
     val meterRegistry: MeterRegistry
@@ -67,9 +67,33 @@ interface MetricsProvider {
             .tag("service", serviceName)
             .register(meterRegistry)
 
+    val metricsSuccessReadRequestsCounter: Counter
+        get() = Counter.builder("metrics_success_read_requests_total")
+            .description("Total number of successful read metrics requests")
+            .tag("service", serviceName)
+            .register(meterRegistry)
+
+    val metricsFailureReadRequestsCounter: Counter
+        get() = Counter.builder("metrics_failure_read_requests_total")
+            .description("Total number of failed read metrics requests")
+            .tag("service", serviceName)
+            .register(meterRegistry)
+
     val metricsWriteRequestsCounter: Counter
         get() = Counter.builder("metrics_write_requests_total")
             .description("Total number of metrics requests")
+            .tag("service", serviceName)
+            .register(meterRegistry)
+
+    val metricsSuccessWriteRequestsCounter: Counter
+        get() = Counter.builder("metrics_success_write_requests_total")
+            .description("Total number of successful write metrics requests")
+            .tag("service", serviceName)
+            .register(meterRegistry)
+
+    val metricsFailureWriteRequestsCounter: Counter
+        get() = Counter.builder("metrics_failure_write_requests_total")
+            .description("Total number of failed write metrics requests")
             .tag("service", serviceName)
             .register(meterRegistry)
 

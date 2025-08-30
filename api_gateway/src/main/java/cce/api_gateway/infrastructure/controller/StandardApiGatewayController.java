@@ -72,18 +72,26 @@ public class StandardApiGatewayController implements ApiGatewayController, Healt
         return ctx -> {
             // Use interface methods directly
             this.getHealthCheckCounter().increment();
+            this.getMetricsCounter().increment();
+            this.getMetricsReadRequestsCounter().increment();
             
             try {
                 this.getHealthCheckTimer().recordCallable(() -> {
                     LOGGER.debug("received GET request for health check");
                     
                     this.getHealthCheckSuccessCounter().increment();
+                    this.getMetricsSuccessCounter().increment();
+                    this.getMetricsSuccessReadRequestsCounter().increment();
+                    
                     JsonObject response = new JsonObject().put("status", "OK");
                     sendResponse(ctx, response, HttpStatus.OK);
                     return null;
                 });
             } catch (Exception e) {
                 this.getHealthCheckFailureCounter().increment();
+                this.getMetricsFailureCounter().increment();
+                this.getMetricsFailureReadRequestsCounter().increment();
+                
                 LOGGER.error("Health check failed: {}", e.getMessage());
                 JsonObject errorResponse = new JsonObject().put("status", "ERROR").put("message", e.getMessage());
                 sendResponse(ctx, errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -96,6 +104,7 @@ public class StandardApiGatewayController implements ApiGatewayController, Healt
         return ctx -> {
             // Use metrics interface methods
             this.getMetricsCounter().increment();
+            this.getMetricsReadRequestsCounter().increment();
             
             try {
                 this.getMetricsTimer().recordCallable(() -> {
@@ -105,6 +114,8 @@ public class StandardApiGatewayController implements ApiGatewayController, Healt
                     String metricsText = prometheusRegistry.scrape();
                     
                     this.getMetricsSuccessCounter().increment();
+                    this.getMetricsSuccessReadRequestsCounter().increment();
+                    
                     ctx.response()
                             .putHeader("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
                             .setStatusCode(HttpStatus.OK)
@@ -113,6 +124,8 @@ public class StandardApiGatewayController implements ApiGatewayController, Healt
                 });
             } catch (Exception e) {
                 this.getMetricsFailureCounter().increment();
+                this.getMetricsFailureReadRequestsCounter().increment();
+                
                 LOGGER.error("Metrics request failed: {}", e.getMessage());
                 ctx.response()
                         .setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR)
