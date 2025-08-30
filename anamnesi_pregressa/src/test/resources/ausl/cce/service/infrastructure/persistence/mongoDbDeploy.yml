@@ -1,0 +1,44 @@
+services:
+
+#  anamnesi-pregressa:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    container_name: anamnesi-pregressa
+#    environment:
+#      - CONFIG_SERVER_HOST_NAME=anamnesi-pregressa-mongo-db
+#      - CONFIG_SERVER_PORT=27017
+#      - CONFIG_SERVER_DB_NAME=anamnesi-pregressa-mongo-db
+#      - CONFIG_SERVER_DB_USERNAME=root
+#      - CONFIG_SERVER_DB_PASSWORD=password
+#    networks:
+#      - app-network
+#    depends_on:
+#      anamnesi-pregressa-mongo-db:
+#        condition: anamnesi-pregressa_started
+
+  anamnesi-pregressa-mongo-db:
+    image: mongo:latest
+    container_name: anamnesi-pregressa-mongo-db
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    volumes:
+      - anamnesi-pregressa-mongo-data:/data/db
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  anamnesi-pregressa-mongo-data:

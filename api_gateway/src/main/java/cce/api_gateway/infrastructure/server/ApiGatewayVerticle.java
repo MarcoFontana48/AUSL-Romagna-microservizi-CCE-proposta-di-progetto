@@ -50,6 +50,8 @@ public final class ApiGatewayVerticle extends AbstractVerticle {
         // reroute to service
         controller.rerouteTo(router, Endpoints.SERVICE + "/*", "service", client);
         controller.rerouteTo(router, Endpoints.TERAPIA + "/*", "terapia", client);
+        controller.rerouteTo(router, Endpoints.DIARIO_CLINICO + "/*", "diario-clinico", client);
+        controller.rerouteTo(router, Endpoints.ANAMNESI_PREGRESSA + "/*", "anamnesi-pregressa", client);
         
         router.get(Endpoints.HEALTH).handler(controller.healthCheckHandler(client));
         router.get(Endpoints.METRICS).handler(controller.metricsHandler(client));

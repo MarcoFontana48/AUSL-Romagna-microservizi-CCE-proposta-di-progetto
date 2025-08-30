@@ -63,6 +63,12 @@ jobs:
           - name: "terapia"
             dockerfile: "./terapia/Dockerfile"
             suffix: "terapia"
+          - name: "diario_clinico"
+            dockerfile: "./diario_clinico/Dockerfile"
+            suffix: "diario_clinico"
+          - name: "anamnesi_pregressa"
+            dockerfile: "./anamnesi_pregressa/Dockerfile"
+            suffix: "anamnesi_pregressa"
     steps:
       - name: Checkout
         uses: actions/checkout@v5

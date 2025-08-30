@@ -12,6 +12,8 @@ plugins {
 rootProject.name = "CCE_Microservizi"
 include(":service")
 include(":terapia")
+include(":diario_clinico")
+include(":anamnesi_pregressa")
 include(":utils")
 include(":api_gateway")
 include(":end_to_end_tests")
