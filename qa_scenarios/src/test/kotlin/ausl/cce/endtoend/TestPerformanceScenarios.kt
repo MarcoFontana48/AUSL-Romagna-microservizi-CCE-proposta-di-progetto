@@ -47,7 +47,7 @@ class HealthCheckEscalatingSpikeTest : Simulation() {
         .repeat(1).on(
             exec(
                 http("health_check_spike_1")
-                    .get("/service/health")
+                    .get("/terapia/health")
                     .check(status().`in`(200, 201, 202))
             )
         )
@@ -56,7 +56,7 @@ class HealthCheckEscalatingSpikeTest : Simulation() {
         .repeat(2).on(
             exec(
                 http("health_check_spike_2")
-                    .get("/service/health")
+                    .get("/terapia/health")
                     .check(status().`in`(200, 201, 202))
             )
         )
@@ -65,7 +65,7 @@ class HealthCheckEscalatingSpikeTest : Simulation() {
         .repeat(3).on(
             exec(
                 http("health_check_spike_3")
-                    .get("/service/health")
+                    .get("/terapia/health")
                     .check(status().`in`(200, 201, 202))
             )
         )
@@ -74,7 +74,7 @@ class HealthCheckEscalatingSpikeTest : Simulation() {
         .repeat(4).on(
             exec(
                 http("health_check_spike_4")
-                    .get("/service/health")
+                    .get("/terapia/health")
                     .check(status().`in`(200, 201, 202))
             )
         )
@@ -83,7 +83,7 @@ class HealthCheckEscalatingSpikeTest : Simulation() {
         .repeat(5).on(
             exec(
                 http("health_check_spike_5")
-                    .get("/service/health")
+                    .get("/terapia/health")
                     .check(status().`in`(200, 201, 202))
             )
         )
@@ -136,7 +136,7 @@ class HealthCheckSpikeTest : Simulation() {
         .repeat(100).on(
             exec(
                 http("health_check_spike")
-                    .get("/service/health")
+                    .get("/diario-clinico/health")
                     .check(status().`in`(200, 201, 202))
             )
         )
@@ -167,7 +167,7 @@ class HealthCheckLoadTest : Simulation() {
         .repeat(10).on( // each user will repeat this X times
             exec(
                 http("health_check_sustained")
-                    .get("/service/health")
+                    .get("/diario-clinico/health")
                     .check(status().`in`(200, 201, 202))
             )
                 .pause(Duration.ofSeconds(1))

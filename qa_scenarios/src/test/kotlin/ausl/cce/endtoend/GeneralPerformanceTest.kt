@@ -76,7 +76,7 @@ class GeneralPerformanceTest : KubernetesTest() {
     }
 
     @Test
-    @DisplayName("PERFORMANCE: Test to evaluate architecture performance with sustained average load")
+    @DisplayName("PERFORMANCE: Test to evaluate 'diario-clinico' architecture performance with sustained average load")
     @Timeout(5 * 60) // 5 minutes timeout
     fun performanceEvaluationSustainedAverageLoad() {
         val results = runLoadTest("Performance evaluation with sustained load", healthCheckOperation, serviceName, HealthCheckLoadTest::class.java)
@@ -88,7 +88,7 @@ class GeneralPerformanceTest : KubernetesTest() {
     }
 
     @Test
-    @DisplayName("PERFORMANCE: Test to evaluate architecture performance with spike average load")
+    @DisplayName("PERFORMANCE: Test to evaluate 'diario-clinico' architecture performance with spike average load")
     @Timeout(5 * 60) // 5 minutes timeout
     fun performanceEvaluationSpikeAverageLoad() {
         val results = runLoadTest("Performance evaluation with spike load", healthCheckOperation, serviceName, HealthCheckSpikeTest::class.java)
@@ -108,7 +108,7 @@ class GeneralPerformanceTest : KubernetesTest() {
      * observe how the system behaves under increasing stress until it reaches its limits.
      */
     @Test
-    @DisplayName("PERFORMANCE / AVAILABILITY: Test to evaluate architecture performance with escalating spike load, to identify breaking point")
+    @DisplayName("PERFORMANCE / AVAILABILITY: Test to evaluate 'terapia' architecture performance with escalating spike load, to identify breaking point")
     @Timeout(15 * 60) // 15 minutes timeout
     fun performanceEvaluationSpikeLoadForBreakingPoint() {
         val initialReplicas = getCurrentReplicas("service")

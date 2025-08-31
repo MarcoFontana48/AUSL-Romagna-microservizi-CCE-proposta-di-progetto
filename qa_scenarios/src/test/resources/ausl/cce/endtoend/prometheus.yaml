@@ -20,16 +20,34 @@ data:
       - job_name: 'prometheus'
         static_configs:
           - targets: ['localhost:9090']
-      
+    
+      - job_name: 'api-gateway'
+        static_configs:
+          - targets: ['api-gateway:8080']
+        metrics_path: '/metrics'
+        scrape_interval: 10s
+    
       - job_name: 'service'
         static_configs:
           - targets: ['service:8080']
         metrics_path: '/metrics'
         scrape_interval: 10s
-      
-      - job_name: 'api-gateway'
+    
+      - job_name: 'terapia'
         static_configs:
-          - targets: ['api-gateway:8080']
+          - targets: [ 'terapia:8080' ]
+        metrics_path: '/metrics'
+        scrape_interval: 10s
+    
+      - job_name: 'diario-clinico'
+        static_configs:
+          - targets: [ 'diario-clinico:8080' ]
+        metrics_path: '/metrics'
+        scrape_interval: 10s
+    
+      - job_name: 'anamnesi-pregressa'
+        static_configs:
+          - targets: [ 'anamnesi-pregressa:8080' ]
         metrics_path: '/metrics'
         scrape_interval: 10s
 ---

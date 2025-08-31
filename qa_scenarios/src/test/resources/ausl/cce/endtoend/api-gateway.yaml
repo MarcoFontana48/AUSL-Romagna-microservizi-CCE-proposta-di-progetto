@@ -109,7 +109,7 @@ spec:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 70  # target CPU utilization percentage to trigger scaling (very low for testing)
+          averageUtilization: 70  # target CPU utilization percentage to trigger scaling
   behavior:
     # define custom scaling behavior (optional)
     scaleUp:

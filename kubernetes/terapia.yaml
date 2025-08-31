@@ -4,35 +4,35 @@ kind: Namespace
 metadata:
   name: monitoring-app
 ---
-# service-deployment.yaml
+# terapia-deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: service
+  name: terapia
   namespace: monitoring-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: service
+      app: terapia
   template:
     metadata:
       labels:
-        app: service
+        app: terapia
     spec:
       containers:
-        - name: service
-          image: marcofontana17/ausl_cce_prototipo:service-dev-latest
+        - name: terapia
+          image: marcofontana17/ausl_cce_prototipo:terapia-dev-latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:
             - name: CONFIG_SERVER_HOST_NAME
-              value: "service-mongo-db"
+              value: "terapia-mongo-db"
             - name: CONFIG_SERVER_PORT
               value: "27017"
             - name: CONFIG_SERVER_DB_NAME
-              value: "service-mongo-db"
+              value: "terapia-mongo-db"
             - name: CONFIG_SERVER_DB_USERNAME
               value: "root"
             - name: CONFIG_SERVER_DB_PASSWORD
@@ -61,32 +61,32 @@ spec:
               memory: "256Mi"
               cpu: "200m"
 ---
-# service-service.yaml
+# terapia-service.yaml
 apiVersion: v1
 kind: Service
 metadata:
-  name: service
+  name: terapia
   namespace: monitoring-app
 spec:
   selector:
-    app: service
+    app: terapia
   ports:
     - name: http
       port: 8080
       targetPort: 8080
   type: ClusterIP
 ---
-# service-hpa.yaml (horizontal pod autoscaler for service)
+# terapia-hpa.yaml (horizontal pod autoscaler for terapia)
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: service-hpa
+  name: terapia-hpa
   namespace: monitoring-app
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: service
+    name: terapia
   minReplicas: 1  # minimum number of replicas to scale down to
   maxReplicas: 10  # maximum number of replicas to scale up to
   metrics:
@@ -96,7 +96,7 @@ spec:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 10  # target CPU utilization percentage to trigger scaling (very low for testing, not realistic)
+          averageUtilization: 70  # target CPU utilization percentage to trigger scaling
   behavior:
     # define custom scaling behavior (optional)
     scaleUp:
