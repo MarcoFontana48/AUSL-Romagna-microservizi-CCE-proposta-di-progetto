@@ -9,6 +9,17 @@ import io.gatling.javaapi.http.HttpDsl.http
 import io.gatling.javaapi.http.HttpDsl.status
 import java.time.Duration
 
+/*
+    === PERFORMANCE MEASURING TESTS ===
+
+    The following tests are designed to measure the performance of the system under different load conditions.
+    They include:
+    - Sustained Load Test: simulates a steady load over time.
+    - Spike Load Test: simulates a sudden spike in load.
+    - Escalating Spike Test: simulates escalating spikes every 30 seconds, starting from K request and increasing by M
+      requests each time up to N requests, to evaluate the limits of the architecture identifying the breaking point.
+*/
+
 /**
  * Gatling simulation class for health check load testing.
  * This class defines a scenario that simulates escalating spikes every 30 seconds,

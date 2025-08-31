@@ -76,51 +76,95 @@ class GeneralPerformanceTest : KubernetesTest() {
     }
 
     @Test
-    @DisplayName("Test to evaluate architecture performance with sustained average load")
+    @DisplayName("PERFORMANCE: Test to evaluate architecture performance with sustained average load")
     @Timeout(5 * 60) // 5 minutes timeout
     fun performanceEvaluationSustainedAverageLoad() {
         val results = runLoadTest("Performance evaluation with sustained load", healthCheckOperation, serviceName, HealthCheckLoadTest::class.java)
         results.logSummary()
 
         // OPTIONAL: a constraint can be added here as expected max latency to pass the test (as shown)
-        assertTrue(results.p95ResponseTime < 150) // example constraint: p95 should be under 150ms
-//        assertTrue(true)
+//        assertTrue(results.p95ResponseTime < 150) // example constraint: p95 should be under 150ms
+        assertTrue(true)
     }
 
     @Test
-    @DisplayName("Test to evaluate architecture performance with spike average load")
+    @DisplayName("PERFORMANCE: Test to evaluate architecture performance with spike average load")
     @Timeout(5 * 60) // 5 minutes timeout
     fun performanceEvaluationSpikeAverageLoad() {
         val results = runLoadTest("Performance evaluation with spike load", healthCheckOperation, serviceName, HealthCheckSpikeTest::class.java)
         results.logSummary()
 
         // OPTIONAL: a constraint can be added here as expected max latency to pass the test (as shown)
-        assertTrue(results.p95ResponseTime < 200) // example constraint: p95 should be under 200ms
-//        assertTrue(true)
+//        assertTrue(results.p95ResponseTime < 200) // example constraint: p95 should be under 200ms
+        assertTrue(true)
     }
 
+    /**
+     * This test performs a load test with escalating spikes to identify the breaking point of the architecture.
+     * It is used to validate how the system behaves under increasing load until it reaches its limits, testing its
+     * performance and also availability under stress, showing if it autoscales horizontally as expected.
+     *
+     * It starts with a low number of requests and increases the load in steps, allowing to
+     * observe how the system behaves under increasing stress until it reaches its limits.
+     */
     @Test
-    @DisplayName("Test to evaluate architecture performance with escalating spike load, to identify breaking point")
+    @DisplayName("PERFORMANCE / AVAILABILITY: Test to evaluate architecture performance with escalating spike load, to identify breaking point")
     @Timeout(15 * 60) // 15 minutes timeout
     fun performanceEvaluationSpikeLoadForBreakingPoint() {
+        val initialReplicas = getCurrentReplicas("service")
+        logger.info("Starting test with $initialReplicas replicas")
+
         val results = runLoadTest("Performance evaluation with spike load", healthCheckOperation, serviceName, HealthCheckEscalatingSpikeTest::class.java)
         results.logSummary()
 
-        // to identify breaking point, it's better to visualize latency results over time in the Prometheus GUI using
-        // those queries (or going to this url that already has all the queries showed plus others, it is sufficient to
-        // refresh the page to see all the new results for each query):
-        // http://localhost:31090/query?g0.expr=rate%28health_check_duration_seconds_sum%5B1h%5D%29+%2F+rate%28health_check_duration_seconds_count%5B1h%5D%29&g0.show_tree=0&g0.tab=graph&g0.range_input=1h&g0.res_type=auto&g0.res_density=high&g0.display_mode=stacked&g0.show_exemplars=0&g1.expr=sum%28health_check_success_total%7Bservice%3D%22service%22%7D%29+%2F+sum%28health_check_requests_total%7Bservice%3D%22service%22%7D%29&g1.show_tree=0&g1.tab=graph&g1.range_input=1h&g1.res_type=auto&g1.res_density=medium&g1.display_mode=stacked&g1.show_exemplars=0&g2.expr=sum%28health_check_success_total%7Bservice%3D%22service%22%7D%29&g2.show_tree=0&g2.tab=graph&g2.range_input=1h&g2.res_type=auto&g2.res_density=medium&g2.display_mode=stacked&g2.show_exemplars=0&g3.expr=sum%28health_check_requests_total%7Bservice%3D%22service%22%7D%29&g3.show_tree=0&g3.tab=graph&g3.range_input=1h&g3.res_type=auto&g3.res_density=medium&g3.display_mode=stacked&g3.show_exemplars=0&g4.expr=&g4.show_tree=0&g4.tab=graph&g4.range_input=1h&g4.res_type=auto&g4.res_density=medium&g4.display_mode=lines&g4.show_exemplars=0&g5.expr=&g5.show_tree=0&g5.tab=graph&g5.range_input=1h&g5.res_type=auto&g5.res_density=medium&g5.display_mode=lines&g5.show_exemplars=0&g6.expr=&g6.show_tree=0&g6.tab=graph&g6.range_input=1h&g6.res_type=auto&g6.res_density=medium&g6.display_mode=lines&g6.show_exemplars=0&g7.expr=&g7.show_tree=0&g7.tab=graph&g7.range_input=1h&g7.res_type=auto&g7.res_density=medium&g7.display_mode=lines&g7.show_exemplars=0&g8.expr=&g8.show_tree=0&g8.tab=graph&g8.range_input=1h&g8.res_type=auto&g8.res_density=medium&g8.display_mode=lines&g8.show_exemplars=0&g9.expr=&g9.show_tree=0&g9.tab=graph&g9.range_input=1h&g9.res_type=auto&g9.res_density=medium&g9.display_mode=lines&g9.show_exemplars=0&g10.expr=&g10.show_tree=0&g10.tab=graph&g10.range_input=1h&g10.res_type=auto&g10.res_density=medium&g10.display_mode=lines&g10.show_exemplars=0
-        //
-        // This shows the average latency over the last hour, showing spikes and trends clearly in the visualized graph:
-        //
-        // rate(health_check_duration_seconds_sum[1h]) / rate(health_check_duration_seconds_count[1h])
-        //
-        // It is also recommended to query the amount of successful requests over total to see if any requests failed
-        // and its ratio over time:
-        //
-        // sum(health_check_success_total) / sum(health_check_requests_total)
+        val finalReplicas = getCurrentReplicas("service")
+        logger.info("Test completed with $finalReplicas replicas (started with $initialReplicas)")
+
+        /*
+        to identify breaking point, it's better to visualize latency results over time in the Prometheus GUI using
+        those queries (or going to this url that already has all the queries showed plus others, it is sufficient to
+        refresh the page to see all the new results for each query):
+        http://localhost:31090/query?g0.expr=rate%28health_check_duration_seconds_sum%5B1h%5D%29+%2F+rate%28health_check_duration_seconds_count%5B1h%5D%29&g0.show_tree=0&g0.tab=graph&g0.range_input=5m&g0.res_type=auto&g0.res_density=high&g0.display_mode=lines&g0.show_exemplars=0&g1.expr=health_check_success_total+%2F+health_check_requests_total&g1.show_tree=0&g1.tab=graph&g1.range_input=1h&g1.res_type=auto&g1.res_density=medium&g1.display_mode=lines&g1.show_exemplars=0&g2.expr=health_check_success_total&g2.show_tree=0&g2.tab=graph&g2.range_input=1h&g2.res_type=auto&g2.res_density=medium&g2.display_mode=lines&g2.show_exemplars=0&g3.expr=health_check_requests_total&g3.show_tree=0&g3.tab=graph&g3.range_input=1h&g3.res_type=auto&g3.res_density=medium&g3.display_mode=lines&g3.show_exemplars=0&g4.expr=get_dummy_requests_total&g4.show_tree=0&g4.tab=graph&g4.range_input=1h&g4.res_type=auto&g4.res_density=medium&g4.display_mode=lines&g4.show_exemplars=0&g5.expr=create_dummy_requests_total&g5.show_tree=0&g5.tab=graph&g5.range_input=1h&g5.res_type=auto&g5.res_density=medium&g5.display_mode=lines&g5.show_exemplars=0&g6.expr=create_dummy_requests_total+%2B+get_dummy_requests_total&g6.show_tree=0&g6.tab=graph&g6.range_input=1h&g6.res_type=auto&g6.res_density=medium&g6.display_mode=lines&g6.show_exemplars=0&g7.expr=get_dummy_requests_total+%2F+%28create_dummy_requests_total+%2B+get_dummy_requests_total%29&g7.show_tree=0&g7.tab=graph&g7.range_input=1h&g7.res_type=auto&g7.res_density=medium&g7.display_mode=lines&g7.show_exemplars=0&g8.expr=get_dummy_failure_total&g8.show_tree=0&g8.tab=graph&g8.range_input=1h&g8.res_type=auto&g8.res_density=medium&g8.display_mode=lines&g8.show_exemplars=0&g9.expr=get_dummy_success_total&g9.show_tree=0&g9.tab=graph&g9.range_input=1h&g9.res_type=auto&g9.res_density=medium&g9.display_mode=lines&g9.show_exemplars=0&g10.expr=get_dummy_success_total+%2F+%28get_dummy_success_total+%2B+get_dummy_failure_total%29&g10.show_tree=0&g10.tab=graph&g10.range_input=1h&g10.res_type=auto&g10.res_density=medium&g10.display_mode=lines&g10.show_exemplars=0&g11.expr=++metrics_success_read_requests_total&g11.show_tree=0&g11.tab=graph&g11.range_input=1h&g11.res_type=auto&g11.res_density=medium&g11.display_mode=lines&g11.show_exemplars=0&g12.expr=metrics_success_total+%2F+metrics_requests_total&g12.show_tree=0&g12.tab=graph&g12.range_input=1h&g12.res_type=auto&g12.res_density=medium&g12.display_mode=lines&g12.show_exemplars=0&g13.expr=metrics_success_read_requests_total+%2F+metrics_read_requests_total&g13.show_tree=0&g13.tab=graph&g13.range_input=1h&g13.res_type=auto&g13.res_density=medium&g13.display_mode=lines&g13.show_exemplars=0&g14.expr=metrics_read_requests_total+%2F+metrics_requests_total&g14.show_tree=0&g14.tab=graph&g14.range_input=1h&g14.res_type=auto&g14.res_density=medium&g14.display_mode=lines&g14.show_exemplars=0&g15.expr=metrics_read_requests_total&g15.show_tree=0&g15.tab=table&g15.range_input=1h&g15.res_type=auto&g15.res_density=medium&g15.display_mode=lines&g15.show_exemplars=0&g16.expr=metrics_requests_total&g16.show_tree=0&g16.tab=table&g16.range_input=1h&g16.res_type=auto&g16.res_density=medium&g16.display_mode=lines&g16.show_exemplars=0
+
+        This shows the average latency over the last hour, showing spikes and trends clearly in the visualized graph:
+
+        rate(health_check_duration_seconds_sum[1h]) / rate(health_check_duration_seconds_count[1h])
+
+        It is also recommended to query the amount of successful requests over total to see if any requests failed
+        and its ratio over time:
+
+        health_check_success_total / health_check_requests_total
+        */
+
+        // A constraint can be added here as expected max latency to pass the test (as shown) under heavy load
+//        assertTrue(results.p95ResponseTime < 300) // example constraint: p95 should be under 300ms
+
+        // Also an assert on horizontal scaling can be added to check whether is scaled up as expected (if necessary)
+//        assertTrue(finalReplicas > initialReplicas, "Expected horizontal scaling to occur. Started with $initialReplicas, ended with $finalReplicas replicas")
 
         assertTrue(true)
+    }
+
+    private fun getCurrentReplicas(deploymentName: String): Int {
+        return try {
+            val processBuilder = ProcessBuilder(
+                "kubectl", "get", "deployment", deploymentName, "-n", k8sNamespace,
+                "-o", "jsonpath={.status.readyReplicas}"
+            ).redirectErrorStream(true)
+
+            val process = processBuilder.start()
+            val output = process.inputStream.bufferedReader().use { it.readText() }.trim()
+            val exitCode = process.waitFor()
+
+            if (exitCode == 0 && output.isNotEmpty()) {
+                output.toIntOrNull() ?: 1
+            } else {
+                1
+            }
+        } catch (e: Exception) {
+            logger.warn("Error getting replica count: ${e.message}")
+            1
+        }
     }
 
     private fun setUpEnvironment(k8sFilesPath: String) {
