@@ -7,7 +7,6 @@ plugins {
 }
 
 dependencies {
-
     implementation(libs.log4j.api)
     implementation(libs.log4j.core)
     implementation(libs.vertx.core)
@@ -21,6 +20,8 @@ dependencies {
     implementation(libs.micrometer.registry.prometheus)
     implementation(libs.micrometer.registry.jmx)
     implementation(libs.bundles.mongodb)
+    implementation(libs.bundles.hapi.fhir)
+
     testImplementation(libs.archunit)
     testImplementation(libs.junit)
     testImplementation(kotlin("test"))
@@ -59,6 +60,7 @@ tasks {
 kotlin {
     jvmToolchain(21)
 }
+
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.compilerOptions {
     freeCompilerArgs.set(

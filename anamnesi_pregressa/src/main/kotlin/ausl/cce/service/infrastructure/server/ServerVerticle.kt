@@ -1,5 +1,6 @@
 package ausl.cce.service.infrastructure.server
 
+import ausl.cce.service.application.AllergyIntoleranceService
 import ausl.cce.service.application.DummyService
 import ausl.cce.service.application.ServiceController
 import ausl.cce.service.infrastructure.controller.StandardController
@@ -19,7 +20,8 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
 class ServerVerticle(
-    private val service : DummyService
+    private val dummyService : DummyService,
+    private val allergyIntoleranceService : AllergyIntoleranceService
 ) : AbstractVerticle() {
     private val logger: Logger = LogManager.getLogger(this::class)
 
@@ -28,7 +30,7 @@ class ServerVerticle(
 
         val meterRegistry = defineMeterRegistry()
         val circuitBreaker = defineCircuitBreaker()
-        val controller: ServiceController = StandardController(service, circuitBreaker, meterRegistry)
+        val controller: ServiceController = StandardController(dummyService, allergyIntoleranceService, circuitBreaker, meterRegistry)
         val router = Router.router(vertx)
         defineEndpoints(router, controller)
         runServer(router).onSuccess {
@@ -74,6 +76,10 @@ class ServerVerticle(
         /* === DUMMY DDD ENTITY ENDPOINT === */
         router.get(Endpoints.DUMMIES + "/:id").handler { ctx -> controller.getDummyHandler(ctx) }
         router.post(Endpoints.DUMMIES).handler { ctx -> controller.createDummyHandler(ctx) }
+
+        /* === ALLERGY INTOLERANCE DDD ENTITY ENDPOINT === */
+        router.get(Endpoints.ALLERGY_INTOLERANCES + "/:id").handler { ctx -> controller.getAllergyIntoleranceHandler(ctx) }
+        router.post(Endpoints.ALLERGY_INTOLERANCES).handler { ctx -> controller.createAllergyIntoleranceHandler(ctx) }
     }
 
     private fun runServer(router: Router): Future<HttpServer> {
