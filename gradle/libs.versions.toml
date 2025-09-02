@@ -24,6 +24,7 @@ springBoot = "3.5.5"
 springCloud = "2023.0.3"
 micrometer = "1.12.0"
 mongodb = "5.2.1"
+hapi-fhir = "6.0.3"
 
 [libraries]
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -58,6 +59,11 @@ micrometer-registry-jmx = { module = "io.micrometer:micrometer-registry-jmx", ve
 mongodb-driver-sync = { module = "org.mongodb:mongodb-driver-sync", version.ref = "mongodb" }
 mongodb-driver-kotlin-coroutine = { module = "org.mongodb:mongodb-driver-kotlin-coroutine", version.ref = "mongodb" }
 bson-kotlin = { module = "org.mongodb:bson-kotlin", version.ref = "mongodb" }
+hapi-fhir-client = { module = "ca.uhn.hapi.fhir:hapi-fhir-client", version.ref = "hapi-fhir" }
+hapi-fhir-structures-r4 = { module = "ca.uhn.hapi.fhir:hapi-fhir-structures-r4", version.ref = "hapi-fhir" }
+hapi-fhir-structures-dstu3 = { module = "ca.uhn.hapi.fhir:hapi-fhir-structures-dstu3", version.ref = "hapi-fhir" }
+hapi-fhir-validation = { module = "ca.uhn.hapi.fhir:hapi-fhir-validation", version.ref = "hapi-fhir" }
+hapi-fhir-validation-resources = { module = "ca.uhn.hapi.fhir:hapi-fhir-validation-resources-r4", version.ref = "hapi-fhir" }
 
 [bundles]
 kotlinxEcosystem = ["kotlinxDatetime", "kotlinxSerialization", "kotlinxCoroutines"]
@@ -67,6 +73,7 @@ spring-cloud-gateway = ["spring-cloud-starter-gateway", "spring-cloud-starter-ci
 junit-testing = ["junit-jupiter-api", "junit-jupiter-params"]
 micrometer = ["micrometer-core", "micrometer-registry-prometheus", "micrometer-registry-jmx"]
 mongodb = ["mongodb-driver-sync", "bson-kotlin"]
+hapi-fhir = ["hapi-fhir-client", "hapi-fhir-structures-r4", "hapi-fhir-structures-dstu3", "hapi-fhir-validation", "hapi-fhir-validation-resources"]
 
 [plugins]
 kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
