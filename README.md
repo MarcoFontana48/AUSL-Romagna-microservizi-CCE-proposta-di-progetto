@@ -228,6 +228,42 @@ to send a get request about the dummy entity just created
 curl.exe -X GET http://localhost:8080/service/dummies/123
 ```
 
+a request to 'anamnesi-pregressa' to get an allergy with id '123':
+
+```bash
+curl.exe -X GET http://localhost:8080/anamnesi-pregressa/AllergyIntolerance/123
+```
+
+a request to 'anamnesi-pregressa' to add an allergy with id '123' to a patient with id '456':
+```bash
+Invoke-RestMethod -Uri "http://localhost:8080/anamnesi-pregressa/AllergyIntolerance" -Method POST -ContentType "application/json" -Body '{
+  "resourceType": "AllergyIntolerance",
+  "id": "123",
+  "patient": {
+    "reference": "Patient/456"
+  },
+  "code": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "227493005",
+        "display": "Cashew nuts"
+      }
+    ],
+    "text": "Cashew nuts"
+  },
+  "clinicalStatus": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical",
+        "code": "active",
+        "display": "Active"
+      }
+    ]
+  }
+}'
+```
+
 ## Visualize metrics
 Go to "http://localhost:9090/" or "http://localhost:31090/" if using kubernetes, to visualize metrics collected by prometheus. You can use the following queries to visualize some metrics:
 
