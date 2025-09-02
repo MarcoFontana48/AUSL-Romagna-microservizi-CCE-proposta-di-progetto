@@ -10,6 +10,7 @@ dependencies {
     implementation(libs.micrometer.registry.jmx)
     implementation(libs.log4j.api)
     implementation(libs.log4j.core)
+    implementation(libs.bundles.hapi.fhir)
     testImplementation(kotlin("test"))
 }
 

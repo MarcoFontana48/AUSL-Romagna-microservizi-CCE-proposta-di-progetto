@@ -26,4 +26,7 @@ object Endpoints {
     const val ANAMNESI_PREGRESSA = "/anamnesi-pregressa"
     const val METRICS = "/metrics"
     const val DUMMIES = "/dummies"
+    // those follow FHIR's RESTful convention, where the name has to match the resource name in CamelCase (see docs: https://hl7.org/fhir/http.html)
+    const val ALLERGY_INTOLERANCES = "/AllergyIntolerance"
+    const val PATIENT = "/Patient"
 }

@@ -1,5 +1,7 @@
 package mf.cce.utils
 
+import org.hl7.fhir.r4.model.DomainResource
+
 /**
  * Marker interface to easily identify a domain object as service.
  */
