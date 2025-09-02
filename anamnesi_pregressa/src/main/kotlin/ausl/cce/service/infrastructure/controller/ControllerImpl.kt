@@ -1,9 +1,13 @@
 package ausl.cce.service.infrastructure.controller
 
+import ausl.cce.service.application.AllergyIntoleranceService
 import ausl.cce.service.application.DummyService
 import ausl.cce.service.application.ServiceController
+import ausl.cce.service.domain.AllergyIntoleranceEntity
+import ausl.cce.service.domain.AllergyIntoleranceId
 import ausl.cce.service.domain.DummyEntity
 import ausl.cce.service.domain.DummyEntity.DummyId
+import ausl.cce.service.domain.fromJsonToAllergyIntolerance
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import com.fasterxml.jackson.module.kotlin.KotlinModule
@@ -20,7 +24,8 @@ import java.sql.SQLIntegrityConstraintViolationException
 import kotlin.reflect.KClass
 
 class StandardController(
-    private val service: DummyService,              // 'service' here refers to the DDD service
+    private val dummyService: DummyService,              // 'service' here refers to the DDD service
+    private val allergyIntoleranceService: AllergyIntoleranceService,              // 'service' here refers to the DDD service
     private val circuitBreaker: CircuitBreaker,
     override val meterRegistry: MeterRegistry,
     override val serviceName: String = "anamnesi-pregressa"    // 'service' here is the name of the microservice / server
@@ -113,7 +118,7 @@ class StandardController(
             }
             logger.debug("Extracted dummy entity id from request, 'id': '{}'", idParam)
 
-            val dummyEntity = service.getDummyEntityById(DummyId(idParam))
+            val dummyEntity = dummyService.getDummyEntityById(DummyId(idParam))
             logger.trace("DummyEntity retrieved: '{}'", dummyEntity)
 
             val replyString = mapper.writeValueAsString(dummyEntity)
@@ -162,7 +167,7 @@ class StandardController(
             val dummyEntity = deserializeRequestFromClass(requestBody, DummyEntity::class)
             logger.debug("Deserialized DummyEntity from request: '{}'", dummyEntity)
 
-            service.addDummyEntity(dummyEntity)
+            dummyService.addDummyEntity(dummyEntity)
             logger.trace("DummyEntity created: '{}'", dummyEntity)
 
             promise.complete(JsonObject().put("id", dummyEntity.id))
@@ -190,6 +195,105 @@ class StandardController(
     }
 
     override fun deleteDummyHandler(ctx: RoutingContext) {
+        TODO("Not yet implemented")
+    }
+
+    override fun getAllergyIntoleranceHandler(ctx: RoutingContext) {
+        logger.debug("Received GET request for allergy intolerance entity")
+
+        getAllergyIntoleranceCounter.increment()
+        metricsCounter.increment()
+        metricsReadRequestsCounter.increment()
+
+        val timerSample = Timer.start(meterRegistry)
+
+        circuitBreaker.execute { promise ->
+            // expects a request path patameter 'id': "/AllergyIntolerance/:id" where ':id' is the allergy intolerance entity id, i.e. "/AllergyIntolerance/123"
+            val idParam = ctx.pathParam("id")
+            if (idParam.isNullOrBlank()) {
+                logger.warn("Received GET request without required 'id' parameter")
+                throw IllegalArgumentException("Cannot execute get request without parameters")
+            }
+            logger.debug("Extracted allergy intolerance entity id from request, 'id': '{}'", idParam)
+
+            val uriAsId = "AllergyIntolerance/$idParam"
+            logger.debug("Converted allergy intolerance entity id to FHIR resource id format: '{}'", uriAsId)
+
+            val allergyIntoleranceEntity = allergyIntoleranceService.getAllergyIntoleranceById(AllergyIntoleranceId(uriAsId))
+            logger.trace("AllergyIntoleranceEntity retrieved: '{}'", allergyIntoleranceEntity)
+
+            val replyJson = JsonObject(allergyIntoleranceEntity.toJson())
+            logger.debug("Converted AllergyIntoleranceEntity to JsonObject: '{}'", replyJson)
+
+            promise.complete(replyJson)
+        }.onComplete { result ->
+            timerSample.stop(getAllergyIntoleranceTimer)
+
+            if (result.succeeded()) {
+                logger.debug("AllergyIntoleranceEntity retrieved successfully, sending response")
+                getAllergyIntoleranceSuccessCounter.increment()
+                metricsSuccessCounter.increment()
+                metricsSuccessReadRequestsCounter.increment()
+                sendResponse(ctx, HttpStatus.OK, result.result())
+            } else {
+                logger.warn("Failed to retrieve AllergyIntoleranceEntity, sending response. Error: {}", result.cause().message)
+                getAllergyIntoleranceFailureCounter.increment()
+                metricsFailureCounter.increment()
+                metricsFailureReadRequestsCounter.increment()
+                sendErrorResponse(ctx, result.cause())
+            }
+        }
+    }
+
+    override fun createAllergyIntoleranceHandler(ctx: RoutingContext) {
+        logger.debug("Received POST request to create allergy intolerance entity")
+
+        createAllergyIntoleranceCounter.increment()
+        metricsCounter.increment()
+        metricsWriteRequestsCounter.increment()
+
+        val timerSample = Timer.start(meterRegistry)
+
+        circuitBreaker.execute { promise ->
+            val requestBody = ctx.body().asJsonObject()
+            if (requestBody.isEmpty) {
+                logger.warn("Received POST request without required body")
+                throw IllegalArgumentException("Cannot execute create request without body")
+            }
+            logger.debug("Extracted allergy intolerance entity data from request body: '{}'", requestBody)
+
+            val allergyIntolerance = requestBody.toString().fromJsonToAllergyIntolerance()
+            val entity = AllergyIntoleranceEntity.of(allergyIntolerance)
+            logger.debug("Created AllergyIntoleranceEntity from FHIR resource: '{}'", entity)
+
+            allergyIntoleranceService.addAllergyIntolerance(entity)
+            logger.trace("AllergyIntoleranceEntity created: '{}'", entity)
+
+            promise.complete(JsonObject().put("id", entity.id))
+        }.onComplete { result ->
+            timerSample.stop(createAllergyIntoleranceTimer)
+
+            if (result.succeeded()) {
+                logger.trace("AllergyIntoleranceEntity created successfully, sending response")
+                createAllergyIntoleranceSuccessCounter.increment()
+                metricsSuccessCounter.increment()
+                metricsSuccessWriteRequestsCounter.increment()
+                sendResponse(ctx, HttpStatus.CREATED, result.result())
+            } else {
+                logger.warn("Failed to create AllergyIntoleranceEntity, sending response. Error: {}", result.cause().message)
+                createAllergyIntoleranceFailureCounter.increment()
+                metricsFailureCounter.increment()
+                metricsFailureWriteRequestsCounter.increment()
+                sendErrorResponse(ctx, result.cause())
+            }
+        }
+    }
+
+    override fun updateAllergyIntoleranceHandler(ctx: RoutingContext) {
+        TODO("Not yet implemented")
+    }
+
+    override fun deleteAllergyIntoleranceHandler(ctx: RoutingContext) {
         TODO("Not yet implemented")
     }
 

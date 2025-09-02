@@ -13,9 +13,14 @@ interface ServiceController :
     MetricsHandler,
     HealthCheckMetricsProvider,
     MetricsProvider,
+    ClientJsonReplyHandler,
+    // === DDD ENTITY HANDLERS ===
+    // Dummy (a generic test entity, not to be used in production)
     CRUDDummyHandler,
     DummyMetricsProvider,
-    ClientJsonReplyHandler
+    // AllergyIntolerance
+    CRUDAllergyIntoleranceHandler,
+    AllergyIntoleranceMetricsProvider
 
 /* === CLIENT REPLY HANDLER === */
 
@@ -36,7 +41,8 @@ interface MetricsHandler {
     fun metricsHandler(ctx: RoutingContext)
 }
 
-/* === DUMMY DDD ENTITY HANDLERS === */
+/* === DDD ENTITY HANDLERS AND METRICS PROVIDER === */
+// Dummy (a generic test entity, not to be used in production)
 
 interface CRUDDummyHandler : QueryDummyHandler, CommandDummyHandler
 
@@ -103,6 +109,76 @@ interface DummyMetricsProvider {
     val createDummyTimer: Timer
         get() = Timer.builder("create_dummy_duration_seconds")
             .description("create_dummy request duration")
+            .tag("service", serviceName)
+            .register(meterRegistry)
+}
+
+// AllergyIntolerance
+interface CRUDAllergyIntoleranceHandler : QueryAllergyIntoleranceHandler, CommandAllergyIntoleranceHandler
+
+interface QueryAllergyIntoleranceHandler {
+    fun getAllergyIntoleranceHandler(ctx: RoutingContext)
+}
+
+interface CommandAllergyIntoleranceHandler {
+    fun createAllergyIntoleranceHandler(ctx: RoutingContext)
+    fun updateAllergyIntoleranceHandler(ctx: RoutingContext)
+    fun deleteAllergyIntoleranceHandler(ctx: RoutingContext)
+}
+
+interface AllergyIntoleranceMetricsProvider {
+    val meterRegistry: MeterRegistry
+    val serviceName: String
+
+    /* === READ === */
+
+    val getAllergyIntoleranceCounter: Counter
+        get() = Counter.builder("get_allergy_intolerance_requests_total")
+            .description("Total number of get_allergy_intolerance requests")
+            .tag("service", serviceName)
+            .register(meterRegistry)
+
+    val getAllergyIntoleranceSuccessCounter: Counter
+        get() = Counter.builder("get_allergy_intolerance_success_total")
+            .description("Total number of successful get_allergy_intolerance")
+            .tag("service", serviceName)
+            .register(meterRegistry)
+
+    val getAllergyIntoleranceFailureCounter: Counter
+        get() = Counter.builder("get_allergy_intolerance_failure_total")
+            .description("Total number of failed get_allergy_intolerance")
+            .tag("service", serviceName)
+            .register(meterRegistry)
+
+    val getAllergyIntoleranceTimer: Timer
+        get() = Timer.builder("get_allergy_intolerance_duration_seconds")
+            .description("get_allergy_intolerance request duration")
+            .tag("service", serviceName)
+            .register(meterRegistry)
+
+    /* === CREATE === */
+
+    val createAllergyIntoleranceCounter: Counter
+        get() = Counter.builder("create_allergy_intolerance_requests_total")
+            .description("Total number of create_allergy_intolerance requests")
+            .tag("service", serviceName)
+            .register(meterRegistry)
+
+    val createAllergyIntoleranceSuccessCounter: Counter
+        get() = Counter.builder("create_allergy_intolerance_success_total")
+            .description("Total number of successful create_allergy_intolerance")
+            .tag("service", serviceName)
+            .register(meterRegistry)
+
+    val createAllergyIntoleranceFailureCounter: Counter
+        get() = Counter.builder("create_allergy_intolerance_failure_total")
+            .description("Total number of failed create_allergy_intolerance")
+            .tag("service", serviceName)
+            .register(meterRegistry)
+
+    val createAllergyIntoleranceTimer: Timer
+        get() = Timer.builder("create_allergy_intolerance_duration_seconds")
+            .description("create_allergy_intolerance request duration")
             .tag("service", serviceName)
             .register(meterRegistry)
 }
