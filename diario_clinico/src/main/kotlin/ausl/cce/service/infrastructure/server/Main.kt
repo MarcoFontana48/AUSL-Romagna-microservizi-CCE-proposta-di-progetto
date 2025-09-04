@@ -1,9 +1,13 @@
 package ausl.cce.service.infrastructure.server
 
-import ausl.cce.service.application.DummyRepository
 import ausl.cce.service.application.DummyService
 import ausl.cce.service.application.DummyServiceImpl
-import ausl.cce.service.infrastructure.persistence.MongoRepository
+import ausl.cce.service.application.EncounterService
+import ausl.cce.service.application.EncounterServiceImpl
+import ausl.cce.service.infrastructure.persistence.DummyRepository
+import ausl.cce.service.infrastructure.persistence.EncounterRepository
+import ausl.cce.service.infrastructure.persistence.MongoDummyRepository
+import ausl.cce.service.infrastructure.persistence.MongoEncounterRepository
 import io.vertx.core.Vertx
 import mf.cce.utils.RepositoryCredentials
 
@@ -23,10 +27,15 @@ fun runServer() {
         System.getenv("CONFIG_SERVER_DB_PASSWORD") ?: "password"
     )
 
-    val serviceRepository : DummyRepository = MongoRepository(mongoRepositoryCredentials)
-    val service : DummyService = DummyServiceImpl(serviceRepository)
+    val dummyServiceRepository : DummyRepository = MongoDummyRepository(mongoRepositoryCredentials)
+    val dummyService : DummyService = DummyServiceImpl(dummyServiceRepository)
 
-    val serverVerticle = ServerVerticle(service)
+    // Add Encounter service setup
+    val encounterServiceRepository: EncounterRepository = MongoEncounterRepository(mongoRepositoryCredentials)
+    val encounterService: EncounterService = EncounterServiceImpl(encounterServiceRepository)
+
+    // Update ServerVerticle constructor to include encounterService
+    val serverVerticle = ServerVerticle(dummyService, encounterService)
 
     vertx.deployVerticle(serverVerticle).onSuccess {
         println("Service Verticle deployed successfully!")
