@@ -54,6 +54,38 @@ object EncounterFactory {
             serviceTypeSystem, serviceTypeCode, serviceTypeDisplay
         )
     }
+
+    /**
+     * Factory method to create a new Encounter with basic information and a CarePlan diagnosis/outcome
+     *
+     * @param id Logical ID of the Encounter resource (without "Encounter/" prefix)
+     * @param patientReference Reference to the patient (e.g., "Patient/123")
+     * @param encounterClass Class of the encounter (e.g., "AMB" for ambulatory, "IMP" for inpatient)
+     * @param carePlanReference Reference to the CarePlan resource (e.g., "CarePlan/123")
+     * @param carePlanUseType The role/use of this diagnosis in the encounter context (default: "CM" for comorbidity)
+     * @param status Status of the encounter (default: "finished")
+     * @param serviceTypeSystem Coding system for the service type (e.g., "http://terminology.hl7.org/CodeSystem/service-type")
+     * @param serviceTypeCode Code for the service type (e.g., "408")
+     * @param serviceTypeDisplay Display text for the service type (e.g., "General Medicine")
+     * @return Configured Encounter instance
+     * @see <a href="https://www.hl7.org/fhir/encounter.html">FHIR Encounter Resource</a>
+     */
+    fun of(
+        id: String,
+        patientReference: String,
+        encounterClass: String,
+        carePlanReference: String,
+        carePlanUseType: String = "CM",
+        status: String = "finished",
+        serviceTypeSystem: String? = null,
+        serviceTypeCode: String? = null,
+        serviceTypeDisplay: String? = null
+    ): Encounter {
+        return this.of(
+            id, patientReference, encounterClass, status,
+            serviceTypeSystem, serviceTypeCode, serviceTypeDisplay
+        ).addCarePlanDiagnosis(carePlanReference, carePlanUseType)
+    }
 }
 
 /**
@@ -107,6 +139,48 @@ fun Encounter.configure(
     }
     this.period = period
 
+    return this
+}
+
+/**
+ * Extension function to add a CarePlan diagnosis/outcome to the encounter
+ * This represents a CarePlan that was identified, created, or modified during this encounter
+ *
+ * @param carePlanReference Reference to the CarePlan resource (e.g., "CarePlan/123")
+ * @param useType The role/use of this diagnosis in the encounter context
+ * @param rank Ranking of the diagnosis (1 = primary, 2 = secondary, etc.)
+ * @return The modified Encounter instance
+ */
+fun Encounter.addCarePlanDiagnosis(
+    carePlanReference: String,
+    useType: String = "CM", // Case management
+    rank: Int? = null
+): Encounter {
+    val diagnosis = Encounter.DiagnosisComponent()
+    diagnosis.condition = Reference(carePlanReference)
+
+    // Set the use/type of this diagnosis
+    val useCodeableConcept = CodeableConcept()
+    useCodeableConcept.addCoding().apply {
+        system = "http://terminology.hl7.org/CodeSystem/diagnosis-role"
+        code = useType
+        display = when (useType) {
+            "AD" -> "Admission diagnosis"
+            "DD" -> "Discharge diagnosis"
+            "CC" -> "Chief complaint"
+            "CM" -> "Comorbidity diagnosis"
+            "pre-op" -> "Pre-operative diagnosis"
+            "post-op" -> "Post-operative diagnosis"
+            "billing" -> "Billing diagnosis"
+            else -> useType
+        }
+    }
+    diagnosis.use = useCodeableConcept
+
+    // Set rank if provided
+    rank?.let { diagnosis.rank = it }
+
+    this.addDiagnosis(diagnosis)
     return this
 }
 
