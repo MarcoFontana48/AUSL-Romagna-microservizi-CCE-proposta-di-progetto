@@ -1,7 +1,8 @@
 package ausl.cce.service.infrastructure.server
 
+import ausl.cce.service.application.CarePlanService
 import ausl.cce.service.application.DummyService
-import ausl.cce.service.application.TerapiaController
+import ausl.cce.service.application.ServiceController
 import ausl.cce.service.infrastructure.controller.StandardController
 import io.micrometer.core.instrument.Timer
 import io.micrometer.prometheus.PrometheusConfig
@@ -19,7 +20,8 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
 class ServerVerticle(
-    private val service : DummyService
+    private val dummyService : DummyService,
+    private val carePlanService : CarePlanService
 ) : AbstractVerticle() {
     private val logger: Logger = LogManager.getLogger(this::class)
 
@@ -28,15 +30,15 @@ class ServerVerticle(
 
         val meterRegistry = defineMeterRegistry()
         val circuitBreaker = defineCircuitBreaker()
-        val controller: TerapiaController = StandardController(service, circuitBreaker, meterRegistry)
+        val controller: ServiceController = StandardController(dummyService, carePlanService, circuitBreaker, meterRegistry)
         val router = Router.router(vertx)
         defineEndpoints(router, controller)
         runServer(router).onSuccess {
             logger.info("Server started successfully, listening on port ${Ports.HTTP}")
         }
-        .onFailure { throwable ->
-            logger.error("Failed to start server: ${throwable.message}")
-        }
+            .onFailure { throwable ->
+                logger.error("Failed to start server: ${throwable.message}")
+            }
     }
 
     private fun defineMeterRegistry(): PrometheusMeterRegistry {
@@ -62,7 +64,7 @@ class ServerVerticle(
         return CircuitBreaker.create("terapia-circuit-breaker", this.vertx, options)
     }
 
-    private fun defineEndpoints(router: Router, controller: TerapiaController) {
+    private fun defineEndpoints(router: Router, controller: ServiceController) {
         router.route().handler(BodyHandler.create())
 
         /* === HEALTH CHECK ENDPOINT === */
@@ -74,6 +76,10 @@ class ServerVerticle(
         /* === DUMMY DDD ENTITY ENDPOINT === */
         router.get(Endpoints.DUMMIES + "/:id").handler { ctx -> controller.getDummyHandler(ctx) }
         router.post(Endpoints.DUMMIES).handler { ctx -> controller.createDummyHandler(ctx) }
+
+        /* === CARE PLAN DDD ENTITY ENDPOINTS === */
+        router.get(Endpoints.CARE_PLANS + "/:id").handler { ctx -> controller.getCarePlanHandler(ctx) }
+        router.post(Endpoints.CARE_PLANS).handler { ctx -> controller.createCarePlanHandler(ctx) }
     }
 
     private fun runServer(router: Router): Future<HttpServer> {
