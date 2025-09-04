@@ -1,9 +1,13 @@
 package ausl.cce.service.infrastructure.controller
 
+import ausl.cce.service.application.EncounterService
 import ausl.cce.service.application.DummyService
 import ausl.cce.service.application.ServiceController
+import ausl.cce.service.domain.EncounterEntity
+import ausl.cce.service.domain.EncounterId
 import ausl.cce.service.domain.DummyEntity
 import ausl.cce.service.domain.DummyEntity.DummyId
+import ausl.cce.service.domain.fromJsonToEncounter
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import com.fasterxml.jackson.module.kotlin.KotlinModule
@@ -20,10 +24,11 @@ import java.sql.SQLIntegrityConstraintViolationException
 import kotlin.reflect.KClass
 
 class StandardController(
-    private val service: DummyService,              // 'service' here refers to the DDD service
+    private val dummyService: DummyService,              // 'service' here refers to the DDD service
+    private val encounterService: EncounterService,              // 'service' here refers to the DDD service
     private val circuitBreaker: CircuitBreaker,
     override val meterRegistry: MeterRegistry,
-    override val serviceName: String = "diario-clinico"    // 'service' here is the name of the microservice / server
+    override val serviceName: String = "anamnesi-pregressa"    // 'service' here is the name of the microservice / server
 ) : ServiceController {
     private val logger = LogManager.getLogger(this::class.java)
     private val mapper: ObjectMapper = jacksonObjectMapper().apply {
@@ -113,7 +118,7 @@ class StandardController(
             }
             logger.debug("Extracted dummy entity id from request, 'id': '{}'", idParam)
 
-            val dummyEntity = service.getDummyEntityById(DummyId(idParam))
+            val dummyEntity = dummyService.getDummyEntityById(DummyId(idParam))
             logger.trace("DummyEntity retrieved: '{}'", dummyEntity)
 
             val replyString = mapper.writeValueAsString(dummyEntity)
@@ -162,7 +167,7 @@ class StandardController(
             val dummyEntity = deserializeRequestFromClass(requestBody, DummyEntity::class)
             logger.debug("Deserialized DummyEntity from request: '{}'", dummyEntity)
 
-            service.addDummyEntity(dummyEntity)
+            dummyService.addDummyEntity(dummyEntity)
             logger.trace("DummyEntity created: '{}'", dummyEntity)
 
             promise.complete(JsonObject().put("id", dummyEntity.id))
@@ -193,9 +198,108 @@ class StandardController(
         TODO("Not yet implemented")
     }
 
+    override fun getEncounterHandler(ctx: RoutingContext) {
+        logger.debug("Received GET request for encounter entity")
+
+        getEncounterCounter.increment()
+        metricsCounter.increment()
+        metricsReadRequestsCounter.increment()
+
+        val timerSample = Timer.start(meterRegistry)
+
+        circuitBreaker.execute { promise ->
+            // expects a request path patameter 'id': "/Encounter/:id" where ':id' is the encounter entity id, i.e. "/Encounter/123"
+            val idParam = ctx.pathParam("id")
+            if (idParam.isNullOrBlank()) {
+                logger.warn("Received GET request without required 'id' parameter")
+                throw IllegalArgumentException("Cannot execute get request without parameters")
+            }
+            logger.debug("Extracted encounter entity id from request, 'id': '{}'", idParam)
+
+            val uriAsId = "Encounter/$idParam"
+            logger.debug("Converted encounter entity id to FHIR resource id format: '{}'", uriAsId)
+
+            val encounterEntity = encounterService.getEncounterById(EncounterId(uriAsId))
+            logger.trace("EncounterEntity retrieved: '{}'", encounterEntity)
+
+            val replyJson = JsonObject(encounterEntity.toJson())
+            logger.debug("Converted EncounterEntity to JsonObject: '{}'", replyJson)
+
+            promise.complete(replyJson)
+        }.onComplete { result ->
+            timerSample.stop(getEncounterTimer)
+
+            if (result.succeeded()) {
+                logger.debug("EncounterEntity retrieved successfully, sending response")
+                getEncounterSuccessCounter.increment()
+                metricsSuccessCounter.increment()
+                metricsSuccessReadRequestsCounter.increment()
+                sendResponse(ctx, HttpStatus.OK, result.result())
+            } else {
+                logger.warn("Failed to retrieve EncounterEntity, sending response. Error: {}", result.cause().message)
+                getEncounterFailureCounter.increment()
+                metricsFailureCounter.increment()
+                metricsFailureReadRequestsCounter.increment()
+                sendErrorResponse(ctx, result.cause())
+            }
+        }
+    }
+
+    override fun createEncounterHandler(ctx: RoutingContext) {
+        logger.debug("Received POST request to create encounter entity")
+
+        createEncounterCounter.increment()
+        metricsCounter.increment()
+        metricsWriteRequestsCounter.increment()
+
+        val timerSample = Timer.start(meterRegistry)
+
+        circuitBreaker.execute { promise ->
+            val requestBody = ctx.body().asJsonObject()
+            if (requestBody.isEmpty) {
+                logger.warn("Received POST request without required body")
+                throw IllegalArgumentException("Cannot execute create request without body")
+            }
+            logger.debug("Extracted encounter entity data from request body: '{}'", requestBody)
+
+            val encounter = requestBody.toString().fromJsonToEncounter()
+            val entity = EncounterEntity.of(encounter)
+            logger.debug("Created EncounterEntity from FHIR resource: '{}'", entity)
+
+            encounterService.addEncounter(entity)
+            logger.trace("EncounterEntity created: '{}'", entity)
+
+            promise.complete(JsonObject().put("id", entity.id))
+        }.onComplete { result ->
+            timerSample.stop(createEncounterTimer)
+
+            if (result.succeeded()) {
+                logger.trace("EncounterEntity created successfully, sending response")
+                createEncounterSuccessCounter.increment()
+                metricsSuccessCounter.increment()
+                metricsSuccessWriteRequestsCounter.increment()
+                sendResponse(ctx, HttpStatus.CREATED, result.result())
+            } else {
+                logger.warn("Failed to create EncounterEntity, sending response. Error: {}", result.cause().message)
+                createEncounterFailureCounter.increment()
+                metricsFailureCounter.increment()
+                metricsFailureWriteRequestsCounter.increment()
+                sendErrorResponse(ctx, result.cause())
+            }
+        }
+    }
+
+    override fun updateEncounterHandler(ctx: RoutingContext) {
+        TODO("Not yet implemented")
+    }
+
+    override fun deleteEncounterHandler(ctx: RoutingContext) {
+        TODO("Not yet implemented")
+    }
+
     override fun sendResponse(ctx: RoutingContext, statusCode: Int, message: JsonObject) {
-        logger.trace("Adding service key to response: '{}'", "diario-clinico")
-        message.put("service", "diario-clinico")
+        logger.trace("Adding service key to response: '{}'", "anamnesi-pregressa")
+        message.put("service", "anamnesi-pregressa")
 
         logger.trace("Sending response with status code: {}", statusCode)
         ctx.response()
