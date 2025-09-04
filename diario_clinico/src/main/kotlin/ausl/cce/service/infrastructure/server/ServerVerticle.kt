@@ -53,7 +53,7 @@ class ServerVerticle(
 
         Timer.builder("health_check_duration_seconds")
             .description("Health check request duration")
-            .tag("service", "anamnesi-pregressa")
+            .tag("service", "diario-clinico")
             .publishPercentileHistogram() // enables histogram buckets
             .register(res)
 
@@ -66,7 +66,7 @@ class ServerVerticle(
             .setTimeout(10000)
             .setResetTimeout(30000)
 
-        return CircuitBreaker.create("anamnesi-pregressa-circuit-breaker", this.vertx, options)
+        return CircuitBreaker.create("diario-clinico-circuit-breaker", this.vertx, options)
     }
 
     private fun defineEndpoints(router: Router, controller: ServiceController) {
