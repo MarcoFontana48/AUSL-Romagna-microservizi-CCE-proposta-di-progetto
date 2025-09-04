@@ -20,14 +20,14 @@ object Ports {
 
 object Endpoints {
     const val HEALTH = "/health"
-    const val SERVICE = "/service"
+    const val SERVICE = "/service"  // a generic test microservice endpoint, not to be used in production
     const val TERAPIA = "/terapia"
     const val DIARIO_CLINICO = "/diario-clinico"
     const val ANAMNESI_PREGRESSA = "/anamnesi-pregressa"
     const val METRICS = "/metrics"
-    const val DUMMIES = "/dummies"
+    const val DUMMIES = "/dummies"  // a generic test entity, not to be used in production
     // those follow FHIR's RESTful convention, where the name has to match the resource name in CamelCase (see docs: https://hl7.org/fhir/http.html)
     const val ALLERGY_INTOLERANCES = "/AllergyIntolerance"
     const val ENCOUNTERS = "/Encounter"
-//    const val PATIENT = "/Patient"
+    const val CARE_PLANS = "/CarePlan"
 }
