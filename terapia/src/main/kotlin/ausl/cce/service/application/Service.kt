@@ -1,8 +1,72 @@
 package ausl.cce.service.application
 
+import ausl.cce.service.domain.CarePlanEntity
+import ausl.cce.service.domain.CarePlanId
 import ausl.cce.service.domain.DummyEntity
 import ausl.cce.service.domain.DummyEntity.DummyId
+import ausl.cce.service.infrastructure.persistence.CarePlanRepository
+import ausl.cce.service.infrastructure.persistence.DummyRepository
 import mf.cce.utils.Service
+import org.hl7.fhir.r4.model.AllergyIntolerance
+import org.hl7.fhir.r4.model.CarePlan
+
+interface CarePlanService : Service {
+    fun getCarePlanById(id: CarePlanId): CarePlanEntity
+    fun addCarePlan(entity: CarePlanEntity)
+    fun updateCarePlan(entity: CarePlanEntity)
+    fun deleteCarePlan(id: CarePlanId)
+    fun checkMedicationAllergy(
+        carePlan: CarePlan,
+        allergy: AllergyIntolerance
+    ): Boolean
+}
+
+class CarePlanServiceImpl(
+    private val carePlanRepository: CarePlanRepository,
+) : CarePlanService {
+    override fun getCarePlanById(id: CarePlanId): CarePlanEntity {
+        return carePlanRepository.findById(id) ?: throw NoSuchElementException("CarePlanEntity with id '$id' not found")
+    }
+
+    override fun addCarePlan(entity: CarePlanEntity) {
+        carePlanRepository.save(entity)
+    }
+
+    override fun updateCarePlan(entity: CarePlanEntity) {
+        carePlanRepository.update(entity)
+    }
+
+    override fun deleteCarePlan(id: CarePlanId) {
+        carePlanRepository.deleteById(id)
+    }
+
+    /**
+     * Check if a CarePlan contains medications that conflict with known allergies
+     * @param carePlan The CarePlan to check
+     * @param allergy known AllergyIntolerance resource for the patient
+     * @return true if there are any medication-allergy conflicts, false otherwise
+     */
+    override fun checkMedicationAllergy(
+        carePlan: CarePlan,
+        allergy: AllergyIntolerance
+    ): Boolean {
+        carePlan.activity?.forEach { activity ->
+            activity.detail?.let { detail ->
+                // Check productCodeableConcept for medication codes that might conflict with allergies (same codes between medication and allergy)
+                detail.productCodeableConcept?.coding?.forEach { medicationCoding ->
+                    allergy.code?.coding?.forEach { allergyCoding ->
+                        if (medicationCoding.system == allergyCoding.system &&
+                            medicationCoding.code == allergyCoding.code) {
+                            return true // Found a conflict, return immediately
+                        }
+                    }
+                }
+            }
+        }
+
+        return false // No conflicts found
+    }
+}
 
 interface DummyService : Service {
     fun getDummyEntityById(id: DummyId): DummyEntity
@@ -12,7 +76,7 @@ interface DummyService : Service {
 }
 
 class DummyServiceImpl(
-    private val dummyRepository: DummyRepository
+    private val dummyRepository: DummyRepository,
 ) : DummyService {
     override fun getDummyEntityById(id: DummyId): DummyEntity {
         return dummyRepository.findById(id) ?: throw NoSuchElementException("DummyEntity with id '$id' not found")
