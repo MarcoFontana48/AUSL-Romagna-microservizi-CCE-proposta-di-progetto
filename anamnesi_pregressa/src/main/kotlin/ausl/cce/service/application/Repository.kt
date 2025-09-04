@@ -5,7 +5,6 @@ import ausl.cce.service.domain.AllergyIntoleranceId
 import ausl.cce.service.domain.DummyEntity
 import mf.cce.utils.Repository
 
-// Updated repository interfaces to include Closeable
 interface DummyRepository : Repository<DummyEntity.DummyId, DummyEntity>, Closeable
 
 interface AllergyIntoleranceRepository : Repository<AllergyIntoleranceId, AllergyIntoleranceEntity>, Closeable
