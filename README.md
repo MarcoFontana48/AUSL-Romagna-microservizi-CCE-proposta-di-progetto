@@ -264,6 +264,43 @@ Invoke-RestMethod -Uri "http://localhost:8080/anamnesi-pregressa/AllergyIntolera
 }'
 ```
 
+a request to 'diario-clinico' to get an encounter with id '123':
+
+```bash
+curl.exe -X GET http://localhost:8080/diario-clinico/Encounter/123
+```
+
+a request to 'diario-clinico' to add an encounter with id '123' to a patient with id '456':
+```bash
+Invoke-RestMethod -Uri "http://localhost:8080/diario-clinico/Encounter" -Method POST -ContentType "application/json" -Body '{
+  "resourceType": "Encounter",
+  "id": "123",
+  "subject": {
+    "reference": "Patient/456"
+  },
+  "class": {
+    "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+    "code": "AMB",
+    "display": "Ambulatory"
+  },
+  "status": "finished",
+  "serviceType": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/service-type",
+        "code": "408",
+        "display": "General Medicine"
+      }
+    ],
+    "text": "General Medicine"
+  },
+  "period": {
+    "start": "2025-09-04T12:00:00Z",
+    "end": "2025-09-04T12:00:00Z"
+  }
+}'
+```
+
 ## Visualize metrics
 Go to "http://localhost:9090/" or "http://localhost:31090/" if using kubernetes, to visualize metrics collected by prometheus. You can use the following queries to visualize some metrics:
 
