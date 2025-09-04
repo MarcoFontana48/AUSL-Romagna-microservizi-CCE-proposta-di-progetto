@@ -242,16 +242,6 @@ Invoke-RestMethod -Uri "http://localhost:8080/anamnesi-pregressa/AllergyIntolera
   "patient": {
     "reference": "Patient/456"
   },
-  "code": {
-    "coding": [
-      {
-        "system": "http://snomed.info/sct",
-        "code": "227493005",
-        "display": "Cashew nuts"
-      }
-    ],
-    "text": "Cashew nuts"
-  },
   "clinicalStatus": {
     "coding": [
       {
@@ -260,7 +250,46 @@ Invoke-RestMethod -Uri "http://localhost:8080/anamnesi-pregressa/AllergyIntolera
         "display": "Active"
       }
     ]
-  }
+  },
+  "verificationStatus": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/allergyintolerance-verification",
+        "code": "confirmed",
+        "display": "Confirmed"
+      }
+    ]
+  },
+  "type": "allergy",
+  "category": ["medication"],
+  "criticality": "high",
+  "code": {
+    "coding": [
+      {
+        "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+        "code": "7980",
+        "display": "Penicillin"
+      }
+    ],
+    "text": "Penicillin"
+  },
+  "onsetDateTime": "2020-06-15",
+  "reaction": [
+    {
+      "manifestation": [
+        {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "247472004",
+              "display": "Hives"
+            }
+          ]
+        }
+      ],
+      "severity": "moderate"
+    }
+  ]
 }'
 ```
 
@@ -353,6 +382,227 @@ Invoke-RestMethod -Uri "http://localhost:8080/diario-clinico/Encounter" -Method 
     }
   ]
 }'
+```
+
+a request to 'terapia' to post a care plan with id '001' to a patient with id '456':
+
+```bash
+Invoke-RestMethod -Uri "http://localhost:8080/terapia/CarePlan" -Method POST -ContentType "application/json" -Body '{
+  "resourceType": "CarePlan",
+  "id": "001",
+  "subject": {
+    "reference": "Patient/456"
+  },
+  "title": "Diabetes Management Plan",
+  "description": "Comprehensive diabetes care plan including medication, diet, and exercise management",
+  "status": "active",
+  "intent": "plan",
+  "category": [
+    {
+      "coding": [
+        {
+          "system": "http://snomed.info/sct",
+          "code": "734163000",
+          "display": "Care of patient with diabetes"
+        }
+      ],
+      "text": "Diabetes care"
+    }
+  ],
+  "period": {
+    "start": "2025-09-04T00:00:00Z"
+  },
+  "activity": [
+    {
+      "detail": {
+        "code": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "229065009",
+              "display": "Exercise therapy"
+            }
+          ],
+          "text": "Exercise therapy"
+        },
+        "description": "Daily 30-minute moderate exercise",
+        "status": "not-started"
+      }
+    },
+    {
+      "detail": {
+        "code": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "182840001",
+              "display": "Drug therapy"
+            }
+          ],
+          "text": "Medication management"
+        },
+        "description": "Metformin 500mg twice daily with meals",
+        "status": "in-progress"
+      }
+    }
+  ],
+  "goal": [
+    {
+      "reference": "Goal/hba1c-target-001"
+    },
+    {
+      "reference": "Goal/weight-loss-target-001"
+    }
+  ]
+}'
+```
+
+a request to 'terapia' to get a care plan with id '001':
+
+```bash
+curl.exe -X GET http://localhost:8080/terapia/CarePlan/001
+```
+
+a request to 'terapia' to post a care plan with id '002' that contains a medication request for an example medication with id 'penicillin-001' to a patient with id '456':
+
+```bash
+Invoke-RestMethod -Uri "http://localhost:8080/terapia/CarePlan" -Method POST -ContentType "application/json" -Body '{
+  "resourceType": "CarePlan",
+  "id": "002",
+  "subject": {
+    "reference": "Patient/456"
+  },
+  "title": "Diabetes Management Plan",
+  "description": "Comprehensive diabetes care plan including medication, diet, and exercise management",
+  "status": "active",
+  "intent": "plan",
+  "category": [
+    {
+      "coding": [
+        {
+          "system": "http://snomed.info/sct",
+          "code": "734163000",
+          "display": "Care of patient with diabetes"
+        }
+      ],
+      "text": "Diabetes care"
+    }
+  ],
+  "period": {
+    "start": "2025-09-04T00:00:00Z"
+  },
+  "activity": [
+    {
+      "detail": {
+        "code": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "229065009",
+              "display": "Exercise therapy"
+            }
+          ],
+          "text": "Exercise therapy"
+        },
+        "description": "Daily 30-minute moderate exercise",
+        "status": "not-started"
+      }
+    },
+    {
+      "detail": {
+        "code": {
+          "coding": [
+            {
+              "system": "http://hl7.org/fhir/uv/cpg/CodeSystem/cpg-activity-type",
+              "code": "medication-administration",
+              "display": "Medication Administration"
+            }
+          ],
+          "text": "Medication administration"
+        },
+        "description": "Metformin 500mg twice daily with meals",
+        "status": "in-progress",
+        "productCodeableConcept": {
+          "coding": [
+            {
+              "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+              "code": "6809",
+              "display": "Metformin"
+            }
+          ],
+          "text": "Metformin 500mg"
+        },
+        "dailyAmount": {
+          "value": 2,
+          "unit": "tablets",
+          "system": "http://unitsofmeasure.org",
+          "code": "1"
+        },
+        "quantity": {
+          "value": 60,
+          "unit": "tablets",
+          "system": "http://unitsofmeasure.org",
+          "code": "1"
+        }
+      }
+    },
+    {
+      "detail": {
+        "code": {
+          "coding": [
+            {
+              "system": "http://hl7.org/fhir/uv/cpg/CodeSystem/cpg-activity-type",
+              "code": "medication-administration",
+              "display": "Medication Administration"
+            }
+          ],
+          "text": "Medication administration"
+        },
+        "description": "Penicillin 500mg four times daily for infection treatment",
+        "status": "not-started",
+        "productCodeableConcept": {
+          "coding": [
+            {
+              "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+              "code": "7980",
+              "display": "Penicillin"
+            }
+          ],
+          "text": "Penicillin 500mg"
+        },
+        "dailyAmount": {
+          "value": 4,
+          "unit": "tablets",
+          "system": "http://unitsofmeasure.org",
+          "code": "1"
+        },
+        "quantity": {
+          "value": 28,
+          "unit": "tablets",
+          "system": "http://unitsofmeasure.org",
+          "code": "1"
+        }
+      }
+    },
+    {
+      "reference": "MedicationRequest/glucose-meter-strips-001"
+    }
+  ],
+  "goal": [
+    {
+      "reference": "Goal/hba1c-target-001"
+    },
+    {
+      "reference": "Goal/weight-loss-target-001"
+    }
+  ]
+}'
+```
+
+a request to 'terapia' to get a care plan with id '002':
+
+```bash
+curl.exe -X GET http://localhost:8080/terapia/CarePlan/002
 ```
 
 ## Visualize metrics
