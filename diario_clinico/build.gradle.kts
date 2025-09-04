@@ -21,6 +21,7 @@ dependencies {
     implementation(libs.micrometer.registry.prometheus)
     implementation(libs.micrometer.registry.jmx)
     implementation(libs.bundles.mongodb)
+    implementation(libs.bundles.hapi.fhir)
     testImplementation(libs.archunit)
     testImplementation(libs.junit)
     testImplementation(kotlin("test"))
