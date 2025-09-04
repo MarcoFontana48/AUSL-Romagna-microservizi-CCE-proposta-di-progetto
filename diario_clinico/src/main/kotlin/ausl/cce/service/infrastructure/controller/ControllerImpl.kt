@@ -28,7 +28,7 @@ class StandardController(
     private val encounterService: EncounterService,              // 'service' here refers to the DDD service
     private val circuitBreaker: CircuitBreaker,
     override val meterRegistry: MeterRegistry,
-    override val serviceName: String = "anamnesi-pregressa"    // 'service' here is the name of the microservice / server
+    override val serviceName: String = "diario-clinico"    // 'service' here is the name of the microservice / server
 ) : ServiceController {
     private val logger = LogManager.getLogger(this::class.java)
     private val mapper: ObjectMapper = jacksonObjectMapper().apply {
@@ -298,8 +298,8 @@ class StandardController(
     }
 
     override fun sendResponse(ctx: RoutingContext, statusCode: Int, message: JsonObject) {
-        logger.trace("Adding service key to response: '{}'", "anamnesi-pregressa")
-        message.put("service", "anamnesi-pregressa")
+        logger.trace("Adding service key to response: '{}'", "diario-clinico")
+        message.put("service", "diario-clinico")
 
         logger.trace("Sending response with status code: {}", statusCode)
         ctx.response()
