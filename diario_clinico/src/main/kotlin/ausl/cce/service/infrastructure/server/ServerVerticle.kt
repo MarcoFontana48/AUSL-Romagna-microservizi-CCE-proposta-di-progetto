@@ -1,6 +1,7 @@
 package ausl.cce.service.infrastructure.server
 
 import ausl.cce.service.application.DummyService
+import ausl.cce.service.application.EncounterService
 import ausl.cce.service.application.ServiceController
 import ausl.cce.service.infrastructure.controller.StandardController
 import io.micrometer.core.instrument.Timer
@@ -19,7 +20,8 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
 class ServerVerticle(
-    private val service : DummyService
+    private val dummyService : DummyService,
+    private val encounterService : EncounterService
 ) : AbstractVerticle() {
     private val logger: Logger = LogManager.getLogger(this::class)
 
@@ -28,15 +30,20 @@ class ServerVerticle(
 
         val meterRegistry = defineMeterRegistry()
         val circuitBreaker = defineCircuitBreaker()
-        val controller: ServiceController = StandardController(service, circuitBreaker, meterRegistry)
+        val controller: ServiceController = StandardController(
+            dummyService,
+            encounterService,
+            circuitBreaker,
+            meterRegistry
+        )
         val router = Router.router(vertx)
         defineEndpoints(router, controller)
         runServer(router).onSuccess {
             logger.info("Server started successfully, listening on port ${Ports.HTTP}")
         }
-        .onFailure { throwable ->
-            logger.error("Failed to start server: ${throwable.message}")
-        }
+            .onFailure { throwable ->
+                logger.error("Failed to start server: ${throwable.message}")
+            }
     }
 
     private fun defineMeterRegistry(): PrometheusMeterRegistry {
@@ -46,7 +53,7 @@ class ServerVerticle(
 
         Timer.builder("health_check_duration_seconds")
             .description("Health check request duration")
-            .tag("service", "diario-clinico")
+            .tag("service", "anamnesi-pregressa")
             .publishPercentileHistogram() // enables histogram buckets
             .register(res)
 
@@ -59,7 +66,7 @@ class ServerVerticle(
             .setTimeout(10000)
             .setResetTimeout(30000)
 
-        return CircuitBreaker.create("diario-clinico-circuit-breaker", this.vertx, options)
+        return CircuitBreaker.create("anamnesi-pregressa-circuit-breaker", this.vertx, options)
     }
 
     private fun defineEndpoints(router: Router, controller: ServiceController) {
@@ -74,6 +81,10 @@ class ServerVerticle(
         /* === DUMMY DDD ENTITY ENDPOINT === */
         router.get(Endpoints.DUMMIES + "/:id").handler { ctx -> controller.getDummyHandler(ctx) }
         router.post(Endpoints.DUMMIES).handler { ctx -> controller.createDummyHandler(ctx) }
+
+        /* === ENCOUNTER DDD ENTITY ENDPOINT === */
+        router.get(Endpoints.ENCOUNTERS + "/:id").handler { ctx -> controller.getEncounterHandler(ctx) }
+        router.post(Endpoints.ENCOUNTERS).handler { ctx -> controller.createEncounterHandler(ctx) }
     }
 
     private fun runServer(router: Router): Future<HttpServer> {
