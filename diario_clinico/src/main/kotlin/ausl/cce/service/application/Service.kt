@@ -2,7 +2,38 @@ package ausl.cce.service.application
 
 import ausl.cce.service.domain.DummyEntity
 import ausl.cce.service.domain.DummyEntity.DummyId
+import ausl.cce.service.domain.EncounterEntity
+import ausl.cce.service.domain.EncounterId
+import ausl.cce.service.infrastructure.persistence.DummyRepository
+import ausl.cce.service.infrastructure.persistence.EncounterRepository
 import mf.cce.utils.Service
+
+interface EncounterService : Service {
+    fun getEncounterById(id: EncounterId): EncounterEntity
+    fun addEncounter(entity: EncounterEntity)
+    fun updateEncounter(entity: EncounterEntity)
+    fun deleteEncounter(id: EncounterId)
+}
+
+class EncounterServiceImpl(
+    private val encounterRepository: EncounterRepository,
+) : EncounterService {
+    override fun getEncounterById(id: EncounterId): EncounterEntity {
+        return encounterRepository.findById(id) ?: throw NoSuchElementException("EncounterEntity with id '$id' not found")
+    }
+
+    override fun addEncounter(entity: EncounterEntity) {
+        encounterRepository.save(entity)
+    }
+
+    override fun updateEncounter(entity: EncounterEntity) {
+        encounterRepository.update(entity)
+    }
+
+    override fun deleteEncounter(id: EncounterId) {
+        encounterRepository.deleteById(id)
+    }
+}
 
 interface DummyService : Service {
     fun getDummyEntityById(id: DummyId): DummyEntity
