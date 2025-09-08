@@ -5,7 +5,7 @@ import ausl.cce.service.domain.CarePlanFactory
 import ausl.cce.service.domain.CarePlanId
 import ausl.cce.service.domain.DummyEntity
 import ausl.cce.service.domain.toJson
-import ausl.cce.service.infrastructure.persistence.CarePlanRepository
+import ausl.cce.service.application.CarePlanRepository
 import ausl.cce.service.infrastructure.persistence.MongoCarePlanRepository
 import ausl.cce.service.infrastructure.persistence.MongoDummyRepository
 import mf.cce.utils.DockerTest
