@@ -4,10 +4,12 @@ import ausl.cce.service.application.DummyService
 import ausl.cce.service.application.DummyServiceImpl
 import ausl.cce.service.application.EncounterService
 import ausl.cce.service.application.EncounterServiceImpl
+import ausl.cce.service.infrastructure.controller.EncounterEventProducerVerticle
 import ausl.cce.service.infrastructure.persistence.DummyRepository
 import ausl.cce.service.infrastructure.persistence.EncounterRepository
 import ausl.cce.service.infrastructure.persistence.MongoDummyRepository
 import ausl.cce.service.infrastructure.persistence.MongoEncounterRepository
+import io.vertx.core.Verticle
 import io.vertx.core.Vertx
 import mf.cce.utils.RepositoryCredentials
 
@@ -30,16 +32,27 @@ fun runServer() {
     val dummyServiceRepository : DummyRepository = MongoDummyRepository(mongoRepositoryCredentials)
     val dummyService : DummyService = DummyServiceImpl(dummyServiceRepository)
 
-    // Add Encounter service setup
     val encounterServiceRepository: EncounterRepository = MongoEncounterRepository(mongoRepositoryCredentials)
-    val encounterService: EncounterService = EncounterServiceImpl(encounterServiceRepository)
+    val diarioEventProducer = EncounterEventProducerVerticle()
+    val encounterService: EncounterService = EncounterServiceImpl(encounterServiceRepository, diarioEventProducer)
 
-    // Update ServerVerticle constructor to include encounterService
     val serverVerticle = ServerVerticle(dummyService, encounterService)
 
-    vertx.deployVerticle(serverVerticle).onSuccess {
-        println("Service Verticle deployed successfully!")
-    }.onFailure { throwable ->
-        println("Failed to deploy Service Verticle: ${throwable.message}")
+    deployVerticles(vertx, serverVerticle, diarioEventProducer)
+}
+
+private fun deployVerticles(vertx: Vertx, vararg verticles: Verticle) {
+    println("Deploying ${verticles.size} verticles...")
+    var counter = 0
+
+    verticles.forEach {
+        counter++
+        println("Deploying verticle $counter/${verticles.size}: ${it::class.simpleName}...")
+
+        vertx.deployVerticle(it).onSuccess { msg ->
+            println("${it::class.simpleName} deployed successfully!")
+        }.onFailure { throwable ->
+            println("Failed to deploy ${it::class.simpleName}: ${throwable.message}")
+        }
     }
 }
