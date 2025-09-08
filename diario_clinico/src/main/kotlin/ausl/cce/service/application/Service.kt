@@ -4,8 +4,10 @@ import ausl.cce.service.domain.DummyEntity
 import ausl.cce.service.domain.DummyEntity.DummyId
 import ausl.cce.service.domain.EncounterEntity
 import ausl.cce.service.domain.EncounterId
+import ausl.cce.service.infrastructure.controller.EncounterEventProducerVerticle
 import ausl.cce.service.infrastructure.persistence.DummyRepository
 import ausl.cce.service.infrastructure.persistence.EncounterRepository
+import mf.cce.utils.EncounterConcluded
 import mf.cce.utils.Service
 
 interface EncounterService : Service {
@@ -17,6 +19,7 @@ interface EncounterService : Service {
 
 class EncounterServiceImpl(
     private val encounterRepository: EncounterRepository,
+    private val encounterEventProducer: EncounterEventProducerVerticle,
 ) : EncounterService {
     override fun getEncounterById(id: EncounterId): EncounterEntity {
         return encounterRepository.findById(id) ?: throw NoSuchElementException("EncounterEntity with id '$id' not found")
@@ -24,6 +27,7 @@ class EncounterServiceImpl(
 
     override fun addEncounter(entity: EncounterEntity) {
         encounterRepository.save(entity)
+        encounterEventProducer.publishEvent(EncounterConcluded.of(entity.encounter))
     }
 
     override fun updateEncounter(entity: EncounterEntity) {
