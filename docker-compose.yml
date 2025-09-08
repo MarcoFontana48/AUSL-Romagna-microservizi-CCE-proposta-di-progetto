@@ -26,6 +26,49 @@ services:
       retries: 3
       start_period: 30s
 
+  # === EVENT BROKER ===
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD", "echo", "ruok", "|", "nc", "localhost", "2181", "|", "grep", "imok" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: kafka
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - "9092:9092"
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+      anamnesi-pregressa-mongo-db:
+        condition: service_healthy
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
   # === ANAMNESI PREGRESSA ===
 
   anamnesi-pregressa:
@@ -42,6 +85,8 @@ services:
       - CONFIG_SERVER_DB_NAME=anamnesi-pregressa-mongo-db
       - CONFIG_SERVER_DB_USERNAME=root
       - CONFIG_SERVER_DB_PASSWORD=password
+      - KAFKA_HOST=kafka
+      - KAFKA_PORT=9092
     networks:
       - app-network
     #    healthcheck:
@@ -55,6 +100,8 @@ services:
         condition: service_healthy
       anamnesi-pregressa-mongo-db:
         condition: service_started
+      kafka:
+        condition: service_healthy
 
   anamnesi-pregressa-mongo-db:
     image: mongo:latest
@@ -105,6 +152,8 @@ services:
         condition: service_healthy
       diario-clinico-mongo-db:
         condition: service_started
+      kafka:
+        condition: service_healthy
 
   diario-clinico-mongo-db:
     image: mongo:latest
@@ -142,6 +191,8 @@ services:
       - CONFIG_SERVER_DB_NAME=terapia-mongo-db
       - CONFIG_SERVER_DB_USERNAME=root
       - CONFIG_SERVER_DB_PASSWORD=password
+      - KAFKA_HOST=kafka
+      - KAFKA_PORT=9092
     networks:
       - app-network
     #    healthcheck:
@@ -155,6 +206,8 @@ services:
         condition: service_healthy
       terapia-mongo-db:
         condition: service_started
+      kafka:
+        condition: service_healthy
 
   terapia-mongo-db:
     image: mongo:latest
@@ -192,6 +245,8 @@ services:
       - CONFIG_SERVER_DB_NAME=service-mongo-db
       - CONFIG_SERVER_DB_USERNAME=root
       - CONFIG_SERVER_DB_PASSWORD=password
+      - KAFKA_HOST=kafka
+      - KAFKA_PORT=9092
     networks:
       - app-network
     #    healthcheck:
@@ -205,6 +260,8 @@ services:
         condition: service_healthy
       service-mongo-db:
         condition: service_started
+      kafka:
+        condition: service_healthy
 
   service-mongo-db:
     image: mongo:latest
