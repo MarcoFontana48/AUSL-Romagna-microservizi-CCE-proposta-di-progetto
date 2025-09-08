@@ -1,5 +1,7 @@
 package ausl.cce.service.infrastructure.persistence
 
+import ausl.cce.service.application.CarePlanRepository
+import ausl.cce.service.application.DummyRepository
 import ausl.cce.service.domain.CarePlanEntity
 import ausl.cce.service.domain.CarePlanId
 import ausl.cce.service.domain.DummyEntity
