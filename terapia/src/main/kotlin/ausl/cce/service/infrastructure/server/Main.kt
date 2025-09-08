@@ -4,10 +4,13 @@ import ausl.cce.service.application.CarePlanService
 import ausl.cce.service.application.CarePlanServiceImpl
 import ausl.cce.service.application.DummyService
 import ausl.cce.service.application.DummyServiceImpl
-import ausl.cce.service.infrastructure.persistence.CarePlanRepository
-import ausl.cce.service.infrastructure.persistence.DummyRepository
+import ausl.cce.service.infrastructure.controller.TerapiaConsumerVerticle
+import ausl.cce.service.infrastructure.controller.TerapiaProducerVerticle
+import ausl.cce.service.application.CarePlanRepository
+import ausl.cce.service.application.DummyRepository
 import ausl.cce.service.infrastructure.persistence.MongoCarePlanRepository
 import ausl.cce.service.infrastructure.persistence.MongoDummyRepository
+import io.vertx.core.Verticle
 import io.vertx.core.Vertx
 import mf.cce.utils.RepositoryCredentials
 
@@ -31,13 +34,27 @@ fun runServer() {
     val dummyService : DummyService = DummyServiceImpl(dummyServiceRepository)
 
     val carePlanServiceRepository: CarePlanRepository = MongoCarePlanRepository(mongoRepositoryCredentials)
-    val carePlanService : CarePlanService = CarePlanServiceImpl(carePlanServiceRepository)
+    val terapiaEventProducer = TerapiaProducerVerticle()
+    val carePlanService : CarePlanService = CarePlanServiceImpl(carePlanServiceRepository, terapiaEventProducer)
 
     val serverVerticle = ServerVerticle(dummyService, carePlanService)
+    val consumerVerticle = TerapiaConsumerVerticle(carePlanService)
 
-    vertx.deployVerticle(serverVerticle).onSuccess {
-        println("Service Verticle deployed successfully!")
-    }.onFailure { throwable ->
-        println("Failed to deploy Service Verticle: ${throwable.message}")
+    deployVerticles(vertx, serverVerticle, consumerVerticle, terapiaEventProducer)
+}
+
+private fun deployVerticles(vertx: Vertx, vararg verticles: Verticle) {
+    println("Deploying ${verticles.size} verticles...")
+    var counter = 0
+
+    verticles.forEach {
+        counter++
+        println("Deploying verticle $counter/${verticles.size}: ${it::class.simpleName}...")
+
+        vertx.deployVerticle(it).onSuccess { msg ->
+            println("${it::class.simpleName} deployed successfully!")
+        }.onFailure { throwable ->
+            println("Failed to deploy ${it::class.simpleName}: ${throwable.message}")
+        }
     }
 }
