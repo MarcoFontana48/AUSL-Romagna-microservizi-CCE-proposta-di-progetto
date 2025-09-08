@@ -1,4 +1,4 @@
-package ausl.cce.service.infrastructure.persistence
+package ausl.cce.service.application
 
 import ausl.cce.service.domain.CarePlanEntity
 import ausl.cce.service.domain.CarePlanId
