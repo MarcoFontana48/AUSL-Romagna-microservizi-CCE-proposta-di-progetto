@@ -4,9 +4,11 @@ import ausl.cce.service.domain.CarePlanEntity
 import ausl.cce.service.domain.CarePlanId
 import ausl.cce.service.domain.DummyEntity
 import ausl.cce.service.domain.DummyEntity.DummyId
-import ausl.cce.service.infrastructure.persistence.CarePlanRepository
-import ausl.cce.service.infrastructure.persistence.DummyRepository
+import ausl.cce.service.infrastructure.controller.TerapiaProducerVerticle
+import mf.cce.utils.AllergyDiagnosed
 import mf.cce.utils.Service
+import mf.cce.utils.TherapyRevoked
+import org.apache.logging.log4j.LogManager
 import org.hl7.fhir.r4.model.AllergyIntolerance
 import org.hl7.fhir.r4.model.CarePlan
 
@@ -15,6 +17,7 @@ interface CarePlanService : Service {
     fun addCarePlan(entity: CarePlanEntity)
     fun updateCarePlan(entity: CarePlanEntity)
     fun deleteCarePlan(id: CarePlanId)
+    fun checkAndSuspendCarePlanIfConflict(allergyDiagnosed: AllergyDiagnosed)
     fun checkMedicationAllergy(
         carePlan: CarePlan,
         allergy: AllergyIntolerance
@@ -23,7 +26,31 @@ interface CarePlanService : Service {
 
 class CarePlanServiceImpl(
     private val carePlanRepository: CarePlanRepository,
+    private val terapiaEventProducer: TerapiaProducerVerticle,
 ) : CarePlanService {
+    private val logger = LogManager.getLogger(this::class)
+
+    override fun checkAndSuspendCarePlanIfConflict(allergyDiagnosed: AllergyDiagnosed) {
+        val allCarePlans = carePlanRepository.findAll()
+        logger.debug("Retrieved ${allCarePlans.count()} CarePlans from repository")
+
+        allCarePlans.forEach { carePlanEntity ->
+            val carePlan = carePlanEntity.carePlan
+            val allergy = allergyDiagnosed.allergyIntolerance
+
+            if (checkMedicationAllergy(carePlan, allergy)) {
+                logger.info("Conflict detected between CarePlan '${carePlan.id}' and AllergyIntolerance '${allergy.id}'. Suspending CarePlan.")
+                // suspend the CarePlan by updating its status
+                carePlan.status = CarePlan.CarePlanStatus.REVOKED   // a 'SUSPENDED' status is not available in CarePlan resource, using 'REVOKED' as an alternative
+                carePlanRepository.update(CarePlanEntity.of(carePlan))
+                terapiaEventProducer.publishEvent(TherapyRevoked.of(carePlan))
+                logger.debug("Updated CarePlan '${carePlan.id}' status to REVOKED in repository")
+            } else {
+                logger.debug("No conflict detected between CarePlan '${carePlan.id}' and AllergyIntolerance '${allergy.id}'")
+            }
+        }
+    }
+
     override fun getCarePlanById(id: CarePlanId): CarePlanEntity {
         return carePlanRepository.findById(id) ?: throw NoSuchElementException("CarePlanEntity with id '$id' not found")
     }
