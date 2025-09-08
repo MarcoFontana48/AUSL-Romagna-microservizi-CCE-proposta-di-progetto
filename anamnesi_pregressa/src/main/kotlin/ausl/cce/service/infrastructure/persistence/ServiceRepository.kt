@@ -1,5 +1,7 @@
 package ausl.cce.service.infrastructure.persistence
 
+import ausl.cce.service.application.AllergyIntoleranceRepository
+import ausl.cce.service.application.DummyRepository
 import ausl.cce.service.domain.AllergyIntoleranceEntity
 import ausl.cce.service.domain.AllergyIntoleranceId
 import ausl.cce.service.domain.DummyEntity
