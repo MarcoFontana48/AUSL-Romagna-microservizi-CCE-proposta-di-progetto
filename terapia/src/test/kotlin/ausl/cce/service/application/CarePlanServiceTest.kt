@@ -1,6 +1,6 @@
 package ausl.cce.service.application
 
-import ausl.cce.service.infrastructure.persistence.CarePlanRepository
+import ausl.cce.service.infrastructure.controller.TerapiaProducerVerticle
 import org.hl7.fhir.r4.model.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -16,7 +16,8 @@ class CarePlanServiceImplTest {
     @BeforeEach
     fun setUp() {
         val mockRepository = mockk<CarePlanRepository>(relaxed = true)  // 'dummy' test double: it's a mock type that passes an empty implementation of a class required by the constructor but never used in the tests
-        carePlanService = CarePlanServiceImpl(mockRepository)
+        val mockProducer = mockk<TerapiaProducerVerticle>(relaxed = true)   // 'dummy' test double: (same as above)
+        carePlanService = CarePlanServiceImpl(mockRepository, mockProducer)
     }
 
     @Nested
