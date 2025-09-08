@@ -25,6 +25,7 @@ dependencies {
     testImplementation(libs.archunit)
     testImplementation(libs.junit)
     testImplementation(kotlin("test"))
+    testImplementation("io.mockk:mockk:1.13.8")
     implementation(project(":utils"))
 }
 
