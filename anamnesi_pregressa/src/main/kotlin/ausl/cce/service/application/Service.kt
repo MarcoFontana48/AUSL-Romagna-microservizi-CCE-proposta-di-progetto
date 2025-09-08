@@ -4,8 +4,8 @@ import ausl.cce.service.domain.AllergyIntoleranceEntity
 import ausl.cce.service.domain.AllergyIntoleranceId
 import ausl.cce.service.domain.DummyEntity
 import ausl.cce.service.domain.DummyEntity.DummyId
-import ausl.cce.service.infrastructure.persistence.AllergyIntoleranceRepository
-import ausl.cce.service.infrastructure.persistence.DummyRepository
+import ausl.cce.service.infrastructure.controller.AnamnesiProducerVerticle
+import mf.cce.utils.AllergyDiagnosed
 import mf.cce.utils.Service
 
 interface AllergyIntoleranceService : Service {
@@ -17,6 +17,7 @@ interface AllergyIntoleranceService : Service {
 
 class AllergyIntoleranceServiceImpl(
     private val allergyIntoleranceRepository: AllergyIntoleranceRepository,
+    private val allergyIntoleranceEventProducer: AnamnesiProducerVerticle,
 ) : AllergyIntoleranceService {
     override fun getAllergyIntoleranceById(id: AllergyIntoleranceId): AllergyIntoleranceEntity {
         return allergyIntoleranceRepository.findById(id) ?: throw NoSuchElementException("AllergyIntoleranceEntity with id '$id' not found")
@@ -24,6 +25,7 @@ class AllergyIntoleranceServiceImpl(
 
     override fun addAllergyIntolerance(entity: AllergyIntoleranceEntity) {
         allergyIntoleranceRepository.save(entity)
+        allergyIntoleranceEventProducer.publishEvent(AllergyDiagnosed.of(entity.allergyIntolerance))
     }
 
     override fun updateAllergyIntolerance(entity: AllergyIntoleranceEntity) {
