@@ -9,6 +9,8 @@ import ausl.cce.service.domain.fromJsonToCarePlan
 import ausl.cce.service.domain.toJson
 import ausl.cce.service.application.CarePlanRepository
 import ausl.cce.service.infrastructure.persistence.MongoCarePlanRepository
+import io.micrometer.core.instrument.MeterRegistry
+import io.mockk.mockk
 import io.mockk.spyk
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Verticle
@@ -61,7 +63,9 @@ class TerapiaConsumerVerticleTest : DockerTest() {
         carePlanRepository = MongoCarePlanRepository(repositoryCredentials)
         terapiaEventProducer = spyk(TerapiaProducerVerticle())
         anamnesiTestEventProducer = spyk(AnamnesiProducerVerticle())
-        carePlanService = spyk(CarePlanServiceImpl(carePlanRepository, terapiaEventProducer))
+        val mockMeterRegistry = mockk<MeterRegistry>(relaxed = true)   // 'dummy' test double
+        val serviceName = "terapia-test"
+        carePlanService = spyk(CarePlanServiceImpl(carePlanRepository, terapiaEventProducer, mockMeterRegistry, serviceName))
 
         vertx = vertx()
 

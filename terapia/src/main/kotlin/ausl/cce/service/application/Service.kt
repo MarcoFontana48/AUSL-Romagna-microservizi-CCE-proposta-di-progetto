@@ -5,7 +5,9 @@ import ausl.cce.service.domain.CarePlanId
 import ausl.cce.service.domain.DummyEntity
 import ausl.cce.service.domain.DummyEntity.DummyId
 import ausl.cce.service.infrastructure.controller.TerapiaProducerVerticle
+import io.micrometer.core.instrument.MeterRegistry
 import mf.cce.utils.AllergyDiagnosed
+import mf.cce.utils.MetricsProvider
 import mf.cce.utils.Service
 import mf.cce.utils.TherapyRevoked
 import org.apache.logging.log4j.LogManager
@@ -27,27 +29,47 @@ interface CarePlanService : Service {
 class CarePlanServiceImpl(
     private val carePlanRepository: CarePlanRepository,
     private val terapiaEventProducer: TerapiaProducerVerticle,
-) : CarePlanService {
+    override val meterRegistry: MeterRegistry,
+    override val serviceName: String,
+) : CarePlanService, MetricsProvider, CarePlanMetricsProvider {
     private val logger = LogManager.getLogger(this::class)
 
     override fun checkAndSuspendCarePlanIfConflict(allergyDiagnosed: AllergyDiagnosed) {
-        val allCarePlans = carePlanRepository.findAll()
-        logger.debug("Retrieved ${allCarePlans.count()} CarePlans from repository")
+        try {
+            val allCarePlans = carePlanRepository.findAll()
+            logger.debug("Retrieved ${allCarePlans.count()} CarePlans from repository")
 
-        allCarePlans.forEach { carePlanEntity ->
-            val carePlan = carePlanEntity.carePlan
-            val allergy = allergyDiagnosed.allergyIntolerance
+            allCarePlans.forEach { carePlanEntity ->
+                val carePlan = carePlanEntity.carePlan
+                val allergy = allergyDiagnosed.allergyIntolerance
 
-            if (checkMedicationAllergy(carePlan, allergy)) {
-                logger.info("Conflict detected between CarePlan '${carePlan.id}' and AllergyIntolerance '${allergy.id}'. Suspending CarePlan.")
-                // suspend the CarePlan by updating its status
-                carePlan.status = CarePlan.CarePlanStatus.REVOKED   // a 'SUSPENDED' status is not available in CarePlan resource, using 'REVOKED' as an alternative
-                carePlanRepository.update(CarePlanEntity.of(carePlan))
-                terapiaEventProducer.publishEvent(TherapyRevoked.of(carePlan))
-                logger.debug("Updated CarePlan '${carePlan.id}' status to REVOKED in repository")
-            } else {
-                logger.debug("No conflict detected between CarePlan '${carePlan.id}' and AllergyIntolerance '${allergy.id}'")
+                if (checkMedicationAllergy(carePlan, allergy)) {
+                    logger.info("Conflict detected between CarePlan '${carePlan.id}' and AllergyIntolerance '${allergy.id}'. Suspending CarePlan.")
+                    // suspend the CarePlan by updating its status
+                    carePlan.status =
+                        CarePlan.CarePlanStatus.REVOKED   // a 'SUSPENDED' status is not available in CarePlan resource, using 'REVOKED' as an alternative
+
+                    metricsCounter.increment()
+                    metricsWriteRequestsCounter.increment()
+                    updateCarePlanCounter.increment()
+
+                    carePlanRepository.update(CarePlanEntity.of(carePlan))
+                    terapiaEventProducer.publishEvent(TherapyRevoked.of(carePlan))
+                    logger.debug("Updated CarePlan '${carePlan.id}' status to REVOKED in repository")
+
+                    metricsSuccessCounter.increment()
+                    metricsSuccessWriteRequestsCounter.increment()
+                    updateCarePlanSuccessCounter.increment()
+                } else {
+                    logger.debug("No conflict detected between CarePlan '${carePlan.id}' and AllergyIntolerance '${allergy.id}'")
+                }
             }
+        } catch (e: Exception) {
+            logger.error("Error while checking and suspending CarePlans: ${e.message}")
+            metricsFailureCounter.increment()
+            metricsFailureWriteRequestsCounter.increment()
+            updateCarePlanFailureCounter.increment()
+            throw e
         }
     }
 

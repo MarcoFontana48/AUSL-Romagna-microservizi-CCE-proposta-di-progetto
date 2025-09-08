@@ -17,7 +17,9 @@ class CarePlanServiceImplTest {
     fun setUp() {
         val mockRepository = mockk<CarePlanRepository>(relaxed = true)  // 'dummy' test double: it's a mock type that passes an empty implementation of a class required by the constructor but never used in the tests
         val mockProducer = mockk<TerapiaProducerVerticle>(relaxed = true)   // 'dummy' test double: (same as above)
-        carePlanService = CarePlanServiceImpl(mockRepository, mockProducer)
+        val mockMeterRegistry = mockk<io.micrometer.core.instrument.MeterRegistry>(relaxed = true)   // 'dummy' test double: (same as above)
+        val serviceName = "terapia-test"
+        carePlanService = CarePlanServiceImpl(mockRepository, mockProducer, mockMeterRegistry, serviceName)
     }
 
     @Nested

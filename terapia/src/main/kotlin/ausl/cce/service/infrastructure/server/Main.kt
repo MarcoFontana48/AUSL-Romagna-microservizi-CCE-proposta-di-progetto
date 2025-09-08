@@ -8,8 +8,15 @@ import ausl.cce.service.infrastructure.controller.TerapiaConsumerVerticle
 import ausl.cce.service.infrastructure.controller.TerapiaProducerVerticle
 import ausl.cce.service.application.CarePlanRepository
 import ausl.cce.service.application.DummyRepository
+import ausl.cce.service.application.ServiceController
+import ausl.cce.service.infrastructure.controller.StandardController
 import ausl.cce.service.infrastructure.persistence.MongoCarePlanRepository
 import ausl.cce.service.infrastructure.persistence.MongoDummyRepository
+import io.micrometer.core.instrument.Timer
+import io.micrometer.prometheus.PrometheusConfig
+import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.vertx.circuitbreaker.CircuitBreaker
+import io.vertx.circuitbreaker.CircuitBreakerOptions
 import io.vertx.core.Verticle
 import io.vertx.core.Vertx
 import mf.cce.utils.RepositoryCredentials
@@ -30,14 +37,19 @@ fun runServer() {
         System.getenv("CONFIG_SERVER_DB_PASSWORD") ?: "password"
     )
 
+    val meterRegistry = defineMeterRegistry()
+    val circuitBreaker = defineCircuitBreaker(vertx)
+
     val dummyServiceRepository : DummyRepository = MongoDummyRepository(mongoRepositoryCredentials)
     val dummyService : DummyService = DummyServiceImpl(dummyServiceRepository)
 
     val carePlanServiceRepository: CarePlanRepository = MongoCarePlanRepository(mongoRepositoryCredentials)
     val terapiaEventProducer = TerapiaProducerVerticle()
-    val carePlanService : CarePlanService = CarePlanServiceImpl(carePlanServiceRepository, terapiaEventProducer)
+    val carePlanService : CarePlanService = CarePlanServiceImpl(carePlanServiceRepository, terapiaEventProducer, meterRegistry, "terapia")
 
-    val serverVerticle = ServerVerticle(dummyService, carePlanService)
+    val controller: ServiceController = StandardController(dummyService, carePlanService, circuitBreaker, meterRegistry)
+
+    val serverVerticle = ServerVerticle(controller)
     val consumerVerticle = TerapiaConsumerVerticle(carePlanService)
 
     deployVerticles(vertx, serverVerticle, consumerVerticle, terapiaEventProducer)
@@ -57,4 +69,27 @@ private fun deployVerticles(vertx: Vertx, vararg verticles: Verticle) {
             println("Failed to deploy ${it::class.simpleName}: ${throwable.message}")
         }
     }
+}
+
+private fun defineMeterRegistry(): PrometheusMeterRegistry {
+    val config = PrometheusConfig.DEFAULT
+
+    val res = PrometheusMeterRegistry(config)
+
+    Timer.builder("health_check_duration_seconds")
+        .description("Health check request duration")
+        .tag("service", "terapia")
+        .publishPercentileHistogram() // enables histogram buckets
+        .register(res)
+
+    return res
+}
+
+private fun defineCircuitBreaker(vertx: Vertx): CircuitBreaker {
+    val options = CircuitBreakerOptions()
+        .setMaxFailures(5)
+        .setTimeout(10000)
+        .setResetTimeout(30000)
+
+    return CircuitBreaker.create("terapia-circuit-breaker", vertx, options)
 }

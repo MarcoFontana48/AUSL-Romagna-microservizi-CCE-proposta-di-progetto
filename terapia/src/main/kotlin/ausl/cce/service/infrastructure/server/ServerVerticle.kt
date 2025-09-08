@@ -1,14 +1,6 @@
 package ausl.cce.service.infrastructure.server
 
-import ausl.cce.service.application.CarePlanService
-import ausl.cce.service.application.DummyService
 import ausl.cce.service.application.ServiceController
-import ausl.cce.service.infrastructure.controller.StandardController
-import io.micrometer.core.instrument.Timer
-import io.micrometer.prometheus.PrometheusConfig
-import io.micrometer.prometheus.PrometheusMeterRegistry
-import io.vertx.circuitbreaker.CircuitBreaker
-import io.vertx.circuitbreaker.CircuitBreakerOptions
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Future
 import io.vertx.core.http.HttpServer
@@ -20,19 +12,15 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
 class ServerVerticle(
-    private val dummyService : DummyService,
-    private val carePlanService : CarePlanService
+    private val controller: ServiceController,
 ) : AbstractVerticle() {
     private val logger: Logger = LogManager.getLogger(this::class)
 
     override fun start() {
         logger.info("Starting server...")
 
-        val meterRegistry = defineMeterRegistry()
-        val circuitBreaker = defineCircuitBreaker()
-        val controller: ServiceController = StandardController(dummyService, carePlanService, circuitBreaker, meterRegistry)
         val router = Router.router(vertx)
-        defineEndpoints(router, controller)
+        defineEndpoints(router)
         runServer(router).onSuccess {
             logger.info("Server started successfully, listening on port ${Ports.HTTP}")
         }
@@ -41,30 +29,7 @@ class ServerVerticle(
             }
     }
 
-    private fun defineMeterRegistry(): PrometheusMeterRegistry {
-        val config = PrometheusConfig.DEFAULT
-
-        val res = PrometheusMeterRegistry(config)
-
-        Timer.builder("health_check_duration_seconds")
-            .description("Health check request duration")
-            .tag("service", "terapia")
-            .publishPercentileHistogram() // enables histogram buckets
-            .register(res)
-
-        return res
-    }
-
-    private fun defineCircuitBreaker(): CircuitBreaker {
-        val options = CircuitBreakerOptions()
-            .setMaxFailures(5)
-            .setTimeout(10000)
-            .setResetTimeout(30000)
-
-        return CircuitBreaker.create("terapia-circuit-breaker", this.vertx, options)
-    }
-
-    private fun defineEndpoints(router: Router, controller: ServiceController) {
+    private fun defineEndpoints(router: Router) {
         router.route().handler(BodyHandler.create())
 
         /* === HEALTH CHECK ENDPOINT === */
