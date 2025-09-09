@@ -1,5 +1,7 @@
 package ausl.cce.service.infrastructure.persistence
 
+import ausl.cce.service.application.DummyRepository
+import ausl.cce.service.application.EncounterRepository
 import ausl.cce.service.domain.DummyEntity
 import ausl.cce.service.domain.EncounterEntity
 import ausl.cce.service.domain.EncounterFactory
@@ -12,7 +14,6 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
@@ -295,7 +296,6 @@ class MongoEncounterRepositoryTest : DockerTest() {
     @Test
     @DisplayName("Test saving and finding an existing encounter entity by its ID")
     @Timeout(5 * 60) // 5 minutes timeout
-    @Tag("encounter test")
     fun saveAndFindByEncounterId() {
         logger.trace("Saving encounter entity with id: {}", encounterTestWrapperEntity)
         val expectedEntity = encounterTestWrapperEntity
@@ -322,7 +322,6 @@ class MongoEncounterRepositoryTest : DockerTest() {
     @Test
     @DisplayName("Test finding a non-existent encounter entity by its ID")
     @Timeout(5 * 60) // 5 minutes timeout
-    @Tag("encounter test")
     fun findByEncounterIdNonExistent() {
         val nonExistentEntity = EncounterEntity.of(
             EncounterFactory.of(
@@ -347,7 +346,6 @@ class MongoEncounterRepositoryTest : DockerTest() {
     @Test
     @DisplayName("Test finding all encounter entities")
     @Timeout(5 * 60) // 5 minutes timeout
-    @Tag("encounter test")
     fun findAllEncounterEntities() {
         logger.trace("Testing findAll functionality for encounter entities")
 
@@ -417,7 +415,6 @@ class MongoEncounterRepositoryTest : DockerTest() {
     @Test
     @DisplayName("Test updating an existing encounter entity")
     @Timeout(5 * 60) // 5 minutes timeout
-    @Tag("encounter test")
     fun updateExistingEncounterEntity() {
         logger.trace("Testing update functionality for existing encounter entity")
 
@@ -472,7 +469,6 @@ class MongoEncounterRepositoryTest : DockerTest() {
     @Test
     @DisplayName("Test updating a non-existent encounter entity should throw exception")
     @Timeout(5 * 60) // 5 minutes timeout
-    @Tag("encounter test")
     fun updateNonExistentEncounterEntity() {
         logger.trace("Testing update functionality for non-existent encounter entity")
 
@@ -509,7 +505,6 @@ class MongoEncounterRepositoryTest : DockerTest() {
     @Test
     @DisplayName("Test deleting an existing encounter entity by ID")
     @Timeout(5 * 60) // 5 minutes timeout
-    @Tag("encounter test")
     fun deleteExistingEncounterEntityById() {
         logger.trace("Testing deleteById functionality for existing encounter entity")
 
@@ -555,7 +550,6 @@ class MongoEncounterRepositoryTest : DockerTest() {
     @Test
     @DisplayName("Test deleting a non-existent encounter entity by ID")
     @Timeout(5 * 60) // 5 minutes timeout
-    @Tag("encounter test")
     fun deleteNonExistentEncounterEntityById() {
         logger.trace("Testing deleteById functionality for non-existent encounter entity")
 
@@ -574,7 +568,6 @@ class MongoEncounterRepositoryTest : DockerTest() {
     @Test
     @DisplayName("Complete CRUD operations workflow test for encounter entities")
     @Timeout(5 * 60) // 5 minutes timeout
-    @Tag("encounter test")
     fun completeEncounterCrudWorkflow() {
         logger.trace("Testing complete CRUD workflow for encounter entities")
 

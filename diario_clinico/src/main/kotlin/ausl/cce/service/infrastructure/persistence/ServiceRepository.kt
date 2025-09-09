@@ -1,5 +1,7 @@
 package ausl.cce.service.infrastructure.persistence
 
+import ausl.cce.service.application.DummyRepository
+import ausl.cce.service.application.EncounterRepository
 import ausl.cce.service.domain.DummyEntity
 import ausl.cce.service.domain.EncounterEntity
 import ausl.cce.service.domain.EncounterId

@@ -1,10 +1,11 @@
 package ausl.cce.service.infrastructure.controller
 
+import ausl.cce.service.application.EncounterEventProducerVerticle
 import ausl.cce.service.application.EncounterService
 import ausl.cce.service.application.EncounterServiceImpl
 import ausl.cce.service.domain.EncounterEntity
 import ausl.cce.service.domain.EncounterFactory
-import ausl.cce.service.infrastructure.persistence.EncounterRepository
+import ausl.cce.service.application.EncounterRepository
 import ausl.cce.service.infrastructure.persistence.MongoEncounterRepository
 import io.mockk.spyk
 import io.mockk.verify

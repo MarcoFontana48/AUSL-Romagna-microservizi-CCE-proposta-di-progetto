@@ -2,11 +2,11 @@ package ausl.cce.service.infrastructure.server
 
 import ausl.cce.service.application.DummyService
 import ausl.cce.service.application.DummyServiceImpl
+import ausl.cce.service.application.EncounterEventProducerVerticle
 import ausl.cce.service.application.EncounterService
 import ausl.cce.service.application.EncounterServiceImpl
-import ausl.cce.service.infrastructure.controller.EncounterEventProducerVerticle
-import ausl.cce.service.infrastructure.persistence.DummyRepository
-import ausl.cce.service.infrastructure.persistence.EncounterRepository
+import ausl.cce.service.application.DummyRepository
+import ausl.cce.service.application.EncounterRepository
 import ausl.cce.service.infrastructure.persistence.MongoDummyRepository
 import ausl.cce.service.infrastructure.persistence.MongoEncounterRepository
 import io.vertx.core.Verticle

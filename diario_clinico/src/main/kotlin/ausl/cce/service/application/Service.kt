@@ -4,9 +4,6 @@ import ausl.cce.service.domain.DummyEntity
 import ausl.cce.service.domain.DummyEntity.DummyId
 import ausl.cce.service.domain.EncounterEntity
 import ausl.cce.service.domain.EncounterId
-import ausl.cce.service.infrastructure.controller.EncounterEventProducerVerticle
-import ausl.cce.service.infrastructure.persistence.DummyRepository
-import ausl.cce.service.infrastructure.persistence.EncounterRepository
 import mf.cce.utils.EncounterConcluded
 import mf.cce.utils.Service
 
