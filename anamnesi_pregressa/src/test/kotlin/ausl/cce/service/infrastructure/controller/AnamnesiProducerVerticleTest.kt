@@ -5,6 +5,7 @@ import ausl.cce.service.application.AllergyIntoleranceServiceImpl
 import ausl.cce.service.domain.AllergyIntoleranceEntity
 import ausl.cce.service.domain.AllergyIntoleranceFactory
 import ausl.cce.service.application.AllergyIntoleranceRepository
+import ausl.cce.service.application.AnamnesiProducerVerticle
 import ausl.cce.service.infrastructure.persistence.MongoAllergyIntoleranceRepository
 import io.mockk.spyk
 import io.mockk.verify

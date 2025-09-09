@@ -4,8 +4,8 @@ import ausl.cce.service.application.AllergyIntoleranceService
 import ausl.cce.service.application.AllergyIntoleranceServiceImpl
 import ausl.cce.service.application.DummyService
 import ausl.cce.service.application.DummyServiceImpl
-import ausl.cce.service.infrastructure.controller.AnamnesiProducerVerticle
 import ausl.cce.service.application.AllergyIntoleranceRepository
+import ausl.cce.service.application.AnamnesiProducerVerticle
 import ausl.cce.service.application.DummyRepository
 import ausl.cce.service.infrastructure.persistence.MongoAllergyIntoleranceRepository
 import ausl.cce.service.infrastructure.persistence.MongoDummyRepository

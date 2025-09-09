@@ -4,7 +4,6 @@ import ausl.cce.service.domain.AllergyIntoleranceEntity
 import ausl.cce.service.domain.AllergyIntoleranceId
 import ausl.cce.service.domain.DummyEntity
 import ausl.cce.service.domain.DummyEntity.DummyId
-import ausl.cce.service.infrastructure.controller.AnamnesiProducerVerticle
 import mf.cce.utils.AllergyDiagnosed
 import mf.cce.utils.Service
 

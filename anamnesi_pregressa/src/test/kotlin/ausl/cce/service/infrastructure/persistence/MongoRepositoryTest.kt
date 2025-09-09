@@ -14,7 +14,6 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
@@ -291,7 +290,6 @@ class MongoRepositoryTest : DockerTest() {
     @Test
     @DisplayName("Test saving and finding an existing allergy entity by its ID")
     @Timeout(5 * 60) // 5 minutes timeout
-    @Tag("allergy test")
     fun saveAndFindByAllergyId() {
         logger.trace("Saving entity with id: {}", allergyTestWrapperEntity)
         val expectedEntity = allergyTestWrapperEntity
@@ -318,7 +316,6 @@ class MongoRepositoryTest : DockerTest() {
     @Test
     @DisplayName("Test finding a non-existent allergy entity by its ID")
     @Timeout(5 * 60) // 5 minutes timeout
-    @Tag("allergy test")
     fun findByAllergyIdNonExistent() {
         val nonExistentEntity = AllergyIntoleranceEntity.of(
             AllergyIntoleranceFactory.of(
@@ -345,7 +342,6 @@ class MongoRepositoryTest : DockerTest() {
     @Test
     @DisplayName("Test finding all allergy entities")
     @Timeout(5 * 60) // 5 minutes timeout
-    @Tag("allergy test")
     fun findAllAllergyEntities() {
         logger.trace("Testing findAll functionality for allergy entities")
         // Save multiple test entities
@@ -412,7 +408,6 @@ class MongoRepositoryTest : DockerTest() {
     @Test
     @DisplayName("Test updating an existing allergy entity")
     @Timeout(5 * 60) // 5 minutes timeout
-    @Tag("allergy test")
     fun updateExistingAllergyEntity() {
         logger.trace("Testing update functionality for existing allergy entity")
         // First save an entity
@@ -463,7 +458,6 @@ class MongoRepositoryTest : DockerTest() {
     @Test
     @DisplayName("Test updating a non-existent allergy entity should throw exception")
     @Timeout(5 * 60) // 5 minutes timeout
-    @Tag("allergy test")
     fun updateNonExistentAllergyEntity() {
         logger.trace("Testing update functionality for non-existent allergy entity")
         val nonExistentEntity = AllergyIntoleranceEntity.of(
@@ -498,7 +492,6 @@ class MongoRepositoryTest : DockerTest() {
     @Test
     @DisplayName("Test deleting an existing allergy entity by ID")
     @Timeout(5 * 60) // 5 minutes timeout
-    @Tag("allergy test")
     fun deleteExistingAllergyEntityById() {
         logger.trace("Testing deleteById functionality for existing allergy entity")
         // First save entities to delete
@@ -539,7 +532,6 @@ class MongoRepositoryTest : DockerTest() {
     @Test
     @DisplayName("Test deleting a non-existent allergy entity by ID")
     @Timeout(5 * 60) // 5 minutes timeout
-    @Tag("allergy test")
     fun deleteNonExistentAllergyEntityById() {
         logger.trace("Testing deleteById functionality for non-existent allergy entity")
         val nonExistentDelete = allergyIntoleranceRepository.deleteById(AllergyIntoleranceId("definitely-not-exists"))
@@ -556,7 +548,6 @@ class MongoRepositoryTest : DockerTest() {
     @Test
     @DisplayName("Complete CRUD operations workflow test for allergy entities")
     @Timeout(5 * 60) // 5 minutes timeout
-    @Tag("allergy test")
     fun completeAllergyCrudWorkflow() {
         logger.trace("Testing complete CRUD workflow for allergy entities")
         // Create and save multiple entities
