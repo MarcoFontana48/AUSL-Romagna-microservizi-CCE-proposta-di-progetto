@@ -9,12 +9,12 @@ internal class DependenciesTest {
     fun layerDependenciesAreRespected() {
         layeredArchitecture()
             .consideringOnlyDependenciesInLayers()
-            .layer("Infrastructure").definedBy("ausl.cce.terapia.infrastructure..")
-            .layer("Application").definedBy("ausl.cce.terapia.application..")
-            .layer("Domain").definedBy("ausl.cce.terapia.domain..")
+            .layer("Infrastructure").definedBy("ausl.cce.service.infrastructure..")
+            .layer("Application").definedBy("ausl.cce.service.application..")
+            .layer("Domain").definedBy("ausl.cce.service.domain..")
             .whereLayer("Infrastructure").mayNotBeAccessedByAnyLayer()
             .whereLayer("Application").mayOnlyBeAccessedByLayers("Infrastructure")
             .whereLayer("Domain").mayNotAccessAnyLayer()
-            .check(ClassFileImporter().importPackages("ausl.cce.terapia..."))
+            .check(ClassFileImporter().importPackages("ausl.cce.service..."))
     }
 }

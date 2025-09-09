@@ -1,6 +1,5 @@
 package ausl.cce.service.application
 
-import ausl.cce.service.infrastructure.controller.TerapiaProducerVerticle
 import org.hl7.fhir.r4.model.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

@@ -15,7 +15,6 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
@@ -297,7 +296,6 @@ class MongoRepositoryTest : DockerTest() {
     @Test
     @DisplayName("Test saving and finding an existing care plan entity by its ID")
     @Timeout(5 * 60) // 5 minutes timeout
-    @Tag("careplan test")
     fun saveAndFindByCarePlanId() {
         logger.trace("Saving care plan entity with id: {}", carePlanTestWrapperEntity)
         val expectedEntity = carePlanTestWrapperEntity
@@ -324,7 +322,6 @@ class MongoRepositoryTest : DockerTest() {
     @Test
     @DisplayName("Test finding a non-existent care plan entity by its ID")
     @Timeout(5 * 60) // 5 minutes timeout
-    @Tag("careplan test")
     fun findByCarePlanIdNonExistent() {
         val nonExistentEntity = CarePlanEntity.of(
             CarePlanFactory.of(
@@ -351,7 +348,6 @@ class MongoRepositoryTest : DockerTest() {
     @Test
     @DisplayName("Test finding all care plan entities")
     @Timeout(5 * 60) // 5 minutes timeout
-    @Tag("careplan test")
     fun findAllCarePlanEntities() {
         logger.trace("Testing findAll functionality for care plan entities")
         // Save multiple test entities
@@ -418,7 +414,6 @@ class MongoRepositoryTest : DockerTest() {
     @Test
     @DisplayName("Test updating an existing care plan entity")
     @Timeout(5 * 60) // 5 minutes timeout
-    @Tag("careplan test")
     fun updateExistingCarePlanEntity() {
         logger.trace("Testing update functionality for existing care plan entity")
         // First save an entity
@@ -469,7 +464,6 @@ class MongoRepositoryTest : DockerTest() {
     @Test
     @DisplayName("Test updating a non-existent care plan entity should throw exception")
     @Timeout(5 * 60) // 5 minutes timeout
-    @Tag("careplan test")
     fun updateNonExistentCarePlanEntity() {
         logger.trace("Testing update functionality for non-existent care plan entity")
         val nonExistentEntity = CarePlanEntity.of(
@@ -504,7 +498,6 @@ class MongoRepositoryTest : DockerTest() {
     @Test
     @DisplayName("Test deleting an existing care plan entity by ID")
     @Timeout(5 * 60) // 5 minutes timeout
-    @Tag("careplan test")
     fun deleteExistingCarePlanEntityById() {
         logger.trace("Testing deleteById functionality for existing care plan entity")
         // First save entities to delete
@@ -545,7 +538,6 @@ class MongoRepositoryTest : DockerTest() {
     @Test
     @DisplayName("Test deleting a non-existent care plan entity by ID")
     @Timeout(5 * 60) // 5 minutes timeout
-    @Tag("careplan test")
     fun deleteNonExistentCarePlanEntityById() {
         logger.trace("Testing deleteById functionality for non-existent care plan entity")
         val nonExistentDelete = carePlanRepository.deleteById(CarePlanId("definitely-not-exists"))
@@ -562,7 +554,6 @@ class MongoRepositoryTest : DockerTest() {
     @Test
     @DisplayName("Complete CRUD operations workflow test for care plan entities")
     @Timeout(5 * 60) // 5 minutes timeout
-    @Tag("careplan test")
     fun completeCarePlanCrudWorkflow() {
         logger.trace("Testing complete CRUD workflow for care plan entities")
         // Create and save multiple entities

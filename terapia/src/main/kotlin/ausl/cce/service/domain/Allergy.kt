@@ -1,7 +1,6 @@
 package ausl.cce.service.domain
 
 import com.fasterxml.jackson.annotation.JsonCreator
-import com.fasterxml.jackson.annotation.JsonProperty
 import mf.cce.utils.Entity
 import mf.cce.utils.Factory
 import mf.cce.utils.ID

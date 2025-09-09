@@ -4,7 +4,6 @@ import ausl.cce.service.domain.CarePlanEntity
 import ausl.cce.service.domain.CarePlanId
 import ausl.cce.service.domain.DummyEntity
 import ausl.cce.service.domain.DummyEntity.DummyId
-import ausl.cce.service.infrastructure.controller.TerapiaProducerVerticle
 import io.micrometer.core.instrument.MeterRegistry
 import mf.cce.utils.AllergyDiagnosed
 import mf.cce.utils.MetricsProvider

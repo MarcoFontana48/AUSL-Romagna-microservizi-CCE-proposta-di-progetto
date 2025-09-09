@@ -5,10 +5,10 @@ import ausl.cce.service.application.CarePlanServiceImpl
 import ausl.cce.service.application.DummyService
 import ausl.cce.service.application.DummyServiceImpl
 import ausl.cce.service.infrastructure.controller.TerapiaConsumerVerticle
-import ausl.cce.service.infrastructure.controller.TerapiaProducerVerticle
 import ausl.cce.service.application.CarePlanRepository
 import ausl.cce.service.application.DummyRepository
 import ausl.cce.service.application.ServiceController
+import ausl.cce.service.application.TerapiaProducerVerticle
 import ausl.cce.service.infrastructure.controller.StandardController
 import ausl.cce.service.infrastructure.persistence.MongoCarePlanRepository
 import ausl.cce.service.infrastructure.persistence.MongoDummyRepository
