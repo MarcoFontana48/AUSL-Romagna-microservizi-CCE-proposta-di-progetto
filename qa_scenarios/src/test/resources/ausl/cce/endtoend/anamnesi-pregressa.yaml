@@ -4,21 +4,21 @@ kind: Namespace
 metadata:
   name: monitoring-app
 ---
-# terapia-deployment.yaml
+# anamnesi-pregressa-deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: terapia
+  name: anamnesi-pregressa
   namespace: monitoring-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: terapia
+      app: anamnesi-pregressa
   template:
     metadata:
       labels:
-        app: terapia
+        app: anamnesi-pregressa
     spec:
       initContainers:
         - name: wait-for-kafka
@@ -60,18 +60,18 @@ spec:
               
               echo "Kafka is ready and accepting connections!"
       containers:
-        - name: terapia
-          image: marcofontana17/ausl_cce_prototipo:terapia-dev-latest
+        - name: anamnesi-pregressa
+          image: marcofontana17/ausl_cce_prototipo:anamnesi_pregressa-dev-latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:
             - name: CONFIG_SERVER_HOST_NAME
-              value: "terapia-mongo-db"
+              value: "anamnesi-pregressa-mongo-db"
             - name: CONFIG_SERVER_PORT
               value: "27017"
             - name: CONFIG_SERVER_DB_NAME
-              value: "terapia-mongo-db"
+              value: "anamnesi-pregressa-mongo-db"
             - name: CONFIG_SERVER_DB_USERNAME
               value: "root"
             - name: CONFIG_SERVER_DB_PASSWORD
@@ -80,22 +80,6 @@ spec:
               value: "broker-0.broker.monitoring-app.svc.cluster.local"
             - name: KAFKA_PORT
               value: "9092"
-          #          livenessProbe:
-          #            httpGet:
-          #              path: /health
-          #              port: 8080
-          #            initialDelaySeconds: 30
-          #            periodSeconds: 10
-          #            timeoutSeconds: 5
-          #            failureThreshold: 5
-          #          readinessProbe:
-          #            httpGet:
-          #              path: /health
-          #              port: 8080
-          #            initialDelaySeconds: 10
-          #            periodSeconds: 5
-          #            timeoutSeconds: 3
-          #            failureThreshold: 5
           resources:
             requests:
               memory: "64Mi"
@@ -104,32 +88,32 @@ spec:
               memory: "256Mi"
               cpu: "200m"
 ---
-# terapia-service.yaml
+# anamnesi-pregressa-service.yaml
 apiVersion: v1
 kind: Service
 metadata:
-  name: terapia
+  name: anamnesi-pregressa
   namespace: monitoring-app
 spec:
   selector:
-    app: terapia
+    app: anamnesi-pregressa
   ports:
     - name: http
       port: 8080
       targetPort: 8080
   type: ClusterIP
 ---
-# terapia-hpa.yaml (horizontal pod autoscaler for terapia)
+# anamnesi-pregressa-hpa.yaml (horizontal pod autoscaler for anamnesi-pregressa)
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: terapia-hpa
+  name: anamnesi-pregressa-hpa
   namespace: monitoring-app
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: terapia
+    name: anamnesi-pregressa
   minReplicas: 1  # minimum number of replicas to scale down to
   maxReplicas: 10  # maximum number of replicas to scale up to
   metrics:
@@ -139,7 +123,7 @@ spec:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 10  # target CPU utilization percentage to trigger scaling (very low for testing, not realistic)
+          averageUtilization: 70  # target CPU utilization percentage to trigger scaling
   behavior:
     # define custom scaling behavior (optional)
     scaleUp:

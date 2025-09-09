@@ -26,27 +26,27 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
-#          env:
-#            - name: LOG_LEVEL
-#              value: "debug"
-#            - name: LOG_ADD_SOURCE
-#              value: "false"
-#          livenessProbe:
-#            httpGet:
-#              path: /health
-#              port: 8080
-#            initialDelaySeconds: 30
-#            periodSeconds: 10
-#            timeoutSeconds: 5
-#            failureThreshold: 5
-#          readinessProbe:
-#            httpGet:
-#              path: /health
-#              port: 8080
-#            initialDelaySeconds: 10
-#            periodSeconds: 5
-#            timeoutSeconds: 3
-#            failureThreshold: 5
+          #          env:
+          #            - name: LOG_LEVEL
+          #              value: "debug"
+          #            - name: LOG_ADD_SOURCE
+          #              value: "false"
+          #          livenessProbe:
+          #            httpGet:
+          #              path: /health
+          #              port: 8080
+          #            initialDelaySeconds: 30
+          #            periodSeconds: 10
+          #            timeoutSeconds: 5
+          #            failureThreshold: 5
+          #          readinessProbe:
+          #            httpGet:
+          #              path: /health
+          #              port: 8080
+          #            initialDelaySeconds: 10
+          #            periodSeconds: 5
+          #            timeoutSeconds: 3
+          #            failureThreshold: 5
           resources:
             requests:
               memory: "64Mi"
