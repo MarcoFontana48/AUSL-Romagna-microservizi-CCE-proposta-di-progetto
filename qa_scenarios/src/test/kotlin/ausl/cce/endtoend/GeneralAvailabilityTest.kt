@@ -302,7 +302,6 @@ class RecoveryTimeTest : KubernetesTest() {
     /**
      * Execute recovery test with one pod failure at specified time
      */
-//    TODO: fare in modo da passare come argomento il servizio da tirare giù
     private fun executeRecoveryTestWithSingleFailure(
         testName: String,
         initialReplicas: Int,
