@@ -13,7 +13,7 @@ spec:
       name: client
   selector:
     app: zookeeper
-  clusterIP: None  # Headless service for StatefulSet
+  type: ClusterIP
 ---
 # Zookeeper StatefulSet
 apiVersion: apps/v1
@@ -44,24 +44,18 @@ spec:
             - name: ZOOKEEPER_TICK_TIME
               value: "2000"
           livenessProbe:
-            exec:
-              command:
-                - sh
-                - -c
-                - "echo ruok | nc localhost 2181 | grep imok"
+            tcpSocket:
+              port: 2181
             initialDelaySeconds: 30
             periodSeconds: 30
             timeoutSeconds: 10
             failureThreshold: 5
           readinessProbe:
-            exec:
-              command:
-                - sh
-                - -c
-                - "echo ruok | nc localhost 2181 | grep imok"
-            initialDelaySeconds: 10
+            tcpSocket:
+              port: 2181
+            initialDelaySeconds: 5
             periodSeconds: 10
-            timeoutSeconds: 10
+            timeoutSeconds: 5
             failureThreshold: 3
           resources:
             requests:
@@ -70,6 +64,9 @@ spec:
             limits:
               memory: "512Mi"
               cpu: "500m"
+          volumeMounts:
+            - name: zookeeper-data
+              mountPath: /var/lib/zookeeper/data
   volumeClaimTemplates:
     - metadata:
         name: zookeeper-data
@@ -83,100 +80,36 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: kafka
+  name: broker
   namespace: monitoring-app
   labels:
-    app: kafka
+    app: broker
 spec:
   ports:
     - port: 9092
       targetPort: 9092
-      name: kafka
+      name: broker
   selector:
-    app: kafka
-  clusterIP: None  # Headless service for StatefulSet
----
-# Kafka External Service (NodePort for external access)
-apiVersion: v1
-kind: Service
-metadata:
-  name: kafka-external
-  namespace: monitoring-app
-  labels:
-    app: kafka
-spec:
-  type: NodePort
-  ports:
-    - port: 9092
-      targetPort: 9092
-      nodePort: 30092
-      name: kafka
-  selector:
-    app: kafka
+    app: broker
+  type: ClusterIP
 ---
 # Kafka StatefulSet
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: kafka
+  name: broker
   namespace: monitoring-app
 spec:
-  serviceName: kafka
+  serviceName: broker
   replicas: 1
   selector:
     matchLabels:
-      app: kafka
+      app: broker
   template:
     metadata:
       labels:
-        app: kafka
+        app: broker
     spec:
-      containers:
-        - name: kafka
-          image: confluentinc/cp-kafka:7.4.0
-          ports:
-            - containerPort: 9092
-              name: kafka
-          env:
-            - name: KAFKA_BROKER_ID
-              value: "1"
-            - name: KAFKA_ZOOKEEPER_CONNECT
-              value: "zookeeper.monitoring-app.svc.cluster.local:2181"
-            - name: KAFKA_LISTENERS
-              value: "PLAINTEXT://0.0.0.0:9092"
-            - name: KAFKA_ADVERTISED_LISTENERS
-              value: "PLAINTEXT://kafka.monitoring-app.svc.cluster.local:9092"
-            - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
-              value: "PLAINTEXT:PLAINTEXT"
-            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
-              value: "1"
-          livenessProbe:
-            exec:
-              command:
-                - sh
-                - -c
-                - "kafka-broker-api-versions --bootstrap-server localhost:9092"
-            initialDelaySeconds: 60
-            periodSeconds: 30
-            timeoutSeconds: 10
-            failureThreshold: 5
-          readinessProbe:
-            exec:
-              command:
-                - sh
-                - -c
-                - "kafka-broker-api-versions --bootstrap-server localhost:9092"
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            timeoutSeconds: 10
-            failureThreshold: 3
-          resources:
-            requests:
-              memory: "512Mi"
-              cpu: "500m"
-            limits:
-              memory: "1Gi"
-              cpu: "1000m"
       initContainers:
         - name: wait-for-zookeeper
           image: busybox:1.35
@@ -189,6 +122,78 @@ spec:
                 sleep 5
               done
               echo "Zookeeper is ready!"
+#              # Additional check to ensure ZK is responding
+#              until echo ruok | nc zookeeper.monitoring-app.svc.cluster.local 2181 | grep imok; do
+#                echo "Waiting for Zookeeper to respond..."
+#                sleep 5
+#              done
+#              echo "Zookeeper is responding!"
+      containers:
+        - name: broker
+          image: confluentinc/cp-kafka:7.4.0
+          ports:
+            - containerPort: 9092
+              name: broker
+          env:
+            - name: KAFKA_BROKER_ID
+              value: "1"
+            - name: KAFKA_ZOOKEEPER_CONNECT
+              value: "zookeeper.monitoring-app.svc.cluster.local:2181"
+            - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+              value: "PLAINTEXT:PLAINTEXT"
+            - name: KAFKA_LISTENERS
+              value: "PLAINTEXT://0.0.0.0:9092"
+            - name: KAFKA_ADVERTISED_LISTENERS
+              value: "PLAINTEXT://broker-0.broker.monitoring-app.svc.cluster.local:9092"
+            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_TRANSACTION_STATE_LOG_MIN_ISR
+              value: "1"
+            # Additional configurations for single-node setup
+            - name: KAFKA_DEFAULT_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_MIN_IN_SYNC_REPLICAS
+              value: "1"
+            # Reduce startup time
+            - name: KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS
+              value: "0"
+            # Controller configuration
+            - name: KAFKA_CONTROLLER_QUORUM_VOTERS
+              value: ""
+            - name: KAFKA_PROCESS_ROLES
+              value: ""
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - "kafka-topics --bootstrap-server localhost:9092 --list"
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 15
+            failureThreshold: 5
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - "kafka-topics --bootstrap-server localhost:9092 --list"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1"
+          volumeMounts:
+            - name: kafka-data
+              mountPath: /var/lib/kafka/data
   volumeClaimTemplates:
     - metadata:
         name: kafka-data
@@ -197,4 +202,3 @@ spec:
         resources:
           requests:
             storage: 2Gi
----

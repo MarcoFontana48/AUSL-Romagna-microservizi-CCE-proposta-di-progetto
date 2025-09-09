@@ -136,6 +136,215 @@ To send a get request about the dummy entity just created
 curl.exe -X GET http://localhost:31080/service/dummies/123
 ```
 
+a request to 'terapia' to post a care plan with id '002' that contains a medication request for an example medication with id 'penicillin-001' to a patient with id '456':
+
+```bash
+Invoke-RestMethod -Uri "http://localhost:31080/terapia/CarePlan" -Method POST -ContentType "application/json" -Body '{
+  "resourceType": "CarePlan",
+  "id": "002",
+  "subject": {
+    "reference": "Patient/456"
+  },
+  "title": "Diabetes Management Plan",
+  "description": "Comprehensive diabetes care plan including medication, diet, and exercise management",
+  "status": "active",
+  "intent": "plan",
+  "category": [
+    {
+      "coding": [
+        {
+          "system": "http://snomed.info/sct",
+          "code": "734163000",
+          "display": "Care of patient with diabetes"
+        }
+      ],
+      "text": "Diabetes care"
+    }
+  ],
+  "period": {
+    "start": "2025-09-04T00:00:00Z"
+  },
+  "activity": [
+    {
+      "detail": {
+        "code": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "229065009",
+              "display": "Exercise therapy"
+            }
+          ],
+          "text": "Exercise therapy"
+        },
+        "description": "Daily 30-minute moderate exercise",
+        "status": "not-started"
+      }
+    },
+    {
+      "detail": {
+        "code": {
+          "coding": [
+            {
+              "system": "http://hl7.org/fhir/uv/cpg/CodeSystem/cpg-activity-type",
+              "code": "medication-administration",
+              "display": "Medication Administration"
+            }
+          ],
+          "text": "Medication administration"
+        },
+        "description": "Metformin 500mg twice daily with meals",
+        "status": "in-progress",
+        "productCodeableConcept": {
+          "coding": [
+            {
+              "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+              "code": "6809",
+              "display": "Metformin"
+            }
+          ],
+          "text": "Metformin 500mg"
+        },
+        "dailyAmount": {
+          "value": 2,
+          "unit": "tablets",
+          "system": "http://unitsofmeasure.org",
+          "code": "1"
+        },
+        "quantity": {
+          "value": 60,
+          "unit": "tablets",
+          "system": "http://unitsofmeasure.org",
+          "code": "1"
+        }
+      }
+    },
+    {
+      "detail": {
+        "code": {
+          "coding": [
+            {
+              "system": "http://hl7.org/fhir/uv/cpg/CodeSystem/cpg-activity-type",
+              "code": "medication-administration",
+              "display": "Medication Administration"
+            }
+          ],
+          "text": "Medication administration"
+        },
+        "description": "Penicillin 500mg four times daily for infection treatment",
+        "status": "not-started",
+        "productCodeableConcept": {
+          "coding": [
+            {
+              "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+              "code": "7980",
+              "display": "Penicillin"
+            }
+          ],
+          "text": "Penicillin 500mg"
+        },
+        "dailyAmount": {
+          "value": 4,
+          "unit": "tablets",
+          "system": "http://unitsofmeasure.org",
+          "code": "1"
+        },
+        "quantity": {
+          "value": 28,
+          "unit": "tablets",
+          "system": "http://unitsofmeasure.org",
+          "code": "1"
+        }
+      }
+    },
+    {
+      "reference": "MedicationRequest/glucose-meter-strips-001"
+    }
+  ],
+  "goal": [
+    {
+      "reference": "Goal/hba1c-target-001"
+    },
+    {
+      "reference": "Goal/weight-loss-target-001"
+    }
+  ]
+}'
+```
+
+a request to 'terapia' to get a care plan with id '002':
+
+```bash
+curl.exe -X GET http://localhost:31080/terapia/CarePlan/002
+```
+
+a request to 'anamnesi-pregressa' to add an allergy with id '123' to a patient with id '456':
+```bash
+Invoke-RestMethod -Uri "http://localhost:31080/anamnesi-pregressa/AllergyIntolerance" -Method POST -ContentType "application/json" -Body '{
+  "resourceType": "AllergyIntolerance",
+  "id": "123",
+  "patient": {
+    "reference": "Patient/456"
+  },
+  "clinicalStatus": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical",
+        "code": "active",
+        "display": "Active"
+      }
+    ]
+  },
+  "verificationStatus": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/allergyintolerance-verification",
+        "code": "confirmed",
+        "display": "Confirmed"
+      }
+    ]
+  },
+  "type": "allergy",
+  "category": ["medication"],
+  "criticality": "high",
+  "code": {
+    "coding": [
+      {
+        "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+        "code": "7980",
+        "display": "Penicillin"
+      }
+    ],
+    "text": "Penicillin"
+  },
+  "onsetDateTime": "2020-06-15",
+  "reaction": [
+    {
+      "manifestation": [
+        {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "247472004",
+              "display": "Hives"
+            }
+          ]
+        }
+      ],
+      "severity": "moderate"
+    }
+  ]
+}'
+```
+
+a request to 'anamnesi-pregressa' to get an allergy with id '123':
+
+```bash
+curl.exe -X GET http://localhost:31080/anamnesi-pregressa/AllergyIntolerance/123
+```
+
+other requests are shown in the Docker part, the same requests can be done here but on port '31080' instead of '8080'
+
 ## Docker
 If you want to use docker, run those commands instead:
 
