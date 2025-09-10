@@ -73,14 +73,37 @@ private fun deployVerticles(vertx: Vertx, vararg verticles: Verticle) {
 
 private fun defineMeterRegistry(): PrometheusMeterRegistry {
     val config = PrometheusConfig.DEFAULT
-
     val res = PrometheusMeterRegistry(config)
 
+    // Health check timer
     Timer.builder("health_check_duration_seconds")
         .description("Health check request duration")
         .tag("service", "terapia")
         .publishPercentileHistogram() // enables histogram buckets
         .register(res)
+
+    // Any request timer
+    Timer.builder("metrics_duration_seconds")
+        .description("Any request duration")
+        .tag("service", "terapia")
+        .publishPercentileHistogram() // enables histogram buckets
+        .register(res)
+
+    // Get care plan request timer
+    Timer.builder("get_care_plan_duration_seconds")
+        .description("care_plan request duration")
+        .tag("service", "terapia")
+        .publishPercentileHistogram() // enables histogram buckets
+        .register(res)
+
+    // Create care plan request timer
+    Timer.builder("create_care_plan_duration_seconds")
+        .description("care_plan request duration")
+        .tag("service", "terapia")
+        .publishPercentileHistogram() // enables histogram buckets
+        .register(res)
+
+    // Specific request timers can be added here similarly, the timer names should match those used in the ausl.cce.service.application.Controller file
 
     return res
 }
