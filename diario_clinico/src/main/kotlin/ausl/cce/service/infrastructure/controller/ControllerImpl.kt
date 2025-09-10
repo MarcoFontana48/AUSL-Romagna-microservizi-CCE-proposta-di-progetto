@@ -54,6 +54,7 @@ class StandardController(
             promise.complete(response)
         }.onComplete { result ->
             timerSample.stop(healthCheckTimer) // Stop timer when async work completes
+            timerSample.stop(metricsTimer)
 
             if (result.succeeded()) {
                 logger.debug("health check successful, sending response")
@@ -128,6 +129,7 @@ class StandardController(
             promise.complete(replyJson)
         }.onComplete { result ->
             timerSample.stop(getDummyTimer)
+            timerSample.stop(metricsTimer)
 
             if (result.succeeded()) {
                 logger.debug("DummyEntity retrieved successfully, sending response")
@@ -173,6 +175,7 @@ class StandardController(
             promise.complete(JsonObject().put("id", dummyEntity.id))
         }.onComplete { result ->
             timerSample.stop(createDummyTimer)
+            timerSample.stop(metricsTimer)
 
             if (result.succeeded()) {
                 logger.trace("DummyEntity created successfully, sending response")
@@ -228,6 +231,7 @@ class StandardController(
             promise.complete(replyJson)
         }.onComplete { result ->
             timerSample.stop(getEncounterTimer)
+            timerSample.stop(metricsTimer)
 
             if (result.succeeded()) {
                 logger.debug("EncounterEntity retrieved successfully, sending response")
@@ -272,6 +276,7 @@ class StandardController(
             promise.complete(JsonObject().put("id", entity.id))
         }.onComplete { result ->
             timerSample.stop(createEncounterTimer)
+            timerSample.stop(metricsTimer)
 
             if (result.succeeded()) {
                 logger.trace("EncounterEntity created successfully, sending response")

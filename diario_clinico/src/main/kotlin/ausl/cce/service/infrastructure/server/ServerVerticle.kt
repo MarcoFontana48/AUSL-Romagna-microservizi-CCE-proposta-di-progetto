@@ -57,6 +57,27 @@ class ServerVerticle(
             .publishPercentileHistogram() // enables histogram buckets
             .register(res)
 
+        // Any request timer
+        Timer.builder("metrics_duration_seconds")
+            .description("Any request duration")
+            .tag("service", "diario-clinico")
+            .publishPercentileHistogram() // enables histogram buckets
+            .register(res)
+
+        // Get allergy request timer
+        Timer.builder("get_encounter_duration_seconds")
+            .description("encounter request duration")
+            .tag("service", "diario-clinico")
+            .publishPercentileHistogram() // enables histogram buckets
+            .register(res)
+
+        // Create allergy request timer
+        Timer.builder("create_encounter_duration_seconds")
+            .description("encounter request duration")
+            .tag("service", "diario-clinico")
+            .publishPercentileHistogram() // enables histogram buckets
+            .register(res)
+
         return res
     }
 
