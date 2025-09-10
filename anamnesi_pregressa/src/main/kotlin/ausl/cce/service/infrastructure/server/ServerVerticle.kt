@@ -46,8 +46,30 @@ class ServerVerticle(
 
         val res = PrometheusMeterRegistry(config)
 
+        // Health check timer
         Timer.builder("health_check_duration_seconds")
             .description("Health check request duration")
+            .tag("service", "anamnesi-pregressa")
+            .publishPercentileHistogram() // enables histogram buckets
+            .register(res)
+
+        // Any request timer
+        Timer.builder("metrics_duration_seconds")
+            .description("Any request duration")
+            .tag("service", "anamnesi-pregressa")
+            .publishPercentileHistogram() // enables histogram buckets
+            .register(res)
+
+        // Get allergy request timer
+        Timer.builder("get_allergy_intolerance_duration_seconds")
+            .description("allergy_intolerance request duration")
+            .tag("service", "anamnesi-pregressa")
+            .publishPercentileHistogram() // enables histogram buckets
+            .register(res)
+
+        // Create allergy request timer
+        Timer.builder("create_allergy_intolerance_duration_seconds")
+            .description("allergy_intolerance request duration")
             .tag("service", "anamnesi-pregressa")
             .publishPercentileHistogram() // enables histogram buckets
             .register(res)
