@@ -1,5 +1,6 @@
 package ausl.cce.endtoend
 
+import io.gatling.javaapi.core.CoreDsl.StringBody
 import io.gatling.javaapi.core.CoreDsl.atOnceUsers
 import io.gatling.javaapi.core.CoreDsl.exec
 import io.gatling.javaapi.core.CoreDsl.scenario
@@ -7,6 +8,8 @@ import io.gatling.javaapi.core.OpenInjectionStep.nothingFor
 import io.gatling.javaapi.core.Simulation
 import io.gatling.javaapi.http.HttpDsl.http
 import io.gatling.javaapi.http.HttpDsl.status
+import mf.cce.utils.allergyIntoleranceTest
+import mf.cce.utils.carePlanTest
 import java.time.Duration
 
 /*
@@ -184,4 +187,184 @@ class HealthCheckLoadTest : Simulation() {
     }
 }
 
+class CarePlanEscalatingSpikeTest : Simulation() {
+    private val httpProtocol = http
+        .baseUrl("http://localhost:8080")
+        .acceptHeader("application/json")
+        .userAgentHeader("Gatling Load Test")
 
+    private val storeResource = scenario("Store CarePlan Resource")
+        .repeat(1).on(
+            exec(
+                http("store_care_plan")
+                    .post("/terapia/CarePlan")
+                    .header("Content-Type", "application/fhir+json")
+                    .body(StringBody(carePlanTest))
+                    .check(status().`in`(200, 201, 202))
+            )
+        )
+
+    // Create individual scenarios for each spike level
+    private val spike1Scenario = scenario("Spike 1 Requests")
+        .repeat(1).on(
+            exec(
+                http("care_plan_spike_1")
+                    .get("/terapia/CarePlan/002")
+                    .check(status().`in`(200, 201, 202))
+            )
+        )
+
+    private val spike2Scenario = scenario("Spike 2 Requests")
+        .repeat(2).on(
+            exec(
+                http("care_plan_spike_2")
+                    .get("/terapia/CarePlan/002")
+                    .check(status().`in`(200, 201, 202))
+            )
+        )
+
+    private val spike3Scenario = scenario("Spike 3 Requests")
+        .repeat(3).on(
+            exec(
+                http("care_plan_spike_3")
+                    .get("/terapia/CarePlan/002")
+                    .check(status().`in`(200, 201, 202))
+            )
+        )
+
+    private val spike4Scenario = scenario("Spike 4 Requests")
+        .repeat(4).on(
+            exec(
+                http("care_plan_spike_4")
+                    .get("/terapia/CarePlan/002")
+                    .check(status().`in`(200, 201, 202))
+            )
+        )
+
+    private val spike5Scenario = scenario("Spike 5 Requests")
+        .repeat(5).on(
+            exec(
+                http("care_plan_spike_5")
+                    .get("/terapia/CarePlan/002")
+                    .check(status().`in`(200, 201, 202))
+            )
+        )
+
+    init {
+        setUp(
+            // First, store the CarePlan resource to ensure it exists for subsequent GET requests
+            storeResource.injectOpen(
+                nothingFor(Duration.ofSeconds(0)),
+                atOnceUsers(1)
+            ),
+            // Spike 1: 1 requests at t=0
+            spike1Scenario.injectOpen(
+                nothingFor(Duration.ofSeconds(30)),
+                atOnceUsers(1)
+            ),
+            // Spike 2: 2 requests at t=30s
+            spike2Scenario.injectOpen(
+                nothingFor(Duration.ofSeconds(60)),
+                atOnceUsers(1)
+            ),
+            // Spike 3: 3 requests at t=60s
+            spike3Scenario.injectOpen(
+                nothingFor(Duration.ofSeconds(90)),
+                atOnceUsers(1)
+            ),
+            // Spike 4: 4 requests at t=90s
+            spike4Scenario.injectOpen(
+                nothingFor(Duration.ofSeconds(120)),
+                atOnceUsers(1)
+            ),
+            // Spike 5: 5 requests at t=120s
+            spike5Scenario.injectOpen(
+                nothingFor(Duration.ofSeconds(150)),
+                atOnceUsers(1)
+            ),
+        ).protocols(httpProtocol)
+            .maxDuration(Duration.ofSeconds(350)) // allow time for all spikes to complete
+    }
+}
+
+/**
+ * Gatling simulation class for load testing.
+ * This class defines a scenario that simulates a sudden spike on load on the endpoint.
+ * It is using a low number of requests to avoid overwhelming the system used for the test,
+ * but in a real case scenario much higher amounts should be used instead.
+ */
+class CarePlanSpikeTest : Simulation() {
+    private val httpProtocol = http
+        .baseUrl("http://localhost:8080")
+        .acceptHeader("application/json")
+        .userAgentHeader("Gatling Load Test")
+
+    private val storeResource = scenario("Store CarePlan resource")
+        .repeat(1).on(
+            exec(
+                http("store_care_plan")
+                    .post("/terapia/CarePlan")
+                    .header("Content-Type", "application/fhir+json")
+                    .body(StringBody(carePlanTest))
+                    .check(status().`in`(200, 201, 202))
+            )
+        )
+
+    // scenario for spike load, where 10 requests are sent all at once
+    private val spikeLoadScenario = scenario("Spike Load Test")
+        // send 10 requests immediately
+        .repeat(10).on(
+            exec(
+                http("care_plan_spike")
+                    .get("/terapia/CarePlan/002")
+                    .check(status().`in`(200, 201, 202))
+            )
+        )
+
+    init {
+        setUp(
+            storeResource.injectOpen(
+                nothingFor(Duration.ofSeconds(0)),
+                atOnceUsers(1)
+            ),
+            spikeLoadScenario.injectOpen(
+                nothingFor(Duration.ofSeconds(30)),
+                atOnceUsers(1)
+            )
+        ).protocols(httpProtocol)
+            .maxDuration(Duration.ofSeconds(120))
+    }
+}
+
+/**
+ * Gatling simulation class for load testing.
+ * This class defines a scenario that simulates sustained load over time on the endpoint.
+ */
+class CarePlanLoadTest : Simulation() {
+    private val httpProtocol = http
+        .baseUrl("http://localhost:8080")
+        .acceptHeader("application/json")
+        .userAgentHeader("Gatling Load Test")
+
+    // scenario for sustained load, where each user sends 10 requests, 1 request per second
+    private val sustainedLoadScenario = scenario("Sustained Load Test")
+        // send 10 requests per user with 1 second pause
+        .repeat(10).on( // each user will repeat this X times
+            exec(
+                http("care_plan_sustained")
+                    .get("/terapia/CarePlan/002")
+                    .check(status().`in`(200, 201, 202))
+            )
+                .pause(Duration.ofSeconds(1))
+        )
+
+    init {
+        // create 4 users, each will run for the amount of iterations with 1 sec pause specified above
+        setUp(
+            sustainedLoadScenario.injectOpen(
+                atOnceUsers(4) // X users start immediately
+            )
+        ).protocols(httpProtocol)
+            .maxDuration(Duration.ofSeconds(40))
+    }
+}

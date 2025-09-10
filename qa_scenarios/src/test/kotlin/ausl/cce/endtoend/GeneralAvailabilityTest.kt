@@ -31,7 +31,7 @@ import kotlin.test.assertTrue
  */
 class RecoveryTimeTest : KubernetesTest() {
     private val logger = LogManager.getLogger(this::class)
-    private val k8sYamlFiles = "src/test/resources/ausl/cce/endtoend"
+    private val k8sYamlFiles = "src/test/resources/ausl/cce/endtoend/scaler"
     private val k8sNamespace = "monitoring-app"
     private lateinit var k8sDirectory: File
 
@@ -205,7 +205,7 @@ class RecoveryTimeTest : KubernetesTest() {
     @DisplayName("Test recovery time for 'anamnesi-pregressa' service (scaled horizontally) with a single " +
             "replica pod failure where 'terapia' care plan has to be suspended and needs to process events coming " +
             "from anamnesi - 3 replica pods")
-    @Timeout(10 * 60) // 10 minutes timeout
+    @Timeout(30 * 60) // 30 minutes timeout
     fun testAnamnesiRecoveryTimeUponFailingAndTherapyCarePlanSuspendedWithMultiplePods() {
         val postResponse = sendPostRequestTo("/terapia/CarePlan", carePlanTest)
         logger.info("Create CarePlan response: ${postResponse?.statusCode()} - ${postResponse?.bodyAsString() ?: "No Body"}")

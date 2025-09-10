@@ -1,0 +1,105 @@
+## namespace.yaml
+#apiVersion: v1
+#kind: Namespace
+#metadata:
+#  name: monitoring-app
+#---
+## anamnesi-pregressa-deployment.yaml
+#apiVersion: apps/v1
+#kind: Deployment
+#metadata:
+#  name: anamnesi-pregressa
+#  namespace: monitoring-app
+#spec:
+#  replicas: 1
+#  selector:
+#    matchLabels:
+#      app: anamnesi-pregressa
+#  template:
+#    metadata:
+#      labels:
+#        app: anamnesi-pregressa
+#    spec:
+#      initContainers:
+#        - name: wait-for-kafka
+#          image: busybox:1.35
+#          command:
+#            - sh
+#            - -c
+#            - |
+#              TIMEOUT=600  # Increased to 10 minutes
+#              ELAPSED=0
+#
+#              # First check if the service exists
+#              echo "Checking if broker service exists in DNS..."
+#
+#              until nslookup broker.monitoring-app.svc.cluster.local || [ $ELAPSED -ge $TIMEOUT ]; do
+#                echo "DNS lookup failed for broker.monitoring-app.svc.cluster.local (${ELAPSED}s elapsed)"
+#                sleep 5
+#                ELAPSED=$((ELAPSED + 5))
+#              done
+#
+#              if [ $ELAPSED -ge $TIMEOUT ]; then
+#                echo "Timeout: Could not resolve broker.monitoring-app.svc.cluster.local after ${TIMEOUT}s"
+#                exit 1
+#              fi
+#
+#              echo "DNS resolved successfully! Now checking if port 9092 is open..."
+#              ELAPSED=0
+#
+#              until nc -z broker.monitoring-app.svc.cluster.local 9092 || [ $ELAPSED -ge $TIMEOUT ]; do
+#                echo "Waiting for Kafka broker to accept connections... (${ELAPSED}s elapsed)"
+#                sleep 10
+#                ELAPSED=$((ELAPSED + 10))
+#              done
+#
+#              if [ $ELAPSED -ge $TIMEOUT ]; then
+#                echo "Timeout waiting for Kafka after ${TIMEOUT}s"
+#                exit 1
+#              fi
+#
+#              echo "Kafka is ready and accepting connections!"
+#      containers:
+#        - name: anamnesi-pregressa
+#          image: marcofontana17/ausl_cce_prototipo:anamnesi_pregressa-dev-latest
+#          imagePullPolicy: Always
+#          ports:
+#            - containerPort: 8080
+#          env:
+#            - name: CONFIG_SERVER_HOST_NAME
+#              value: "anamnesi-pregressa-mongo-db"
+#            - name: CONFIG_SERVER_PORT
+#              value: "27017"
+#            - name: CONFIG_SERVER_DB_NAME
+#              value: "anamnesi-pregressa-mongo-db"
+#            - name: CONFIG_SERVER_DB_USERNAME
+#              value: "root"
+#            - name: CONFIG_SERVER_DB_PASSWORD
+#              value: "password"
+#            - name: KAFKA_HOST
+#              value: "broker-0.broker.monitoring-app.svc.cluster.local"
+#            - name: KAFKA_PORT
+#              value: "9092"
+#          resources:
+#            requests:
+#              memory: "64Mi"
+#              cpu: "50m"
+#            limits:
+#              memory: "256Mi"
+#              cpu: "200m"
+#---
+## anamnesi-pregressa-service.yaml
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: anamnesi-pregressa
+#  namespace: monitoring-app
+#spec:
+#  selector:
+#    app: anamnesi-pregressa
+#  ports:
+#    - name: http
+#      port: 8080
+#      targetPort: 8080
+#  type: ClusterIP
+#---
