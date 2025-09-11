@@ -79,23 +79,15 @@ public final class ApiGatewayVerticle extends AbstractVerticle {
                 .setPort(Ports.HTTP)
                 .setHost("0.0.0.0")
                 .setTcpKeepAlive(true)
-                .setIdleTimeout(300)           // Increased from 120
-                .setAcceptBacklog(2000)        // Increased from 1000
+                .setIdleTimeout(300)
+                .setAcceptBacklog(2000)
                 .setTcpNoDelay(true)
                 .setReuseAddress(true)
                 .setReusePort(true)
-                .setMaxInitialLineLength(8192) // Add HTTP line length limit
-                .setMaxHeaderSize(16384)       // Add header size limit
-                .setCompressionSupported(true) // Enable compression
+                .setMaxInitialLineLength(8192)
+                .setMaxHeaderSize(16384)
+                .setCompressionSupported(true)
                 .setDecompressionSupported(true);
-
-        // Also consider setting event loop pool size when creating Vertx
-        // In your Main.java:
-        VertxOptions vertxOptions = new VertxOptions()
-                .setEventLoopPoolSize(Runtime.getRuntime().availableProcessors() * 2)
-                .setWorkerPoolSize(40);
-        
-        Vertx vertx = Vertx.vertx(vertxOptions);
         
         LOGGER.debug("API Gateway ready to serve requests on port {}", Ports.HTTP);
     }
