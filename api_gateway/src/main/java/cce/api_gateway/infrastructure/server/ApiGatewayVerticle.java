@@ -5,6 +5,8 @@ import cce.api_gateway.infrastructure.controller.StandardApiGatewayController;
 import io.vertx.circuitbreaker.CircuitBreaker;
 import io.vertx.circuitbreaker.CircuitBreakerOptions;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.client.WebClient;
@@ -42,16 +44,19 @@ public final class ApiGatewayVerticle extends AbstractVerticle {
         
         WebClientOptions webClientOptions = new WebClientOptions()
                 .setDefaultPort(Ports.HTTP)
-                .setMaxPoolSize(100)
-                .setMaxWaitQueueSize(50)
+                .setMaxPoolSize(500)
+                .setMaxWaitQueueSize(200)
                 .setKeepAlive(true)
-                .setKeepAliveTimeout(30)
+                .setKeepAliveTimeout(60)
                 .setPipelining(false)
-                .setConnectTimeout(5000)
-                .setIdleTimeout(60)
+                .setConnectTimeout(10000)
+                .setIdleTimeout(120)
                 .setTryUseCompression(true)
                 .setTcpKeepAlive(true)
-                .setTcpNoDelay(true);
+                .setTcpNoDelay(true)
+                .setHttp2MaxPoolSize(500)
+                .setMaxRedirects(3)
+                .setFollowRedirects(true);
         
         WebClient client = WebClient.create(this.vertx, webClientOptions);
         Router router = Router.router(this.vertx);
@@ -68,21 +73,29 @@ public final class ApiGatewayVerticle extends AbstractVerticle {
         
         router.get(Endpoints.HEALTH).handler(controller.healthCheckHandler(client));
         router.get(Endpoints.METRICS).handler(controller.metricsHandler(client));
-        
-        // start HTTP server
+
+        // In ApiGatewayVerticle.java
         HttpServerOptions serverOptions = new HttpServerOptions()
                 .setPort(Ports.HTTP)
                 .setHost("0.0.0.0")
                 .setTcpKeepAlive(true)
-                .setIdleTimeout(120)
-                .setAcceptBacklog(1000)
+                .setIdleTimeout(300)           // Increased from 120
+                .setAcceptBacklog(2000)        // Increased from 1000
                 .setTcpNoDelay(true)
                 .setReuseAddress(true)
-                .setReusePort(true);
+                .setReusePort(true)
+                .setMaxInitialLineLength(8192) // Add HTTP line length limit
+                .setMaxHeaderSize(16384)       // Add header size limit
+                .setCompressionSupported(true) // Enable compression
+                .setDecompressionSupported(true);
+
+        // Also consider setting event loop pool size when creating Vertx
+        // In your Main.java:
+        VertxOptions vertxOptions = new VertxOptions()
+                .setEventLoopPoolSize(Runtime.getRuntime().availableProcessors() * 2)
+                .setWorkerPoolSize(40);
         
-        this.vertx.createHttpServer(serverOptions)
-                .requestHandler(router)
-                .listen(Ports.HTTP);
+        Vertx vertx = Vertx.vertx(vertxOptions);
         
         LOGGER.debug("API Gateway ready to serve requests on port {}", Ports.HTTP);
     }
