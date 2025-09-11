@@ -4,6 +4,7 @@ import ausl.cce.service.application.ServiceController
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Future
 import io.vertx.core.http.HttpServer
+import io.vertx.core.http.HttpServerOptions
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.BodyHandler
 import mf.cce.utils.Endpoints
@@ -48,7 +49,21 @@ class ServerVerticle(
     }
 
     private fun runServer(router: Router): Future<HttpServer> {
-        return this.vertx.createHttpServer()
+        val serverOptions = HttpServerOptions()
+            .setPort(Ports.HTTP)
+            .setHost("0.0.0.0")
+            .setTcpKeepAlive(true)
+            .setIdleTimeout(300)
+            .setAcceptBacklog(2000)
+            .setTcpNoDelay(true)
+            .setReuseAddress(true)
+            .setReusePort(true)
+            .setMaxInitialLineLength(8192)
+            .setMaxHeaderSize(16384)
+            .setCompressionSupported(true)
+            .setDecompressionSupported(true)
+
+        return this.vertx.createHttpServer(serverOptions)
             .requestHandler(router)
             .listen(Ports.HTTP)
     }

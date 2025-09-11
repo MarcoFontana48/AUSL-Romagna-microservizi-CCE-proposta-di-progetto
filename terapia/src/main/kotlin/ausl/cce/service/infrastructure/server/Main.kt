@@ -1,15 +1,8 @@
 package ausl.cce.service.infrastructure.server
 
-import ausl.cce.service.application.CarePlanService
-import ausl.cce.service.application.CarePlanServiceImpl
-import ausl.cce.service.application.DummyService
-import ausl.cce.service.application.DummyServiceImpl
-import ausl.cce.service.infrastructure.controller.TerapiaConsumerVerticle
-import ausl.cce.service.application.CarePlanRepository
-import ausl.cce.service.application.DummyRepository
-import ausl.cce.service.application.ServiceController
-import ausl.cce.service.application.TerapiaProducerVerticle
+import ausl.cce.service.application.*
 import ausl.cce.service.infrastructure.controller.StandardController
+import ausl.cce.service.infrastructure.controller.TerapiaConsumerVerticle
 import ausl.cce.service.infrastructure.persistence.MongoCarePlanRepository
 import ausl.cce.service.infrastructure.persistence.MongoDummyRepository
 import io.micrometer.core.instrument.Timer
@@ -19,6 +12,7 @@ import io.vertx.circuitbreaker.CircuitBreaker
 import io.vertx.circuitbreaker.CircuitBreakerOptions
 import io.vertx.core.Verticle
 import io.vertx.core.Vertx
+import io.vertx.core.VertxOptions
 import mf.cce.utils.RepositoryCredentials
 
 fun main() {
@@ -26,7 +20,11 @@ fun main() {
 }
 
 fun runServer() {
-    val vertx: Vertx = Vertx.vertx()
+    val vertxOptions = VertxOptions()
+        .setEventLoopPoolSize(Runtime.getRuntime().availableProcessors() * 2)
+        .setWorkerPoolSize(40)
+
+    val vertx: Vertx = Vertx.vertx(vertxOptions)
 
     /* not to be used in production, just for prototyping, not safe */
     val mongoRepositoryCredentials = RepositoryCredentials(

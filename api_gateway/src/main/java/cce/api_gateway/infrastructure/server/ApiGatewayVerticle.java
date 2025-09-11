@@ -5,8 +5,6 @@ import cce.api_gateway.infrastructure.controller.StandardApiGatewayController;
 import io.vertx.circuitbreaker.CircuitBreaker;
 import io.vertx.circuitbreaker.CircuitBreakerOptions;
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.client.WebClient;
@@ -73,8 +71,8 @@ public final class ApiGatewayVerticle extends AbstractVerticle {
         
         router.get(Endpoints.HEALTH).handler(controller.healthCheckHandler(client));
         router.get(Endpoints.METRICS).handler(controller.metricsHandler(client));
-
-        // In ApiGatewayVerticle.java
+        
+        // start HTTP server
         HttpServerOptions serverOptions = new HttpServerOptions()
                 .setPort(Ports.HTTP)
                 .setHost("0.0.0.0")
@@ -88,6 +86,10 @@ public final class ApiGatewayVerticle extends AbstractVerticle {
                 .setMaxHeaderSize(16384)
                 .setCompressionSupported(true)
                 .setDecompressionSupported(true);
+        
+        this.vertx.createHttpServer(serverOptions)
+                .requestHandler(router)
+                .listen(Ports.HTTP);
         
         LOGGER.debug("API Gateway ready to serve requests on port {}", Ports.HTTP);
     }
