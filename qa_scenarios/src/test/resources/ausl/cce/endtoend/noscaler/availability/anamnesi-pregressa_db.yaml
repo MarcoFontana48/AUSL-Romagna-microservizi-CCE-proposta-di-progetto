@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: terapia-mongo-data
+  name: anamnesi-pregressa-mongo-data
   namespace: monitoring-app
 spec:
   accessModes:
@@ -15,17 +15,17 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: terapia-mongo-db
+  name: anamnesi-pregressa-mongo-db
   namespace: monitoring-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: terapia-mongo-db
+      app: anamnesi-pregressa-mongo-db
   template:
     metadata:
       labels:
-        app: terapia-mongo-db
+        app: anamnesi-pregressa-mongo-db
     spec:
       containers:
         - name: mongodb
@@ -62,25 +62,25 @@ spec:
             failureThreshold: 5
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "500m"
+              memory: "128Mi"
+              cpu: "100m"
             limits:
-              memory: "1Gi"
-              cpu: "1000m"
+              memory: "512Mi"
+              cpu: "500m"
       volumes:
         - name: mongo-data
           persistentVolumeClaim:
-            claimName: terapia-mongo-data
+            claimName: anamnesi-pregressa-mongo-data
 ---
-# mongodb-terapia.yaml
+# mongodb-anamnesi-pregressa.yaml
 apiVersion: v1
 kind: Service
 metadata:
-  name: terapia-mongo-db
+  name: anamnesi-pregressa-mongo-db
   namespace: monitoring-app
 spec:
   selector:
-    app: terapia-mongo-db
+    app: anamnesi-pregressa-mongo-db
   ports:
     - name: mongodb
       port: 27017

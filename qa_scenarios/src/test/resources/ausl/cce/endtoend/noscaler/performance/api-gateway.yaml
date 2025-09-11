@@ -26,27 +26,6 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
-          env:
-            - name: SERVER_TOMCAT_MAX_CONNECTIONS
-              value: "200"
-            - name: SERVER_TOMCAT_THREADS_MAX
-              value: "200"
-            - name: SERVER_TOMCAT_ACCEPT_COUNT
-              value: "100"
-            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
-              value: "20"
-            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
-              value: "5"
-            - name: SERVER_NETTY_CONNECTION_TIMEOUT
-              value: "30000"
-            - name: SERVER_CONNECTION_TIMEOUT
-              value: "30000"
-            - name: VERTX_OPTIONS_EVENT_LOOP_POOL_SIZE
-              value: "8"
-            - name: VERTX_OPTIONS_WORKER_POOL_SIZE
-              value: "40"
-            - name: JVM_OPTS
-              value: "-Xmx1536m -Xms512m -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
           #          env:
           #            - name: LOG_LEVEL
           #              value: "debug"
@@ -70,11 +49,11 @@ spec:
           #            failureThreshold: 5
           resources:
             requests:
-              memory: "512Mi"
-              cpu: "1000m"
+              memory: "64Mi"
+              cpu: "50m"
             limits:
-              memory: "2Gi"
-              cpu: "2000m"
+              memory: "256Mi"
+              cpu: "200m"
 #      initContainers:
 #        - name: wait-for-service
 #          image: busybox:1.35
@@ -110,30 +89,3 @@ spec:
       nodePort: 31080
   type: NodePort
 ---
-# api-gateway-hpa.yaml (horizontal pod autoscaler for api-gateway)
-apiVersion: autoscaling/v2
-kind: HorizontalPodAutoscaler
-metadata:
-  name: api-gateway-hpa
-  namespace: monitoring-app
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: api-gateway
-  minReplicas: 1  # minimum number of replicas to scale down to
-  maxReplicas: 20 # maximum number of replicas to scale up to
-  metrics:
-    # scale based on CPU utilization, others can be added as needed, like 'memory'
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 10  # target CPU utilization percentage to trigger scaling
-  behavior:
-    # define custom scaling behavior (optional)
-    scaleUp:
-      stabilizationWindowSeconds: 0    # scale up immediately
-    scaleDown:
-      stabilizationWindowSeconds: 60   # wait 1 min before scaling down

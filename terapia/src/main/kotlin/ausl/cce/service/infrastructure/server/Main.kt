@@ -12,7 +12,6 @@ import io.vertx.circuitbreaker.CircuitBreaker
 import io.vertx.circuitbreaker.CircuitBreakerOptions
 import io.vertx.core.Verticle
 import io.vertx.core.Vertx
-import io.vertx.core.VertxOptions
 import mf.cce.utils.RepositoryCredentials
 
 fun main() {
@@ -20,11 +19,7 @@ fun main() {
 }
 
 fun runServer() {
-    val vertxOptions = VertxOptions()
-        .setEventLoopPoolSize(Runtime.getRuntime().availableProcessors() * 2)
-        .setWorkerPoolSize(40)
-
-    val vertx: Vertx = Vertx.vertx(vertxOptions)
+    val vertx: Vertx = Vertx.vertx()
 
     /* not to be used in production, just for prototyping, not safe */
     val mongoRepositoryCredentials = RepositoryCredentials(

@@ -20,45 +20,45 @@ spec:
       labels:
         app: terapia
     spec:
-      initContainers:
-        - name: wait-for-kafka
-          image: busybox:1.35
-          command:
-            - sh
-            - -c
-            - |
-              TIMEOUT=600  # Increased to 10 minutes
-              ELAPSED=0
-              
-              # First check if the service exists
-              echo "Checking if broker service exists in DNS..."
-              
-              until nslookup broker.monitoring-app.svc.cluster.local || [ $ELAPSED -ge $TIMEOUT ]; do
-                echo "DNS lookup failed for broker.monitoring-app.svc.cluster.local (${ELAPSED}s elapsed)"
-                sleep 5
-                ELAPSED=$((ELAPSED + 5))
-              done
-              
-              if [ $ELAPSED -ge $TIMEOUT ]; then
-                echo "Timeout: Could not resolve broker.monitoring-app.svc.cluster.local after ${TIMEOUT}s"
-                exit 1
-              fi
-              
-              echo "DNS resolved successfully! Now checking if port 9092 is open..."
-              ELAPSED=0
-              
-              until nc -z broker.monitoring-app.svc.cluster.local 9092 || [ $ELAPSED -ge $TIMEOUT ]; do
-                echo "Waiting for Kafka broker to accept connections... (${ELAPSED}s elapsed)"
-                sleep 10
-                ELAPSED=$((ELAPSED + 10))
-              done
-              
-              if [ $ELAPSED -ge $TIMEOUT ]; then
-                echo "Timeout waiting for Kafka after ${TIMEOUT}s"
-                exit 1
-              fi
-              
-              echo "Kafka is ready and accepting connections!"
+#      initContainers:
+#        - name: wait-for-kafka
+#          image: busybox:1.35
+#          command:
+#            - sh
+#            - -c
+#            - |
+#              TIMEOUT=600  # Increased to 10 minutes
+#              ELAPSED=0
+#
+#              # First check if the service exists
+#              echo "Checking if broker service exists in DNS..."
+#
+#              until nslookup broker.monitoring-app.svc.cluster.local || [ $ELAPSED -ge $TIMEOUT ]; do
+#                echo "DNS lookup failed for broker.monitoring-app.svc.cluster.local (${ELAPSED}s elapsed)"
+#                sleep 5
+#                ELAPSED=$((ELAPSED + 5))
+#              done
+#
+#              if [ $ELAPSED -ge $TIMEOUT ]; then
+#                echo "Timeout: Could not resolve broker.monitoring-app.svc.cluster.local after ${TIMEOUT}s"
+#                exit 1
+#              fi
+#
+#              echo "DNS resolved successfully! Now checking if port 9092 is open..."
+#              ELAPSED=0
+#
+#              until nc -z broker.monitoring-app.svc.cluster.local 9092 || [ $ELAPSED -ge $TIMEOUT ]; do
+#                echo "Waiting for Kafka broker to accept connections... (${ELAPSED}s elapsed)"
+#                sleep 10
+#                ELAPSED=$((ELAPSED + 10))
+#              done
+#
+#              if [ $ELAPSED -ge $TIMEOUT ]; then
+#                echo "Timeout waiting for Kafka after ${TIMEOUT}s"
+#                exit 1
+#              fi
+#
+#              echo "Kafka is ready and accepting connections!"
       containers:
         - name: terapia
           image: marcofontana17/ausl_cce_prototipo:terapia-dev-latest
@@ -80,6 +80,26 @@ spec:
               value: "broker-0.broker.monitoring-app.svc.cluster.local"
             - name: KAFKA_PORT
               value: "9092"
+            - name: SERVER_TOMCAT_MAX_CONNECTIONS
+              value: "200"
+            - name: SERVER_TOMCAT_THREADS_MAX
+              value: "200"
+            - name: SERVER_TOMCAT_ACCEPT_COUNT
+              value: "100"
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "20"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "5"
+            - name: SERVER_NETTY_CONNECTION_TIMEOUT
+              value: "30000"
+            - name: SERVER_CONNECTION_TIMEOUT
+              value: "30000"
+            - name: VERTX_OPTIONS_EVENT_LOOP_POOL_SIZE
+              value: "8"
+            - name: VERTX_OPTIONS_WORKER_POOL_SIZE
+              value: "40"
+            - name: JVM_OPTS
+              value: "-Xmx1536m -Xms512m -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
           #          livenessProbe:
           #            httpGet:
           #              path: /health
@@ -98,11 +118,11 @@ spec:
           #            failureThreshold: 5
           resources:
             requests:
-              memory: "64Mi"
-              cpu: "50m"
+              memory: "512Mi"
+              cpu: "1000m"
             limits:
-              memory: "256Mi"
-              cpu: "200m"
+              memory: "2Gi"
+              cpu: "2000m"
 ---
 # terapia-service.yaml
 apiVersion: v1
