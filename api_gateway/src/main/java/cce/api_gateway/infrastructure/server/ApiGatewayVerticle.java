@@ -5,6 +5,7 @@ import cce.api_gateway.infrastructure.controller.StandardApiGatewayController;
 import io.vertx.circuitbreaker.CircuitBreaker;
 import io.vertx.circuitbreaker.CircuitBreakerOptions;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
@@ -39,8 +40,20 @@ public final class ApiGatewayVerticle extends AbstractVerticle {
         
         // === CONFIGURE_WEB_CLIENT ===
         
-        WebClient client = WebClient.create(this.vertx, new WebClientOptions().setDefaultPort(Ports.HTTP));
+        WebClientOptions webClientOptions = new WebClientOptions()
+                .setDefaultPort(Ports.HTTP)
+                .setMaxPoolSize(100)
+                .setMaxWaitQueueSize(50)
+                .setKeepAlive(true)
+                .setKeepAliveTimeout(30)
+                .setPipelining(false)
+                .setConnectTimeout(5000)
+                .setIdleTimeout(60)
+                .setTryUseCompression(true)
+                .setTcpKeepAlive(true)
+                .setTcpNoDelay(true);
         
+        WebClient client = WebClient.create(this.vertx, webClientOptions);
         Router router = Router.router(this.vertx);
         router.route().handler(BodyHandler.create());
         
@@ -57,7 +70,20 @@ public final class ApiGatewayVerticle extends AbstractVerticle {
         router.get(Endpoints.METRICS).handler(controller.metricsHandler(client));
         
         // start HTTP server
-        this.vertx.createHttpServer().requestHandler(router).listen(Ports.HTTP);
+        HttpServerOptions serverOptions = new HttpServerOptions()
+                .setPort(Ports.HTTP)
+                .setHost("0.0.0.0")
+                .setTcpKeepAlive(true)
+                .setIdleTimeout(120)
+                .setAcceptBacklog(1000)
+                .setTcpNoDelay(true)
+                .setReuseAddress(true)
+                .setReusePort(true);
+        
+        this.vertx.createHttpServer(serverOptions)
+                .requestHandler(router)
+                .listen(Ports.HTTP);
+        
         LOGGER.debug("API Gateway ready to serve requests on port {}", Ports.HTTP);
     }
 }
