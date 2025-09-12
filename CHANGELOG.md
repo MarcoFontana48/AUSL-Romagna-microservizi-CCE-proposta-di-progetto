@@ -1,3 +1,12 @@
+## [1.6.2](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/compare/v1.6.1...v1.6.2) (2025-09-09)
+
+
+### Bug Fixes
+
+* **anamnesi-pregressa:** fix package structure ([f8a6c49](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/f8a6c494253b8488499494dcf0a9d495c24a2ef4))
+* **diario-clinico:** fix package structure ([7b7b2b1](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/7b7b2b1ffb3623e4fb7d0beee486f8c261e22964))
+* **terapia:** fix package structure ([953c29a](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/953c29adfb9b8950249709209ecc35a45ad0c42a))
+
 ## [1.6.1](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/compare/v1.6.0...v1.6.1) (2025-09-08)
 
 
