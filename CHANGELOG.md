@@ -1,3 +1,10 @@
+## [1.6.1](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/compare/v1.6.0...v1.6.1) (2025-09-08)
+
+
+### Bug Fixes
+
+* **terapia:** integrate metrics tracking into CarePlanService and update service initialization ([9632f9a](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/9632f9a5f33cf2c57df1a17a1c33b527cd8868fa))
+
 # [1.6.0](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/compare/v1.5.0...v1.6.0) (2025-09-08)
 
 
