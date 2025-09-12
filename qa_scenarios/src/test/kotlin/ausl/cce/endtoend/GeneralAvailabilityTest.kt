@@ -30,7 +30,7 @@ import kotlin.test.assertTrue
  */
 class RecoveryTimeTest : KubernetesTest() {
     private val logger = LogManager.getLogger(this::class)
-    private val k8sYamlFiles = "src/test/resources/ausl/cce/endtoend/anamnesi"
+    private val k8sYamlFiles = "src/test/resources/ausl/cce/endtoend/availability"
     private val k8sPrometheus = "src/test/resources/ausl/cce/endtoend/prometheus"
     private val k8sNamespace = "monitoring-app"
     private val hostUrl = "http://localhost:31080"
@@ -126,6 +126,7 @@ class RecoveryTimeTest : KubernetesTest() {
     @BeforeEach
     fun setUp() {
         setUpEnvironment(k8sYamlFiles)
+        setUpEnvironment(k8sPrometheus)
         healthCheckExecutor = Executors.newScheduledThreadPool(2)
     }
 

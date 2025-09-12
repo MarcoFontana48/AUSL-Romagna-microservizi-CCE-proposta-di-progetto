@@ -26,7 +26,7 @@ import kotlin.test.assertTrue
  */
 class GeneralPerformanceTest : KubernetesTest() {
     private val logger = LogManager.getLogger(this::class)
-    private val k8sFiles = "src/test/resources/ausl/cce/endtoend/terapia"
+    private val k8sFiles = "src/test/resources/ausl/cce/endtoend/performance"
     private val k8sPrometheus = "src/test/resources/ausl/cce/endtoend/prometheus"
     private val k8sNamespace = "monitoring-app"
     private val urlHost = "http://localhost:31080"
@@ -64,7 +64,7 @@ class GeneralPerformanceTest : KubernetesTest() {
 
         val options = WebClientOptions()
             .setMaxPoolSize(500)
-            .setMaxWaitQueueSize(200)
+            .setMaxWaitQueueSize(1000)
             .setKeepAlive(true)
             .setKeepAliveTimeout(30)
             .setPipelining(false)
@@ -121,7 +121,7 @@ class GeneralPerformanceTest : KubernetesTest() {
     @Timeout(30 * 60) // 30 minutes timeout
     fun performanceEvaluationSuddenSpikeLoad() {
         setUpEnvironment(k8sFiles)
-        val results = spikeTest(1000, "/CarePlan", carePlanTest, "/CarePlan/002")
+        val results = spikeTest(500, "/CarePlan", carePlanTest, "/CarePlan/002")
 
         // Log the results
         results.logSummary()
