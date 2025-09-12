@@ -2,6 +2,7 @@ package mf.cce.utils
 
 import org.apache.logging.log4j.LogManager
 import java.io.File
+import java.util.concurrent.TimeUnit
 import kotlin.collections.isEmpty
 
 /**
@@ -175,5 +176,76 @@ abstract class KubernetesTest {
 
         logger.trace("Resource status retrieved successfully")
         return output
+    }
+
+    fun getCurrentReplicas(deploymentName: String, k8sNamespace: String): Int {
+        return try {
+            val processBuilder = ProcessBuilder(
+                "kubectl", "get", "deployment", deploymentName, "-n", k8sNamespace,
+                "-o", "jsonpath={.status.readyReplicas}"
+            ).redirectErrorStream(true)
+
+            val process = processBuilder.start()
+            val output = process.inputStream.bufferedReader().use { it.readText() }.trim()
+            val exitCode = process.waitFor()
+
+            if (exitCode == 0 && output.isNotEmpty()) {
+                output.toIntOrNull() ?: 1
+            } else {
+                1
+            }
+        } catch (e: Exception) {
+            logger.warn("Error getting replica count: ${e.message}")
+            1
+        }
+    }
+
+    fun parseValue(body: String, metricName: String): Double {
+        logger.debug("Prometheus response for {}: {}", metricName, body)
+
+        // check if result array is empty
+        if (body.contains(""""result":[]""")) {
+            logger.warn("Prometheus returned empty result set for $metricName")
+            return 0.0
+        }
+
+        // parse the JSON response to extract the value
+        val valueRegex = """"value":\s*\[\s*\d+(?:\.\d+)?,\s*"([^"]+)"\s*]""".toRegex()
+        val matchResult = valueRegex.find(body)
+
+        return if (matchResult != null) {
+            val valueStr = matchResult.groupValues[1]
+            val valueSeconds = valueStr.toDoubleOrNull() ?: 0.0
+            val valueMilliseconds = valueSeconds * 1000.0
+            logger.trace("Successfully parsed {}: {} seconds ({} ms)", metricName, valueSeconds, valueMilliseconds)
+            valueMilliseconds
+        } else {
+            logger.warn("Could not parse Prometheus response value for {} from body: {}", metricName, body)
+            0.0
+        }
+    }
+
+    fun parseCounterValue(body: String, metricName: String): Long {
+        logger.debug("Prometheus response for {}: {}", metricName, body)
+
+        // check if result array is empty
+        if (body.contains(""""result":[]""")) {
+            logger.warn("Prometheus returned empty result set for $metricName")
+            return 0L
+        }
+
+        // parse the JSON response to extract the value
+        val valueRegex = """"value":\s*\[\s*\d+(?:\.\d+)?,\s*"([^"]+)"\s*]""".toRegex()
+        val matchResult = valueRegex.find(body)
+
+        return if (matchResult != null) {
+            val valueStr = matchResult.groupValues[1]
+            val value = valueStr.toDoubleOrNull()?.toLong() ?: 0L
+            logger.trace("Successfully parsed {}: {}", metricName, value)
+            value
+        } else {
+            logger.warn("Could not parse Prometheus response value for {} from body: {}", metricName, body)
+            0L
+        }
     }
 }

@@ -6,7 +6,6 @@ import io.vertx.ext.web.client.HttpResponse
 import io.vertx.ext.web.client.WebClient
 import mf.cce.utils.KubernetesTest
 import mf.cce.utils.allergyIntoleranceTest
-import mf.cce.utils.carePlanTest
 import org.apache.logging.log4j.LogManager
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -31,15 +30,12 @@ import kotlin.test.assertTrue
  */
 class RecoveryTimeTest : KubernetesTest() {
     private val logger = LogManager.getLogger(this::class)
-    private val k8sYamlFiles = "src/test/resources/ausl/cce/endtoend/noscaler/availability"
+    private val k8sYamlFiles = "src/test/resources/ausl/cce/endtoend/anamnesi"
+    private val k8sPrometheus = "src/test/resources/ausl/cce/endtoend/prometheus"
     private val k8sNamespace = "monitoring-app"
+    private val hostUrl = "http://localhost:31080"
+    private val healthEndpoint = "/health"
     private lateinit var k8sDirectory: File
-
-    // Service endpoints
-    private val apiGatewayUrl = "http://localhost:31080"
-    private val terapiaHealthEndpoint = "/terapia/health"
-    private val anamnesiHealthEndpoint = "/anamnesi-pregressa/health"
-
     private lateinit var vertx: Vertx
     private lateinit var webClient: WebClient
     private lateinit var healthCheckExecutor: ScheduledExecutorService
@@ -60,6 +56,7 @@ class RecoveryTimeTest : KubernetesTest() {
     data class RecoveryTestResult(
         val testName: String,
         val initialReplicas: Int,
+        val finalReplicas: Int,
         val totalHealthChecks: Int,
         val successfulHealthChecks: Int,
         val failedHealthChecks: Int,
@@ -75,6 +72,7 @@ class RecoveryTimeTest : KubernetesTest() {
         fun logSummary() {
             logger.info("=== TEST SUMMARY FOR '$testName' ===")
             logger.debug("Initial replicas: $initialReplicas")
+            logger.debug("Final replicas: $finalReplicas")
             logger.info("Test duration: ${testDuration.toSeconds()} seconds")
             logger.info("Total health checks: $totalHealthChecks")
             logger.info("Successful health checks: $successfulHealthChecks")
@@ -157,24 +155,22 @@ class RecoveryTimeTest : KubernetesTest() {
     }
 
     /**
-     * Test that considers a scenario where we have not scaled horizontally and tests the availability upon some
-     * nodes failing. A request to service 'terapia' is sent to define a care plan, then the 'anamnesi-pregressa'
-     * service is killed to simulate a failure, a request is sent to it while it is down to check whether it will be
-     * able to respond to requests and generate events that will be taken by 'terapia' service upon coming back up and
-     * the time taken to recover is measured.
+     * Test that considers a scenario where we already have scaled horizontally and tests the availability upon some
+     * nodes failing. One of the replicas of the 'anamnesi-pregressa' service is killed to simulate a failure
+     * and upon coming back up the time taken to recover is measured.
      */
     @Test
     @DisplayName("Test recovery time for 'anamnesi-pregressa' service with a single pod failure where " +
             "'terapia' care plan has to be suspended and needs to process events coming from anamnesi - 1 pod")
     @Timeout(30 * 60) // 30 minutes timeout
-    fun testAnamnesiRecoveryTimeUponFailingAndTherapyCarePlanSuspendedWithSinglePod() {
+    fun testAnamnesiRecoveryTimeUponFailingWithSinglePod() {
         val result = executeRecoveryTestWithSingleFailure(
-            testName = "Anamnesi Pod Failure with 1 Pod - Therapy Care Plan Suspended",
+            testName = "Anamnesi Pod Failure with 1 Pod",
             initialReplicas = 1,
-            testDurationSeconds = 300,
-            healthCheckIntervalMs = 5000,
+            testDurationSeconds = 90,
+            healthCheckIntervalMs = 1000,
             failureDelaySeconds = 15,
-            healthCheckEndpoint = anamnesiHealthEndpoint,
+            healthCheckEndpoint = healthEndpoint,
             serviceToKill = "anamnesi-pregressa",
             jsonPostRequestBodyToKilledService = allergyIntoleranceTest,
         )
@@ -182,105 +178,6 @@ class RecoveryTimeTest : KubernetesTest() {
         result.logSummary()
 
         // A constraint can be added here as expected value to pass the test (as shown)
-//        result.assertAverageRecoveryTime(20000) // should recover within 20 seconds on average (example value)
-
-        assertTrue(true)
-    }
-
-    /**
-     * Test that considers a scenario where we already have scaled horizontally and tests the availability upon some
-     * nodes failing. A request to service 'terapia' is sent to define a care plan, then one of the replicas of the
-     * 'anamnesi-pregressa' service is killed to simulate a failure, a request is sent to it while it is down to check
-     * whether it will be able to respond to requests and generate events that will be taken by 'terapia' service upon
-     * coming back up and the time taken to recover is measured.
-     */
-    @Test
-    @DisplayName("Test recovery time for 'anamnesi-pregressa' service (scaled horizontally) with a single " +
-            "replica pod failure where 'terapia' care plan has to be suspended and needs to process events coming " +
-            "from anamnesi - 3 replica pods")
-    @Timeout(30 * 60) // 30 minutes timeout
-    fun testAnamnesiRecoveryTimeUponFailingAndTherapyCarePlanSuspendedWithMultiplePods() {
-        // scale deployment to 3 replicas for high availability - to simulate a scenario where we have already scaled
-        // horizontally
-        scaleDeployment("anamnesi-pregressa", 3)
-        waitForDeploymentReady("anamnesi-pregressa", 3)
-
-        val result = executeRecoveryTestWithSingleFailure(
-            testName = "Anamnesi Pod Failure with 3 Replicas - Therapy Care Plan Suspended",
-            initialReplicas = 3,
-            testDurationSeconds = 300,
-            healthCheckIntervalMs = 5000,
-            failureDelaySeconds = 15,
-            healthCheckEndpoint = anamnesiHealthEndpoint,
-            serviceToKill = "anamnesi-pregressa",
-            jsonPostRequestBodyToKilledService = allergyIntoleranceTest,
-        )
-
-        result.logSummary()
-        // A constraint can be added here as expected value to pass the test (as shown)
-//        result.assertAverageRecoveryTime(30000) // should recover within 20 seconds on average (example value)
-
-        assertTrue(true)
-    }
-
-    /**
-     * Test that considers a scenario where we already have scaled horizontally and tests the availability upon some
-     * nodes failing. The service is measured as 'available' if successfully replies to health checks, so if an error
-     * occurs in the handler of those checks, it is still considered as unavailable, even though the pod is up and
-     * running.
-     */
-    @Test
-    @DisplayName("Test recovery time with 2 sequential pod failures - 3 replica pods")
-    @Timeout(10 * 60) // 10 minutes timeout
-    fun testRecoveryTimeWithMultiplePods() {
-        // scale deployment to 3 replicas for high availability
-        scaleDeployment("terapia", 3)
-        waitForDeploymentReady("terapia", 3)
-
-        val result = executeRecoveryTestWithTwoFailures(
-            testName = "Pod Failure with 3 Replicas",
-            initialReplicas = 3,
-            testDurationSeconds = 90,
-            healthCheckIntervalMs = 5000,
-            firstFailureDelaySeconds = 15,
-            secondFailureDelaySeconds = 45
-        )
-
-        result.logSummary()
-        // A constraint can be added here as expected value to pass the test (as shown)
-//        result.assertAvailability(80.0) // availability % constraints can be added here, but it will depend on total test time, so it may not be realistic
-//        result.assertAverageRecoveryTime(30000) // should recover within 20 seconds on average (example value)
-
-        assertTrue(true)
-    }
-
-    /**
-     * Test that considers a scenario where we have only a single pod and no horizontal scaling, to check the time taken
-     * to recover from failures in the worst-case scenario where for some reason the horizontal scaling is not working.
-     * The service is measured as 'available' if successfully replies to health checks, so if an error occurs in the
-     * handler of those checks, it is still considered as unavailable, even though the pod is up and running.
-     */
-    @Test
-    @DisplayName("Test recovery time with 2 sequential pod failures - 1 pod")
-    @Timeout(10 * 60) // 10 minutes timeout
-    fun testRecoveryTimeWithSinglePod() {
-        val result = executeRecoveryTestWithTwoFailures(
-            testName = "Pod Failure with 1 Pod (no replicas)",
-            initialReplicas = 1,
-            testDurationSeconds = 90,
-            healthCheckIntervalMs = 5000,
-            firstFailureDelaySeconds = 15,
-            secondFailureDelaySeconds = 45
-        )
-
-        result.logSummary()
-        // A constraint can be added here as expected value to pass the test (as shown)
-        // availability % constraints can be added here, but it will depend on total test time, so it may not be
-        // realistic. To predict in a real case scenario how it will behave, it is possible to use metrics from
-        // book "Software Architecture in Practice" by Bass, Clements, Kazman, where formulas are provided to estimate
-        // availability based on MTBF and MTTR, that are applicable only in real case scenarios to predict time taken
-        // to recover.
-//        result.assertAvailability(80.0)   // as said before: availability % constraints can be added here, but it will depend on total test time, so it is not realistic
 //        result.assertAverageRecoveryTime(20000) // should recover within 20 seconds on average (example value)
 
         assertTrue(true)
@@ -295,7 +192,7 @@ class RecoveryTimeTest : KubernetesTest() {
         testDurationSeconds: Int,
         healthCheckIntervalMs: Long,
         failureDelaySeconds: Int,
-        healthCheckEndpoint: String = terapiaHealthEndpoint,
+        healthCheckEndpoint: String = healthEndpoint,
         serviceToKill: String = "anamnesi-pregressa",
         jsonPostRequestBodyToKilledService: String,
     ): RecoveryTestResult {
@@ -338,12 +235,12 @@ class RecoveryTimeTest : KubernetesTest() {
             try {
                 deleteSinglePod(serviceToKill)
                 logger.info("Pod deleted successfully at ${failureDelaySeconds}s")
-                try {
-                    val response = sendPostRequestTo("/$serviceToKill", jsonPostRequestBodyToKilledService)
-                    logger.info("Request sent to killed service at ${failureDelaySeconds}s")
-                } catch (e: Exception) {
-                    logger.error("Failed to send request to the killed service: ${e.message}", e)
-                }
+//                try {
+//                    val response = sendPostRequestTo("/$serviceToKill", jsonPostRequestBodyToKilledService)
+//                    logger.info("Request sent to killed service at ${failureDelaySeconds}s")
+//                } catch (e: Exception) {
+//                    logger.error("Failed to send request to the killed service: ${e.message}", e)
+//                }
             } catch (e: Exception) {
                 logger.error("Failed to delete pod: ${e.message}", e)
             }
@@ -364,7 +261,9 @@ class RecoveryTimeTest : KubernetesTest() {
             logger.warn("Health check future didn't complete cleanly: ${e.message}")
         }
 
-        return analyzeRecoveryResults(testName, initialReplicas, healthCheckResults,
+        val finalReplicas = getCurrentReplicas(serviceToKill, k8sNamespace)
+
+        return analyzeRecoveryResults(testName, initialReplicas, finalReplicas, healthCheckResults,
             testStartTime, totalHealthChecks.get(), successfulHealthChecks.get(), totalResponseTime.get())
     }
 
@@ -394,7 +293,7 @@ class RecoveryTimeTest : KubernetesTest() {
         // Start continuous health checks
         val healthCheckFuture = CompletableFuture.runAsync({
             while (isRunning.get() && Instant.now().isBefore(testEndTime)) {
-                val result = performHealthCheck(terapiaHealthEndpoint)
+                val result = performHealthCheck(healthEndpoint)
                 synchronized(healthCheckResults) {
                     healthCheckResults.add(result)
                 }
@@ -448,14 +347,16 @@ class RecoveryTimeTest : KubernetesTest() {
             logger.warn("Health check future didn't complete cleanly: ${e.message}")
         }
 
-        return analyzeRecoveryResults(testName, initialReplicas, healthCheckResults,
+        val finalReplicas = getCurrentReplicas("terapia", k8sNamespace)
+
+        return analyzeRecoveryResults(testName, initialReplicas, finalReplicas, healthCheckResults,
             testStartTime, totalHealthChecks.get(), successfulHealthChecks.get(), totalResponseTime.get())
     }
 
     private fun sendPostRequestTo(slashEndpoint: String, jsonBody: String): HttpResponse<Buffer?>? {
         return try {
             val response = webClient
-                .postAbs("$apiGatewayUrl$slashEndpoint")
+                .postAbs("$hostUrl$slashEndpoint")
                 .putHeader("Content-Type", "application/json")
                 .sendBuffer(Buffer.buffer(jsonBody))
                 .toCompletionStage()
@@ -472,7 +373,7 @@ class RecoveryTimeTest : KubernetesTest() {
     private fun sendGetRequestTo(slashEndpoint: String): HttpResponse<Buffer?>? {
         return try {
             val response = webClient
-                .getAbs("$apiGatewayUrl$slashEndpoint")
+                .getAbs("$hostUrl$slashEndpoint")
                 .send()
                 .toCompletionStage()
                 .toCompletableFuture()
@@ -490,7 +391,7 @@ class RecoveryTimeTest : KubernetesTest() {
 
         return try {
             val response = webClient
-                .getAbs("$apiGatewayUrl$toEndpoint")
+                .getAbs("$hostUrl$toEndpoint")
                 .timeout(5000)
                 .send()
                 .toCompletionStage()
@@ -596,6 +497,7 @@ class RecoveryTimeTest : KubernetesTest() {
     private fun analyzeRecoveryResults(
         testName: String,
         initialReplicas: Int,
+        finalReplicas: Int,
         healthCheckResults: List<HealthCheckResult>,
         testStartTime: Instant,
         totalHealthChecks: Int,
@@ -628,6 +530,7 @@ class RecoveryTimeTest : KubernetesTest() {
         return RecoveryTestResult(
             testName = testName,
             initialReplicas = initialReplicas,
+            finalReplicas = finalReplicas,
             totalHealthChecks = totalHealthChecks,
             successfulHealthChecks = successfulHealthChecks,
             failedHealthChecks = failedHealthChecks,

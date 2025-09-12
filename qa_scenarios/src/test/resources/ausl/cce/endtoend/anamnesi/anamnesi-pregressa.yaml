@@ -1,0 +1,67 @@
+# namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring-app
+---
+# anamnesi-pregressa-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: anamnesi-pregressa
+  namespace: monitoring-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: anamnesi-pregressa
+  template:
+    metadata:
+      labels:
+        app: anamnesi-pregressa
+    spec:
+      containers:
+        - name: anamnesi-pregressa
+          image: marcofontana17/ausl_cce_prototipo:anamnesi_pregressa-dev-latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: CONFIG_SERVER_HOST_NAME
+              value: "anamnesi-pregressa-mongo-db"
+            - name: CONFIG_SERVER_PORT
+              value: "27017"
+            - name: CONFIG_SERVER_DB_NAME
+              value: "anamnesi-pregressa-mongo-db"
+            - name: CONFIG_SERVER_DB_USERNAME
+              value: "root"
+            - name: CONFIG_SERVER_DB_PASSWORD
+              value: "password"
+            - name: KAFKA_HOST
+              value: "broker-0.broker.monitoring-app.svc.cluster.local"
+            - name: KAFKA_PORT
+              value: "9092"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "200m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+---
+# anamnesi-pregressa-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: anamnesi-pregressa
+  namespace: monitoring-app
+spec:
+  selector:
+    app: anamnesi-pregressa
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      nodePort: 31080
+  type: NodePort
+---

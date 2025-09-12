@@ -1,0 +1,89 @@
+# mongodb-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: diario-clinico-mongo-data
+  namespace: monitoring-app
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+# mongodb-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: diario-clinico-mongo-db
+  namespace: monitoring-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: diario-clinico-mongo-db
+  template:
+    metadata:
+      labels:
+        app: diario-clinico-mongo-db
+    spec:
+      containers:
+        - name: mongodb
+          image: mongo:latest
+          ports:
+            - containerPort: 27017
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              value: "root"
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              value: "password"
+          volumeMounts:
+            - name: mongo-data
+              mountPath: /data/db
+          livenessProbe:
+            exec:
+              command:
+                - mongosh
+                - --eval
+                - "db.adminCommand('ping')"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            exec:
+              command:
+                - mongosh
+                - --eval
+                - "db.adminCommand('ping')"
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 5
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      volumes:
+        - name: mongo-data
+          persistentVolumeClaim:
+            claimName: diario-clinico-mongo-data
+---
+# mongodb-diario-clinico.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: diario-clinico-mongo-db
+  namespace: monitoring-app
+spec:
+  selector:
+    app: diario-clinico-mongo-db
+  ports:
+    - name: mongodb
+      port: 27017
+      targetPort: 27017
+  type: ClusterIP
+---

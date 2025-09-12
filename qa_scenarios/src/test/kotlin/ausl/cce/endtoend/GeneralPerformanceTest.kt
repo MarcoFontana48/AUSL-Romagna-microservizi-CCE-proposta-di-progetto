@@ -10,6 +10,7 @@ import io.vertx.ext.web.client.WebClientOptions
 import mf.cce.utils.KubernetesTest
 import mf.cce.utils.carePlanTest
 import org.apache.logging.log4j.LogManager
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -25,33 +26,23 @@ import kotlin.test.assertTrue
  */
 class GeneralPerformanceTest : KubernetesTest() {
     private val logger = LogManager.getLogger(this::class)
-    private val k8sTerapiaHPA = "src/test/resources/ausl/cce/endtoend/scaler"
-    private val k8sTerapiaNoHPA = "src/test/resources/ausl/cce/endtoend/noscaler/performance"
+    private val k8sFiles = "src/test/resources/ausl/cce/endtoend/terapia"
     private val k8sPrometheus = "src/test/resources/ausl/cce/endtoend/prometheus"
     private val k8sNamespace = "monitoring-app"
-    private lateinit var k8sDirectory: File
-
-    // Service endpoints
-    private val apiGatewayUrl = "http://localhost:31080"
+    private val urlHost = "http://localhost:31080"
     private val prometheusUrl = "http://localhost:31090"
-    private val healthEndpoint = "/service/health"
-
+    private lateinit var k8sDirectory: File
     private lateinit var vertx: Vertx
     private lateinit var webClient: WebClient
-
-    private val serviceName = "service"
-    private val terapia = "terapia"
-    private val diarioClinico = "diario-clinico"
-    private val anamnesiPregressa = "anamnesi-pregressa"
-    private val healthCheckOperation = "health_check"
     private val getCarePlanOperation = "get_care_plan"
 
     data class TestSummary(
         val scenarioName: String,
         val duration: Duration,
-        val totalRequestNumber: Int,
-        val successfulRequests: Int,
-        val p95ResponseTime: Double
+        val totalRequestNumber: Long,
+        val successfulRequests: Long,
+        val p95ResponseTime: Double,
+        val replicaNumber: Int = 0,
     ) {
         private val logger = LogManager.getLogger(this::class)
 
@@ -60,7 +51,9 @@ class GeneralPerformanceTest : KubernetesTest() {
             logger.info("Test duration: ${duration.toSeconds()} seconds")
             logger.info("Total requests sent: $totalRequestNumber")
             logger.info("Successful requests: $successfulRequests")
+            logger.info("Success rate: ${String.format("%.2f", (successfulRequests.toDouble() / totalRequestNumber * 100))}%")
             logger.info("95th percentile response time: ${String.format("%.2f", p95ResponseTime)} ms")
+            logger.info("Number of replicas at test end: $replicaNumber")
             logger.info("==================")
         }
     }
@@ -89,62 +82,56 @@ class GeneralPerformanceTest : KubernetesTest() {
         setUpEnvironment(k8sPrometheus)
     }
 
-//    @AfterEach
-//    fun tearDown() {
-//        // Close Vert.x resources
-//        if (::webClient.isInitialized) {
-//            webClient.close()
-//        }
-//        if (::vertx.isInitialized) {
-//            vertx.close()
-//        }
-//
-//        logger.info("Cleaning up Kubernetes resources...")
-//        executeKubectlDelete(k8sDirectory)
-//        logger.info("Kubernetes resources cleaned up")
-//    }
+    @AfterEach
+    fun tearDown() {
+        // Close Vert.x resources
+        if (::webClient.isInitialized) {
+            webClient.close()
+        }
+        if (::vertx.isInitialized) {
+            vertx.close()
+        }
+
+        logger.info("Cleaning up Kubernetes resources...")
+        executeKubectlDelete(k8sDirectory)
+        logger.info("Kubernetes resources cleaned up")
+    }
 
     @Test
-    @DisplayName("NO_HPA: Test to evaluate 'terapia' architecture performance with escalating spike load")
+    @DisplayName("Test to evaluate 'terapia' architecture performance with escalating spike load")
     @Timeout(30 * 60) // 30 minutes timeout
-    fun performanceEvaluationSustainedAverageLoadNoHPA() {
-        setUpEnvironment(k8sTerapiaNoHPA)
-        escalatingSpikeTest(10, 1, "/terapia/CarePlan", carePlanTest, "/terapia/CarePlan/002")
+    fun performanceEvaluationSustainedAverageLoad() {
+        setUpEnvironment(k8sFiles)
+        val results = escalatingSpikeTest(10, 50, "/CarePlan", carePlanTest, "/CarePlan/002")
 
-        // a constraint can be added here instead of just passing the test
+        // Log the results
+        results.logSummary()
+
+        // Constraints can be added here based on requirements
+//        assertAll(
+//            { assertTrue(results.successfulRequests == results.totalRequestNumber, "All requests should be successful") },
+//            { assertTrue(results.p95ResponseTime < 2000, "95th percentile response time should be under 2000 ms") },
+//            { assertTrue(results.replicaNumber > 1, "Should have scaled horizontally") },
+//        )
         assertTrue(true)
     }
 
     @Test
-    @DisplayName("HPA: Test to evaluate 'terapia' architecture performance with escalating spike load")
+    @DisplayName("Test to evaluate 'terapia' architecture performance with sudden spike load")
     @Timeout(30 * 60) // 30 minutes timeout
-    fun performanceEvaluationSustainedAverageLoadHPA() {
-        setUpEnvironment(k8sTerapiaHPA)
-        escalatingSpikeTest(10, 1, "/terapia/CarePlan", carePlanTest, "/terapia/CarePlan/002")
+    fun performanceEvaluationSuddenSpikeLoad() {
+        setUpEnvironment(k8sFiles)
+        val results = spikeTest(1000, "/CarePlan", carePlanTest, "/CarePlan/002")
 
-        // a constraint can be added here instead of just passing the test
-        assertTrue(true)
-    }
+        // Log the results
+        results.logSummary()
 
-    @Test
-    @DisplayName("NO_HPA: Test to evaluate 'terapia' architecture performance with sudden spike load")
-    @Timeout(30 * 60) // 30 minutes timeout
-    fun performanceEvaluationSuddenSpikeLoadNoHPA() {
-        setUpEnvironment(k8sTerapiaNoHPA)
-        // the amount of requests is set to a low amount in order to avoid overloading the machine used for personal testing, in a real case scenario this should be higher
-        spikeTest(15, "/terapia/CarePlan", carePlanTest, "/terapia/CarePlan/002")
-        // a constraint can be added here instead of just passing the test
-        assertTrue(true)
-    }
-
-    @Test
-    @DisplayName("HPA: Test to evaluate 'terapia' architecture performance with sudden spike load")
-    @Timeout(30 * 60) // 30 minutes timeout
-    fun performanceEvaluationSuddenSpikeLoadHPA() {
-        setUpEnvironment(k8sTerapiaHPA)
-        // the amount of requests is set to a low amount in order to avoid overloading the machine used for personal testing, in a real case scenario this should be higher
-        spikeTest(35, "/terapia/CarePlan", carePlanTest, "/terapia/CarePlan/002")
-        // a constraint can be added here instead of just passing the test
+        // Constraints can be added here based on requirements
+//        assertAll(
+//            { assertTrue(results.successfulRequests == results.totalRequestNumber, "All requests should be successful") },
+//            { assertTrue(results.p95ResponseTime < 2000, "95th percentile response time should be under 2000 ms") },
+//            { assertTrue(results.replicaNumber > 1, "Should have scaled horizontally") },
+//        )
         assertTrue(true)
     }
 
@@ -206,17 +193,43 @@ class GeneralPerformanceTest : KubernetesTest() {
         requestsMultiplier: Int,
         postSlashEndpoint: String,
         postRequestBody: String,
-        getSlashEndpoint: String
-    ) {
+        getSlashEndpoint: String,
+        serviceName: String = "terapia"
+    ): TestSummary {
+        val startTime = System.currentTimeMillis()
+
         logger.info("Sending initial POST request to create resource...")
         sendPostRequestTo(postSlashEndpoint, postRequestBody, 1)
 
         repeat(iterationNumber) { i ->
             logger.info("Waiting 30 seconds before next iteration...")
             Thread.sleep(30_000)
-            logger.info("Iteration ${i + 1}/$iterationNumber: Sending ${i + 1 * requestsMultiplier} GET requests...")
-            sendGetRequestTo(getSlashEndpoint, i + 1 * requestsMultiplier)
+            logger.info("Iteration ${i + 1}/$iterationNumber: Sending ${(i + 1) * requestsMultiplier} GET requests...")
+            sendGetRequestTo(getSlashEndpoint, (i + 1) * requestsMultiplier)
         }
+
+        logger.info("Escalating spike test completed, extracting results...")
+
+        // Wait a bit for metrics to be collected
+        Thread.sleep(10_000)
+
+        val endTime = System.currentTimeMillis()
+        val duration = Duration.ofMillis(endTime - startTime)
+
+        // Query Prometheus for metrics
+        val p95ResponseTime = queryForPercentile(prometheusUrl, getCarePlanOperation, serviceName, 0.95)
+        val successfulRequests = queryForSuccessfulRequests(prometheusUrl, getCarePlanOperation, serviceName)
+        val totalRequests = queryForTotalRequestsNumber(prometheusUrl, getCarePlanOperation, serviceName)
+        val currentReplicas = getCurrentReplicas(serviceName, k8sNamespace)
+
+        return TestSummary(
+            scenarioName = "Escalating Spike Test",
+            duration = duration,
+            totalRequestNumber = totalRequests,
+            successfulRequests = successfulRequests,
+            p95ResponseTime = p95ResponseTime,
+            replicaNumber = currentReplicas,
+        )
     }
 
     /**
@@ -230,25 +243,49 @@ class GeneralPerformanceTest : KubernetesTest() {
         requestsNumber: Int,
         postSlashEndpoint: String,
         postRequestBody: String,
-        getSlashEndpoint: String
-    ) {
+        getSlashEndpoint: String,
+        serviceName: String = "terapia"
+    ): TestSummary {
+        val startTime = System.currentTimeMillis()
+
         logger.info("Sending initial POST request to create resource...")
         sendPostRequestTo(postSlashEndpoint, postRequestBody, 1)
 
         logger.info("Waiting 30 seconds before sending GET requests...")
         Thread.sleep(30_000)
 
-        repeat(requestsNumber) { i ->
-            logger.info("Sending ${i + 1}/${requestsNumber} GET requests...")
-            sendGetRequestTo(getSlashEndpoint, 1)
-        }
+        logger.info("Sending $requestsNumber GET requests...")
+        sendGetRequestTo(getSlashEndpoint, requestsNumber)
+
+        logger.info("Spike test completed, extracting results...")
+
+        // Wait a bit for metrics to be collected
+        Thread.sleep(10_000)
+
+        val endTime = System.currentTimeMillis()
+        val duration = Duration.ofMillis(endTime - startTime)
+
+        // Query Prometheus for metrics
+        val p95ResponseTime = queryForPercentile(prometheusUrl, getCarePlanOperation, serviceName, 0.95)
+        val successfulRequests = queryForSuccessfulRequests(prometheusUrl, getCarePlanOperation, serviceName)
+        val totalRequests = queryForTotalRequestsNumber(prometheusUrl, getCarePlanOperation, serviceName)
+        val currentReplicas = getCurrentReplicas(serviceName, k8sNamespace)
+
+        return TestSummary(
+            scenarioName = "Spike Test",
+            duration = duration,
+            totalRequestNumber = totalRequests,
+            successfulRequests = successfulRequests,
+            p95ResponseTime = p95ResponseTime,
+            replicaNumber = currentReplicas,
+        )
     }
 
     private fun sendPostRequestTo(slashEndpoint: String, jsonBody: String, number: Int = 1): Unit? {
         return try {
             for (i in 1..number) {
                 webClient
-                    .postAbs("$apiGatewayUrl$slashEndpoint")
+                    .postAbs("$urlHost$slashEndpoint")
                     .putHeader("Content-Type", "application/json")
                     .sendBuffer(Buffer.buffer(jsonBody))
             }
@@ -268,7 +305,7 @@ class GeneralPerformanceTest : KubernetesTest() {
 
                 for (i in batch until batchEnd) {
                     val future = webClient
-                        .getAbs("$apiGatewayUrl$slashEndpoint")
+                        .getAbs("$urlHost$slashEndpoint")
                         .timeout(30000) // 30 second timeout per request
                         .send()
                     futures.add(future)
@@ -302,6 +339,157 @@ class GeneralPerformanceTest : KubernetesTest() {
 
         } catch (e: Exception) {
             logger.error("Failed to send GET requests to $slashEndpoint: ${e.message}", e)
+        }
+    }
+
+    private fun queryForPercentile(metricsServerUrl: String, operationType: String, serviceName: String, percentile: Double, time: String = "1h"): Double {
+        val endTime = System.currentTimeMillis() / 1000
+
+        return try {
+            val query = """histogram_quantile($percentile, sum(rate(${operationType}_duration_seconds_bucket{service="$serviceName"}[$time])) by (le))"""
+
+            val encodedQuery = java.net.URLEncoder.encode(query, "UTF-8")
+            val prometheusQuery = "$metricsServerUrl/api/v1/query?query=$encodedQuery&time=$endTime"
+
+            logger.debug("Querying Prometheus for {}th percentile: {}", (percentile * 100).toInt(), prometheusQuery)
+
+            val response = webClient
+                .getAbs(prometheusQuery)
+                .timeout(30000)
+                .send()
+                .toCompletionStage()
+                .toCompletableFuture()
+                .get(30, TimeUnit.SECONDS)
+
+            if (response.statusCode() == 200) {
+                val body = response.bodyAsString()
+                parseValue(body, "${(percentile * 100).toInt()}th percentile")
+            } else {
+                logger.warn("Prometheus query failed with status: {} - {}", response.statusCode(), response.bodyAsString())
+                0.0
+            }
+        } catch (e: Exception) {
+            logger.error("Error querying Prometheus for {}th percentile: {}", (percentile * 100).toInt(), e.message, e)
+            0.0
+        }
+    }
+
+    private fun queryForSuccessfulRequests(metricsServerUrl: String, operationType: String, serviceName: String): Long {
+        val endTime = System.currentTimeMillis() / 1000
+
+        return try {
+            val query = """sum(${operationType}_success_total{service="$serviceName"})"""
+
+            val encodedQuery = java.net.URLEncoder.encode(query, "UTF-8")
+            val prometheusQuery = "$metricsServerUrl/api/v1/query?query=$encodedQuery&time=$endTime"
+
+            logger.debug("Querying Prometheus for successful requests: {}", prometheusQuery)
+
+            val response = webClient
+                .getAbs(prometheusQuery)
+                .timeout(30000)
+                .send()
+                .toCompletionStage()
+                .toCompletableFuture()
+                .get(30, TimeUnit.SECONDS)
+
+            if (response.statusCode() == 200) {
+                val body = response.bodyAsString()
+                parseCounterValue(body, "successful requests")
+            } else {
+                logger.warn("Prometheus query failed with status: {} - {}", response.statusCode(), response.bodyAsString())
+                0L
+            }
+        } catch (e: Exception) {
+            logger.error("Error querying Prometheus for successful requests: {}", e.message, e)
+            0L
+        }
+    }
+
+    private fun queryForTotalRequestsNumber(metricsServerUrl: String, operationType: String, serviceName: String): Long {
+        val endTime = System.currentTimeMillis() / 1000
+
+        return try {
+            val query = """sum(${operationType}_requests_total{service="$serviceName"})"""
+
+            val encodedQuery = java.net.URLEncoder.encode(query, "UTF-8")
+            val prometheusQuery = "$metricsServerUrl/api/v1/query?query=$encodedQuery&time=$endTime"
+
+            logger.debug("Querying Prometheus for total requests: {}", prometheusQuery)
+
+            val response = webClient
+                .getAbs(prometheusQuery)
+                .timeout(30000)
+                .send()
+                .toCompletionStage()
+                .toCompletableFuture()
+                .get(30, TimeUnit.SECONDS)
+
+            if (response.statusCode() == 200) {
+                val body = response.bodyAsString()
+                parseCounterValue(body, "total requests")
+            } else {
+                logger.warn("Prometheus query failed with status: {} - {}", response.statusCode(), response.bodyAsString())
+                0L
+            }
+        } catch (e: Exception) {
+            logger.error("Error querying Prometheus for total requests: {}", e.message, e)
+            0L
+        }
+    }
+
+    // method to perform a custom Prometheus query
+    fun executeCustomQuery(metricsServerUrl: String, query: String, queryDescription: String = "custom query"): String? {
+        val endTime = System.currentTimeMillis() / 1000
+
+        return try {
+            val encodedQuery = java.net.URLEncoder.encode(query, "UTF-8")
+            val prometheusQuery = "$metricsServerUrl/api/v1/query?query=$encodedQuery&time=$endTime"
+
+            logger.debug("Executing custom Prometheus query ({}): {}", queryDescription, prometheusQuery)
+
+            val response = webClient
+                .getAbs(prometheusQuery)
+                .timeout(30000)
+                .send()
+                .toCompletionStage()
+                .toCompletableFuture()
+                .get(30, TimeUnit.SECONDS)
+
+            if (response.statusCode() == 200) {
+                val body = response.bodyAsString()
+                logger.debug("Custom query ({}) response: {}", queryDescription, body)
+                body
+            } else {
+                logger.warn("Custom Prometheus query ({}) failed with status: {} - {}",
+                    queryDescription, response.statusCode(), response.bodyAsString())
+                null
+            }
+        } catch (e: Exception) {
+            logger.error("Error executing custom Prometheus query ({}): {}", queryDescription, e.message, e)
+            null
+        }
+    }
+
+    // convenience method to execute custom query and parse single numeric value
+    fun executeCustomQueryForValue(metricsServerUrl: String, query: String, queryDescription: String = "custom query"): Double {
+        val response = executeCustomQuery(metricsServerUrl, query, queryDescription)
+
+        return if (response != null) {
+            parseValue(response, queryDescription)
+        } else {
+            0.0
+        }
+    }
+
+    // convenience method to execute custom query and parse counter value
+    fun executeCustomQueryForCounterValue(metricsServerUrl: String, query: String, queryDescription: String = "custom query"): Long {
+        val response = executeCustomQuery(metricsServerUrl, query, queryDescription)
+
+        return if (response != null) {
+            parseCounterValue(response, queryDescription)
+        } else {
+            0L
         }
     }
 }
