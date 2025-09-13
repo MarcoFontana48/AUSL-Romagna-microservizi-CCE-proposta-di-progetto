@@ -191,3 +191,31 @@ const val allergyIntoleranceTest = "{\n" +
         "    }\n" +
         "  ]\n" +
         "}"
+
+const val encounterTest = "{\n" +
+        "  \"resourceType\": \"Encounter\",\n" +
+        "  \"id\": \"111\",\n" +
+        "  \"subject\": {\n" +
+        "    \"reference\": \"Patient/456\"\n" +
+        "  },\n" +
+        "  \"class\": {\n" +
+        "    \"system\": \"http://terminology.hl7.org/CodeSystem/v3-ActCode\",\n" +
+        "    \"code\": \"AMB\",\n" +
+        "    \"display\": \"Ambulatory\"\n" +
+        "  },\n" +
+        "  \"status\": \"finished\",\n" +
+        "  \"serviceType\": {\n" +
+        "    \"coding\": [\n" +
+        "      {\n" +
+        "        \"system\": \"http://terminology.hl7.org/CodeSystem/service-type\",\n" +
+        "        \"code\": \"408\",\n" +
+        "        \"display\": \"General Medicine\"\n" +
+        "      }\n" +
+        "    ],\n" +
+        "    \"text\": \"General Medicine\"\n" +
+        "  },\n" +
+        "  \"period\": {\n" +
+        "    \"start\": \"2025-09-04T12:00:00Z\",\n" +
+        "    \"end\": \"2025-09-04T12:00:00Z\"\n" +
+        "  }\n" +
+        "}"
