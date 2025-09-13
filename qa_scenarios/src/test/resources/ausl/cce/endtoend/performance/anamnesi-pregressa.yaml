@@ -20,45 +20,6 @@ spec:
       labels:
         app: anamnesi-pregressa
     spec:
-      initContainers:
-        - name: wait-for-kafka
-          image: busybox:1.35
-          command:
-            - sh
-            - -c
-            - |
-              TIMEOUT=600  # Increased to 10 minutes
-              ELAPSED=0
-
-              # First check if the service exists
-              echo "Checking if broker service exists in DNS..."
-
-              until nslookup broker.monitoring-app.svc.cluster.local || [ $ELAPSED -ge $TIMEOUT ]; do
-                echo "DNS lookup failed for broker.monitoring-app.svc.cluster.local (${ELAPSED}s elapsed)"
-                sleep 5
-                ELAPSED=$((ELAPSED + 5))
-              done
-
-              if [ $ELAPSED -ge $TIMEOUT ]; then
-                echo "Timeout: Could not resolve broker.monitoring-app.svc.cluster.local after ${TIMEOUT}s"
-                exit 1
-              fi
-
-              echo "DNS resolved successfully! Now checking if port 9092 is open..."
-              ELAPSED=0
-
-              until nc -z broker.monitoring-app.svc.cluster.local 9092 || [ $ELAPSED -ge $TIMEOUT ]; do
-                echo "Waiting for Kafka broker to accept connections... (${ELAPSED}s elapsed)"
-                sleep 10
-                ELAPSED=$((ELAPSED + 10))
-              done
-
-              if [ $ELAPSED -ge $TIMEOUT ]; then
-                echo "Timeout waiting for Kafka after ${TIMEOUT}s"
-                exit 1
-              fi
-
-              echo "Kafka is ready and accepting connections!"
       containers:
         - name: anamnesi-pregressa
           image: marcofontana17/ausl_cce_prototipo:anamnesi_pregressa-dev-latest
@@ -101,7 +62,8 @@ spec:
     - name: http
       port: 8080
       targetPort: 8080
-  type: ClusterIP
+      nodePort: 31082
+  type: NodePort
 ---
 # anamnesi-pregressa-hpa.yaml (horizontal pod autoscaler for anamnesi-pregressa)
 apiVersion: autoscaling/v2
