@@ -1,3 +1,23 @@
+# [1.7.0](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/compare/v1.6.2...v1.7.0) (2025-09-12)
+
+
+### Bug Fixes
+
+* **api-gateway:** could not handle more than 5 clients concurrently ([a794ce3](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/a794ce396e569eebddf85b59ea6d3e287d7a2e03))
+* **api-gateway:** number of worker threads ([4d77f9d](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/4d77f9d477528c237c3fe9ed7d618611ac73c27b))
+* **api-gateway:** number of worker threads for reroute ([9f8ea9c](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/9f8ea9ce01f5e280246aeac2a5669abe43173a2e))
+* **api-gateway:** reroute settings ([e3d2357](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/e3d2357923aceba73ca40e13a2c82a0e1ff829fe))
+* fix k8s deploy connection between services ([9e4854c](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/9e4854cbd5075394b4553b1468984d16306dbdb1))
+* **qa_scenarios:** test deployment automation ([6e4ed36](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/6e4ed36413dc3d7d6c0fb868945ba98dc4adb7f0))
+* **qa_scenarios:** update k8s deploy for tests ([0eef3bc](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/0eef3bcf7b59ca3f67e0baf05465230684bc52dc))
+
+
+### Features
+
+* **anamnesi-pregressa:** add timers for requests about domain elements ([ef03214](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/ef03214f50c2edbe7c3e392aa6de2bf5bcb19e35))
+* **diario-clinico:** add timers for requests about domain elements ([190cdbb](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/190cdbb8c6de303b1292144f095e6d40652d1061))
+* **terapia:** add timers for requests about domain elements ([d5e2205](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/d5e220547abb12c77c8e11b9adb025d9127f3e23))
+
 ## [1.6.2](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/compare/v1.6.1...v1.6.2) (2025-09-09)
 
 
