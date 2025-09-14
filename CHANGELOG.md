@@ -1,3 +1,10 @@
+## [1.7.1](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/compare/v1.7.0...v1.7.1) (2025-09-14)
+
+
+### Bug Fixes
+
+* **qa_scenarios:** add nodePort to k8s deploy ([4afa0e6](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/4afa0e6127630b5719ed79212782c7d49cfbb46b))
+
 # [1.7.0](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/compare/v1.6.2...v1.7.0) (2025-09-12)
 
 
