@@ -86,8 +86,8 @@ spec:
         target:
           type: Utilization
           averageUtilization: 66 # 2/3 of requested CPU % to scale up
+# define custom scaling behavior (optional)
 #  behavior:
-#    # define custom scaling behavior (optional)
 #    scaleUp:
 #      stabilizationWindowSeconds: 0    # scale up immediately
 #    scaleDown:

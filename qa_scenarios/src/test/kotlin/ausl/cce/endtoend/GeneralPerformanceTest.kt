@@ -11,6 +11,8 @@ import mf.cce.utils.KubernetesTest
 import mf.cce.utils.carePlanTest
 import org.apache.logging.log4j.LogManager
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertAll
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -109,7 +111,7 @@ class GeneralPerformanceTest : KubernetesTest() {
 
         // Constraints can be added here based on requirements
 //        assertAll(
-//            { assertTrue(results.successfulRequests == results.totalRequestNumber, "All requests should be successful") },
+//            { assertEquals(results.totalRequestNumber, results.successfulRequests, "All requests should be successful") },
 //            { assertTrue(results.p95ResponseTime < 2000, "95th percentile response time should be under 2000 ms") },
 //            { assertTrue(results.replicaNumber > 1, "Should have scaled horizontally") },
 //        )
@@ -128,7 +130,7 @@ class GeneralPerformanceTest : KubernetesTest() {
 
         // Constraints can be added here based on requirements
 //        assertAll(
-//            { assertTrue(results.successfulRequests == results.totalRequestNumber, "All requests should be successful") },
+//            { assertEquals(results.totalRequestNumber, results.successfulRequests, "All requests should be successful") },
 //            { assertTrue(results.p95ResponseTime < 2000, "95th percentile response time should be under 2000 ms") },
 //            { assertTrue(results.replicaNumber > 1, "Should have scaled horizontally") },
 //        )
