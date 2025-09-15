@@ -1,3 +1,10 @@
+## [1.7.2](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/compare/v1.7.1...v1.7.2) (2025-09-15)
+
+
+### Bug Fixes
+
+* **qa_scenarios:** change assert true to assert equals ([9e8ee9b](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/commit/9e8ee9b7281ee26a05738f12824f8f3751245b0a))
+
 ## [1.7.1](https://github.com/MarcoFontana48/AUSL-Romagna-microservizi-CCE-proposta-di-progetto/compare/v1.7.0...v1.7.1) (2025-09-14)
 
 
