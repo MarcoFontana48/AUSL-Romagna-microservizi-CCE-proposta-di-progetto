@@ -416,10 +416,10 @@ class RecoveryTimeTest : KubernetesTest() {
             testStartTime, totalHealthChecks.get(), successfulHealthChecks.get(), totalResponseTime.get())
     }
 
-    private fun sendPostRequestTo(slashEndpoint: String, jsonBody: String): HttpResponse<Buffer?>? {
+    private fun sendPostRequestTo(host: String, slashEndpoint: String, jsonBody: String): HttpResponse<Buffer?>? {
         return try {
             val response = webClient
-                .postAbs("$hostUrl$slashEndpoint")
+                .postAbs("$host$slashEndpoint")
                 .putHeader("Content-Type", "application/json")
                 .sendBuffer(Buffer.buffer(jsonBody))
                 .toCompletionStage()
