@@ -23,7 +23,7 @@ task-tree-version = "4.0.0"
 springBoot = "3.5.5"
 springCloud = "2023.0.3"
 micrometer = "1.15.4"
-mongodb = "5.5.1"
+mongodb = "5.6.0"
 hapi-fhir = "8.4.0"
 
 [libraries]
