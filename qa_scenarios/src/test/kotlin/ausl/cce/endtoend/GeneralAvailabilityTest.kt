@@ -10,6 +10,7 @@ import mf.cce.utils.carePlanTest
 import mf.cce.utils.encounterTest
 import org.apache.logging.log4j.LogManager
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -244,6 +245,48 @@ class RecoveryTimeTest : KubernetesTest() {
         assertTrue(true)
     }
 
+    @Test
+    @DisplayName("Event is received after pod failure and recovery")
+    @Timeout(30 * 60) // 30 minutes timeout
+    fun testEventIsReceivedAfterPodFailureAndRecovery() {
+        logger.info("about to send POST request to CarePlan...")
+        val postResponseCarePlan = sendPostRequestTo(
+            host = "http://localhost:31082",
+            slashEndpoint = "/CarePlan",
+            jsonBody = carePlanTest
+        )
+
+        logger.info("CarePlan POST response: ${postResponseCarePlan?.statusCode()} - ${postResponseCarePlan?.bodyAsString()}")
+        Thread.sleep(20000) // wait for request to be processed (can be removed and replaced with event listening instead)
+
+        logger.info("deleting one pod to simulate failure...")
+        try {
+            deleteSinglePod("terapia")  // delete one pod to simulate failure and automatic recovery
+        } catch (e: Exception) {
+            logger.error("Failed to delete pod: ${e.message}", e)
+        }
+
+        logger.info("about to send POST request to AllergyIntolerance...")
+        val postResponseAllergy = sendPostRequestTo(
+            host = "http://localhost:31080",
+            slashEndpoint = "/AllergyIntolerance",
+            jsonBody = allergyIntoleranceTest
+        )
+
+        logger.info("AllergyIntolerance POST response: ${postResponseAllergy?.statusCode()} - ${postResponseAllergy?.bodyAsString()}")
+        Thread.sleep(20000) // wait for event to be processed (can be removed and replaced with event listening instead)
+
+        logger.info("about to send GET request to CarePlan to verify update...")
+        val getResponse = sendGetRequestTo("http://localhost:31082", "/CarePlan")
+
+        assertAll(
+            { assertTrue(postResponseCarePlan?.statusCode() == 200) },
+            { assertTrue(postResponseAllergy?.statusCode() == 200) },
+            { assertTrue(getResponse?.statusCode() == 200) },
+            { assertTrue(getResponse?.bodyAsString()?.contains("revoked") == true) }
+        )
+    }
+
     /**
      * Execute recovery test with one pod failure at specified time
      */
@@ -433,10 +476,10 @@ class RecoveryTimeTest : KubernetesTest() {
         }
     }
 
-    private fun sendGetRequestTo(slashEndpoint: String): HttpResponse<Buffer?>? {
+    private fun sendGetRequestTo(host: String, slashEndpoint: String): HttpResponse<Buffer?>? {
         return try {
             val response = webClient
-                .getAbs("$hostUrl$slashEndpoint")
+                .getAbs("$host$slashEndpoint")
                 .send()
                 .toCompletionStage()
                 .toCompletableFuture()

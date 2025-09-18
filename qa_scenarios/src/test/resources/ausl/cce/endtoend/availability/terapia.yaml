@@ -38,7 +38,7 @@ spec:
             - name: CONFIG_SERVER_DB_PASSWORD
               value: "password"
             - name: KAFKA_HOST
-              value: "broker-0.broker.monitoring-app.svc.cluster.local"
+              value: "broker"
             - name: KAFKA_PORT
               value: "9092"
           resources:

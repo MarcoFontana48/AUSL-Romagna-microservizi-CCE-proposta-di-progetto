@@ -38,6 +38,7 @@ class CarePlanServiceImpl(
             val allCarePlans = carePlanRepository.findAll()
             logger.debug("Retrieved ${allCarePlans.count()} CarePlans from repository")
 
+            // instead of checking each carePlan, a better algorithm could be used here to reduce time complexity
             allCarePlans.forEach { carePlanEntity ->
                 val carePlan = carePlanEntity.carePlan
                 val allergy = allergyDiagnosed.allergyIntolerance
