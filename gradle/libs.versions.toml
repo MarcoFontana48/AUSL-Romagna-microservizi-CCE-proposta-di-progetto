@@ -22,7 +22,7 @@ mysql-version = "8.0.33"
 task-tree-version = "4.0.0"
 springBoot = "3.5.5"
 springCloud = "2023.0.3"
-micrometer = "1.12.0"
+micrometer = "1.15.4"
 mongodb = "5.5.1"
 hapi-fhir = "6.0.3"
 
