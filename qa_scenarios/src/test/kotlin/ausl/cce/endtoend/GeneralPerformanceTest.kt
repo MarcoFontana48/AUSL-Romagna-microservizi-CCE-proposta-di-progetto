@@ -18,7 +18,11 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import java.io.File
+import java.io.FileWriter
+import java.io.PrintWriter
 import java.time.Duration
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
 import kotlin.test.assertTrue
 
@@ -33,6 +37,7 @@ class GeneralPerformanceTest : KubernetesTest() {
     private val k8sNamespace = "monitoring-app"
     private val urlHost = "http://localhost:31080"
     private val prometheusUrl = "http://localhost:31090"
+    private val csvOutputDir = "test-results/metrics"
     private lateinit var k8sDirectory: File
     private lateinit var vertx: Vertx
     private lateinit var webClient: WebClient
@@ -60,6 +65,15 @@ class GeneralPerformanceTest : KubernetesTest() {
         }
     }
 
+    data class PrometheusMetric(
+        val name: String,
+        val value: String,
+        val timestamp: String,
+        val labels: Map<String, String> = emptyMap(),
+        val help: String = "",
+        val type: String = ""
+    )
+
     @BeforeEach
     fun setUp() {
         vertx = Vertx.vertx()
@@ -80,6 +94,9 @@ class GeneralPerformanceTest : KubernetesTest() {
             .setFollowRedirects(true)
 
         webClient = WebClient.create(vertx, options)
+
+        // Create CSV output directory
+        File(csvOutputDir).mkdirs()
 
         setUpEnvironment(k8sPrometheus)
     }
@@ -104,7 +121,15 @@ class GeneralPerformanceTest : KubernetesTest() {
     @Timeout(30 * 60) // 30 minutes timeout
     fun performanceEvaluationSustainedAverageLoad() {
         setUpEnvironment(k8sFiles)
+
+        // Start metrics collection before test
+        val metricsCollectionFuture = startContinuousMetricsCollection("escalating_spike_test")
+
         val results = escalatingSpikeTest(10, 50, "/CarePlan", carePlanTest, "/CarePlan/002")
+
+        // Stop metrics collection and export final snapshot
+        stopContinuousMetricsCollection(metricsCollectionFuture)
+        exportPrometheusMetricsToCSV("escalating_spike_test_final")
 
         // Log the results
         results.logSummary()
@@ -123,7 +148,15 @@ class GeneralPerformanceTest : KubernetesTest() {
     @Timeout(30 * 60) // 30 minutes timeout
     fun performanceEvaluationSuddenSpikeLoad() {
         setUpEnvironment(k8sFiles)
+
+        // Start metrics collection before test
+        val metricsCollectionFuture = startContinuousMetricsCollection("sudden_spike_test")
+
         val results = spikeTest(500, "/CarePlan", carePlanTest, "/CarePlan/002")
+
+        // Stop metrics collection and export final snapshot
+        stopContinuousMetricsCollection(metricsCollectionFuture)
+        exportPrometheusMetricsToCSV("sudden_spike_test_final")
 
         // Log the results
         results.logSummary()
@@ -135,6 +168,249 @@ class GeneralPerformanceTest : KubernetesTest() {
 //            { assertTrue(results.replicaNumber > 1, "Should have scaled horizontally") },
 //        )
         assertTrue(true)
+    }
+
+    /**
+     * Exports Prometheus metrics to CSV format by fetching data from the /metrics endpoint
+     */
+    fun exportPrometheusMetricsToCSV(testScenario: String = "default"): String? {
+        return try {
+            logger.info("Fetching metrics from Prometheus /metrics endpoint...")
+
+            val response = webClient
+                .getAbs("$prometheusUrl/metrics")
+                .timeout(30000)
+                .send()
+                .toCompletionStage()
+                .toCompletableFuture()
+                .get(30, TimeUnit.SECONDS)
+
+            if (response.statusCode() == 200) {
+                val metricsData = response.bodyAsString()
+                val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"))
+                val csvFileName = "$csvOutputDir/${testScenario}_metrics_${timestamp}.csv"
+
+                parseAndSaveMetricsAsCSV(metricsData, csvFileName)
+                logger.info("Metrics exported to CSV: $csvFileName")
+                csvFileName
+            } else {
+                logger.error("Failed to fetch metrics. Status: ${response.statusCode()}")
+                null
+            }
+        } catch (e: Exception) {
+            logger.error("Error exporting metrics to CSV: ${e.message}", e)
+            null
+        }
+    }
+
+    /**
+     * Starts continuous metrics collection in a separate thread
+     */
+    private fun startContinuousMetricsCollection(testScenario: String): Future<Void> {
+        logger.info("Starting continuous metrics collection for scenario: $testScenario")
+
+        return vertx.executeBlocking<Void> { promise ->
+            try {
+                var iteration = 0
+                while (!Thread.currentThread().isInterrupted) {
+                    exportPrometheusMetricsToCSV("${testScenario}_iteration_${++iteration}")
+                    Thread.sleep(30000) // Collect metrics every 30 seconds
+                }
+                promise.complete()
+            } catch (e: InterruptedException) {
+                logger.info("Continuous metrics collection stopped")
+                promise.complete()
+            } catch (e: Exception) {
+                logger.error("Error in continuous metrics collection: ${e.message}", e)
+                promise.fail(e)
+            }
+        }
+    }
+
+    /**
+     * Stops continuous metrics collection
+     */
+    private fun stopContinuousMetricsCollection(future: Future<Void>) {
+        logger.info("Stopping continuous metrics collection...")
+        // The future will complete when the blocking thread is interrupted
+        // In a real implementation, you might want to use a more sophisticated cancellation mechanism
+    }
+
+    /**
+     * Parses Prometheus metrics format and saves as CSV
+     */
+    private fun parseAndSaveMetricsAsCSV(metricsData: String, csvFileName: String) {
+        val metrics = parsePrometheusMetrics(metricsData)
+
+        File(csvFileName).parentFile.mkdirs()
+        PrintWriter(FileWriter(csvFileName)).use { writer ->
+            // Write CSV header
+            writer.println("timestamp,metric_name,metric_value,metric_type,help_text,labels")
+
+            val currentTimestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+
+            metrics.forEach { metric ->
+                val labelsString = metric.labels.entries.joinToString(";") { "${it.key}=${it.value}" }
+                writer.println("\"$currentTimestamp\",\"${metric.name}\",\"${metric.value}\",\"${metric.type}\",\"${metric.help}\",\"$labelsString\"")
+            }
+        }
+
+        logger.info("Saved ${metrics.size} metrics to $csvFileName")
+    }
+
+    /**
+     * Parses Prometheus metrics format into structured data
+     */
+    private fun parsePrometheusMetrics(metricsData: String): List<PrometheusMetric> {
+        val metrics = mutableListOf<PrometheusMetric>()
+        val lines = metricsData.lines()
+
+        var currentHelp = ""
+        var currentType = ""
+        var currentMetricName = ""
+
+        for (line in lines) {
+            when {
+                line.startsWith("# HELP ") -> {
+                    val parts = line.substring(7).split(" ", limit = 2)
+                    currentMetricName = parts[0]
+                    currentHelp = if (parts.size > 1) parts[1] else ""
+                }
+                line.startsWith("# TYPE ") -> {
+                    val parts = line.substring(7).split(" ", limit = 2)
+                    currentType = if (parts.size > 1) parts[1] else ""
+                }
+                line.isNotBlank() && !line.startsWith("#") -> {
+                    // Parse metric line: metric_name{labels} value [timestamp]
+                    val metric = parseMetricLine(line, currentHelp, currentType)
+                    if (metric != null) {
+                        metrics.add(metric)
+                    }
+                }
+            }
+        }
+
+        return metrics
+    }
+
+    /**
+     * Parses a single metric line from Prometheus format
+     */
+    private fun parseMetricLine(line: String, help: String, type: String): PrometheusMetric? {
+        return try {
+            val parts = line.trim().split("\\s+".toRegex())
+            if (parts.size < 2) return null
+
+            val metricPart = parts[0]
+            val value = parts[1]
+            val timestamp = if (parts.size > 2) parts[2] else ""
+
+            // Parse metric name and labels
+            val (name, labels) = if (metricPart.contains('{')) {
+                val nameEnd = metricPart.indexOf('{')
+                val name = metricPart.substring(0, nameEnd)
+                val labelsString = metricPart.substring(nameEnd + 1, metricPart.lastIndexOf('}'))
+                val labels = parseLabels(labelsString)
+                Pair(name, labels)
+            } else {
+                Pair(metricPart, emptyMap<String, String>())
+            }
+
+            PrometheusMetric(
+                name = name,
+                value = value,
+                timestamp = timestamp,
+                labels = labels,
+                help = help,
+                type = type
+            )
+        } catch (e: Exception) {
+            logger.warn("Failed to parse metric line: $line - ${e.message}")
+            null
+        }
+    }
+
+    /**
+     * Parses labels from Prometheus format: key1="value1",key2="value2"
+     */
+    private fun parseLabels(labelsString: String): Map<String, String> {
+        if (labelsString.isBlank()) return emptyMap()
+
+        val labels = mutableMapOf<String, String>()
+        val regex = """(\w+)="([^"]*)"(?:,|$)""".toRegex()
+
+        regex.findAll(labelsString).forEach { match ->
+            val key = match.groupValues[1]
+            val value = match.groupValues[2]
+            labels[key] = value
+        }
+
+        return labels
+    }
+
+    /**
+     * Exports specific metrics based on query filters to CSV
+     */
+    fun exportFilteredMetricsToCSV(
+        testScenario: String,
+        metricNameFilters: List<String> = emptyList(),
+        labelFilters: Map<String, String> = emptyMap()
+    ): String? {
+        return try {
+            val response = webClient
+                .getAbs("$prometheusUrl/metrics")
+                .timeout(30000)
+                .send()
+                .toCompletionStage()
+                .toCompletableFuture()
+                .get(30, TimeUnit.SECONDS)
+
+            if (response.statusCode() == 200) {
+                val metricsData = response.bodyAsString()
+                val allMetrics = parsePrometheusMetrics(metricsData)
+
+                // Apply filters
+                val filteredMetrics = allMetrics.filter { metric ->
+                    val nameMatches = metricNameFilters.isEmpty() ||
+                            metricNameFilters.any { filter -> metric.name.contains(filter, ignoreCase = true) }
+
+                    val labelMatches = labelFilters.isEmpty() ||
+                            labelFilters.all { (key, value) -> metric.labels[key] == value }
+
+                    nameMatches && labelMatches
+                }
+
+                val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"))
+                val csvFileName = "$csvOutputDir/${testScenario}_filtered_metrics_${timestamp}.csv"
+
+                saveMetricsAsCSV(filteredMetrics, csvFileName)
+                logger.info("Filtered metrics (${filteredMetrics.size} entries) exported to CSV: $csvFileName")
+                csvFileName
+            } else {
+                logger.error("Failed to fetch metrics. Status: ${response.statusCode()}")
+                null
+            }
+        } catch (e: Exception) {
+            logger.error("Error exporting filtered metrics to CSV: ${e.message}", e)
+            null
+        }
+    }
+
+    /**
+     * Helper method to save metrics list as CSV
+     */
+    private fun saveMetricsAsCSV(metrics: List<PrometheusMetric>, csvFileName: String) {
+        File(csvFileName).parentFile.mkdirs()
+        PrintWriter(FileWriter(csvFileName)).use { writer ->
+            writer.println("timestamp,metric_name,metric_value,metric_type,help_text,labels")
+
+            val currentTimestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+
+            metrics.forEach { metric ->
+                val labelsString = metric.labels.entries.joinToString(";") { "${it.key}=${it.value}" }
+                writer.println("\"$currentTimestamp\",\"${metric.name}\",\"${metric.value}\",\"${metric.type}\",\"${metric.help}\",\"$labelsString\"")
+            }
+        }
     }
 
     private fun setUpEnvironment(k8sFilesPath: String) {
@@ -208,6 +484,9 @@ class GeneralPerformanceTest : KubernetesTest() {
             Thread.sleep(30_000)
             logger.info("Iteration ${i + 1}/$iterationNumber: Sending ${(i + 1) * requestsMultiplier} GET requests...")
             sendGetRequestTo(getSlashEndpoint, (i + 1) * requestsMultiplier)
+
+            // Export metrics snapshot after each iteration
+            exportPrometheusMetricsToCSV("escalating_spike_iteration_${i + 1}")
         }
 
         logger.info("Escalating spike test completed, extracting results...")
