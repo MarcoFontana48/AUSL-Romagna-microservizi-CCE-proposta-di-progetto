@@ -25,7 +25,7 @@ dependencies {
     testImplementation(libs.archunit)
     testImplementation(libs.junit)
     testImplementation(kotlin("test"))
-    testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.14.0")
     testImplementation("io.mockk:mockk:1.13.8")
     implementation(project(":utils"))
 }
