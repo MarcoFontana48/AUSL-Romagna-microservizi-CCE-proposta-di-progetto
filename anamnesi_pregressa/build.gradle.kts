@@ -24,7 +24,7 @@ dependencies {
     testImplementation(libs.archunit)
     testImplementation(libs.junit)
     testImplementation(kotlin("test"))
-    testImplementation("io.mockk:mockk:1.13.8")
+    testImplementation("io.mockk:mockk:1.14.6")
     implementation(project(":utils"))
 }
 
