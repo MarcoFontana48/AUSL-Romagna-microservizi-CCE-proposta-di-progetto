@@ -8,7 +8,7 @@ kotlinxDatetime = "0.7.1-0.6.x-compat"
 kotlinxSerializationJSON = "1.9.0"
 kotlinxCoroutines = "1.10.2"
 shadowjar-version = "8.1.1"
-log4j = "2.25.1"
+log4j = "2.25.2"
 kotest = "6.0.3"
 mockito = "5.19.0"
 ktlint = "10.3.0"
@@ -52,7 +52,7 @@ spring-cloud-starter-circuitbreaker-resilience4j = { module = "org.springframewo
 spring-cloud-starter-gateway = { module = "org.springframework.cloud:spring-cloud-starter-gateway" }
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-version" }
 junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit-version" }
-log4j-slf4j-impl = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version = "2.25.1" }
+log4j-slf4j-impl = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version = "2.25.2" }
 micrometer-core = { module = "io.micrometer:micrometer-core", version.ref = "micrometer" }
 micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
 micrometer-registry-jmx = { module = "io.micrometer:micrometer-registry-jmx", version.ref = "micrometer" }
