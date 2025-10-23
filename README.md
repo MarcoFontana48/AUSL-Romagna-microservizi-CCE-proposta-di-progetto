@@ -2,6 +2,13 @@
 [![semantic-release: angular](https://img.shields.io/badge/semantic--release-angular-e10079?logo=semantic-release)](https://github.com/semantic-release/semantic-release)
 [![Renovate](https://img.shields.io/badge/renovate-enabled-brightgreen.svg)](https://renovatebot.com)
 
+# AUSL della Romagna – Transition to Event-Driven Microservices for the EHR System
+
+This prototype for the AUSL della Romagna EHR system was developed to validate the design decisions made during the transition to an event-driven microservices architecture.
+
+For a more in-depth analysis, please refer to the project report.  
+*(Note: as of October 23, 2025, the thesis has not yet been published on AMS. In the meantime, you can access it via the PDF file on my Google Drive.)*
+
 # How to run the project
 how to build and run the entire project (it also builds all images before running):
 
@@ -40,30 +47,6 @@ or
 
 ```bash
 curl http://localhost:31080/health
-```
-
-to check if the application reaches the service from api-gateway:
-
-```bash
-curl.exe http://localhost:31080/service/health
-```
-
-to check all endpoints that can be reached from the API Gateway, you can use the following command:
-
-```bash
-curl.exe http://localhost:31080/route
-```
-
-to get metrics from API gateway
-
-```bash
-curl.exe http://localhost:31080/metrics
-```
-
-to get metrics from the service
-
-```bash
-curl.exe http://localhost:31080/service/metrics
 ```
 
 it is also possible to query prometheus via its browser GUI, connecting to "http://localhost:31090/"
@@ -125,16 +108,6 @@ kubectl get hpa -n monitoring-app --watch
 [//]: # (hey -c 50 -z 2m http://localhost:31080/service/health)
 
 [//]: # (```)
-
-To send a post request for dummy entities
-```bash
-Invoke-RestMethod -Uri "http://localhost:31080/service/dummies" -Method POST -ContentType "application/json" -Body '{"id":{"value":"123"},"field":"dummy_field_value"}'
-```
-
-To send a get request about the dummy entity just created
-```bash
-curl.exe -X GET http://localhost:31080/service/dummies/123
-```
 
 a request to 'terapia' to post a care plan with id '002' that contains a medication request for an example medication with id 'penicillin-001' to a patient with id '456':
 
@@ -399,49 +372,7 @@ or
 curl http://localhost:8080/health
 ```
 
-to check if the application reaches the service from api-gateway:
-
-```bash
-curl.exe http://localhost:8080/service/health
-```
-
-to check all endpoints that can be reached from the API Gateway, you can use the following command:
-
-```bash
-curl.exe http://localhost:8080/route
-```
-
-to get metrics from API gateway
-
-```bash
-curl.exe http://localhost:8080/metrics
-```
-
-to get metrics from the service
-
-```bash
-curl.exe http://localhost:8080/service/metrics
-```
-
 it is also possible to query prometheus via its browser GUI, connecting to "http://localhost:9090/"
-
-to send a post request for dummy entities
-
-```bash
-Invoke-RestMethod -Uri "http://localhost:8080/service/dummies" -Method POST -ContentType "application/json" -Body '{"id":{"value":"123"},"field":"dummy_field_value"}'
-```
-
-to send a get request about the dummy entity just created
-
-```bash
-curl.exe -X GET http://localhost:8080/service/dummies/123
-```
-
-a request to 'anamnesi-pregressa' to get an allergy with id '123':
-
-```bash
-curl.exe -X GET http://localhost:8080/anamnesi-pregressa/AllergyIntolerance/123
-```
 
 a request to 'anamnesi-pregressa' to add an allergy with id '123' to a patient with id '456':
 ```bash
@@ -502,10 +433,10 @@ Invoke-RestMethod -Uri "http://localhost:8080/anamnesi-pregressa/AllergyIntolera
 }'
 ```
 
-a request to 'diario-clinico' to get an encounter with id '111':
+a request to 'anamnesi-pregressa' to get an allergy with id '123':
 
 ```bash
-curl.exe -X GET http://localhost:8080/diario-clinico/Encounter/111
+curl.exe -X GET http://localhost:8080/anamnesi-pregressa/AllergyIntolerance/123
 ```
 
 a request to 'diario-clinico' to add an encounter with id '111' to a patient with id '456':
@@ -539,58 +470,10 @@ Invoke-RestMethod -Uri "http://localhost:8080/diario-clinico/Encounter" -Method 
 }'
 ```
 
-a request to 'diario-clinico' to get an encounter with id '123':
+a request to 'diario-clinico' to get an encounter with id '111':
 
 ```bash
-curl.exe -X GET http://localhost:8080/diario-clinico/Encounter/123
-```
-
-a request to 'diario-clinico' to add an encounter with id '123' to a patient with id '456' and referenced to a CarePlan with id '789':
-```bash
-Invoke-RestMethod -Uri "http://localhost:8080/diario-clinico/Encounter" -Method POST -ContentType "application/json" -Body '{
-  "resourceType": "Encounter",
-  "id": "123",
-  "subject": {
-    "reference": "Patient/456"
-  },
-  "class": {
-    "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
-    "code": "AMB",
-    "display": "Ambulatory"
-  },
-  "status": "finished",
-  "serviceType": {
-    "coding": [
-      {
-        "system": "http://terminology.hl7.org/CodeSystem/service-type",
-        "code": "408",
-        "display": "General Medicine"
-      }
-    ],
-    "text": "General Medicine"
-  },
-  "period": {
-    "start": "2025-09-04T12:00:00Z",
-    "end": "2025-09-04T12:00:00Z"
-  },
-  "diagnosis": [
-    {
-      "condition": {
-        "reference": "CarePlan/789"
-      },
-      "use": {
-        "coding": [
-          {
-            "system": "http://terminology.hl7.org/CodeSystem/diagnosis-role",
-            "code": "CM",
-            "display": "Comorbidity diagnosis"
-          }
-        ]
-      },
-      "rank": 1
-    }
-  ]
-}'
+curl.exe -X GET http://localhost:8080/diario-clinico/Encounter/111
 ```
 
 a request to 'terapia' to post a care plan with id '001' to a patient with id '456':
