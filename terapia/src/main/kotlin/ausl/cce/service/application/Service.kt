@@ -13,6 +13,9 @@ import org.apache.logging.log4j.LogManager
 import org.hl7.fhir.r4.model.AllergyIntolerance
 import org.hl7.fhir.r4.model.CarePlan
 
+/**
+ * interface for CarePlan entity services.
+ */
 interface CarePlanService : Service {
     fun getCarePlanById(id: CarePlanId): CarePlanEntity
     fun addCarePlan(entity: CarePlanEntity)
@@ -25,6 +28,9 @@ interface CarePlanService : Service {
     ): Boolean
 }
 
+/**
+ * Implementation of the CarePlanService interface.
+ */
 class CarePlanServiceImpl(
     private val carePlanRepository: CarePlanRepository,
     private val terapiaEventProducer: TerapiaProducerVerticle,
@@ -33,6 +39,12 @@ class CarePlanServiceImpl(
 ) : CarePlanService, MetricsProvider, CarePlanMetricsProvider {
     private val logger = LogManager.getLogger(this::class)
 
+    /**
+     * Check all CarePlans for medication-allergy conflicts based on a newly diagnosed allergy.
+     * If a conflict is found, the CarePlan is suspended (status set to REVOKED).
+     *
+     * @param allergyDiagnosed The newly diagnosed allergy information.
+     */
     override fun checkAndSuspendCarePlanIfConflict(allergyDiagnosed: AllergyDiagnosed) {
         try {
             val allCarePlans = carePlanRepository.findAll()
@@ -73,18 +85,30 @@ class CarePlanServiceImpl(
         }
     }
 
+    /**
+     * Retrieves a CarePlanEntity by its ID.
+     */
     override fun getCarePlanById(id: CarePlanId): CarePlanEntity {
         return carePlanRepository.findById(id) ?: throw NoSuchElementException("CarePlanEntity with id '$id' not found")
     }
 
+    /**
+     * Adds a new CarePlanEntity to the repository.
+     */
     override fun addCarePlan(entity: CarePlanEntity) {
         carePlanRepository.save(entity)
     }
 
+    /**
+     * Updates an existing CarePlanEntity in the repository.
+     */
     override fun updateCarePlan(entity: CarePlanEntity) {
         carePlanRepository.update(entity)
     }
 
+    /**
+     * Deletes a CarePlanEntity from the repository by its ID.
+     */
     override fun deleteCarePlan(id: CarePlanId) {
         carePlanRepository.deleteById(id)
     }
@@ -117,6 +141,9 @@ class CarePlanServiceImpl(
     }
 }
 
+/**
+ * interface for Dummy entity services.
+ */
 interface DummyService : Service {
     fun getDummyEntityById(id: DummyId): DummyEntity
     fun addDummyEntity(dummyEntity: DummyEntity)
@@ -124,6 +151,9 @@ interface DummyService : Service {
     fun deleteDummyEntity(id: DummyId)
 }
 
+/**
+ * Implementation of the DummyService interface.
+ */
 class DummyServiceImpl(
     private val dummyRepository: DummyRepository,
 ) : DummyService {

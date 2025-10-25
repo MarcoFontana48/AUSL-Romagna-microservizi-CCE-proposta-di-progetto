@@ -12,6 +12,9 @@ import mf.cce.utils.Ports
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
+/**
+ * Verticle responsible for setting up and running the HTTP server.
+ */
 class ServerVerticle(
     private val controller: ServiceController,
 ) : AbstractVerticle() {
@@ -30,6 +33,9 @@ class ServerVerticle(
             }
     }
 
+    /**
+     * Defines the HTTP endpoints and their corresponding handlers.
+     */
     private fun defineEndpoints(router: Router) {
         router.route().handler(BodyHandler.create())
 
@@ -48,6 +54,9 @@ class ServerVerticle(
         router.post(Endpoints.CARE_PLANS).handler { ctx -> controller.createCarePlanHandler(ctx) }
     }
 
+    /**
+     * Configures and runs the HTTP server with specified options.
+     */
     private fun runServer(router: Router): Future<HttpServer> {
         val serverOptions = HttpServerOptions()
             .setPort(Ports.HTTP)

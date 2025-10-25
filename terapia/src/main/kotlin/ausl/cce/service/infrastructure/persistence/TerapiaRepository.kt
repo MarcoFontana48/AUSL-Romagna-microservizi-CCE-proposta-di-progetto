@@ -63,6 +63,9 @@ abstract class MongoRepository<I : ID<*>, E : Entity<I>>(
         }
     }
 
+    /**
+     * Saves an entity to the MongoDB collection.
+     */
     override fun save(entity: E) {
         try {
             logger.debug("Saving entity with id: ${entity.id.value}")
@@ -81,6 +84,9 @@ abstract class MongoRepository<I : ID<*>, E : Entity<I>>(
         }
     }
 
+    /**
+     * Finds an entity by its ID in the MongoDB collection.
+     */
     override fun findById(id: I): E? {
         return try {
             logger.debug("Finding entity with id: ${id.value}")
@@ -102,6 +108,9 @@ abstract class MongoRepository<I : ID<*>, E : Entity<I>>(
         }
     }
 
+    /**
+     * Deletes an entity by its ID from the MongoDB collection.
+     */
     override fun deleteById(id: I): E? {
         return try {
             logger.debug("Deleting entity with id: ${id.value}")
@@ -130,6 +139,9 @@ abstract class MongoRepository<I : ID<*>, E : Entity<I>>(
         }
     }
 
+    /**
+     * Finds all entities in the MongoDB collection.
+     */
     override fun findAll(): Iterable<E> {
         return try {
             logger.debug("Finding all entities")
@@ -153,6 +165,9 @@ abstract class MongoRepository<I : ID<*>, E : Entity<I>>(
         }
     }
 
+    /**
+     * Updates an existing entity in the MongoDB collection.
+     */
     override fun update(entity: E) {
         try {
             logger.debug("Updating entity with id: ${entity.id.value}")
@@ -184,6 +199,9 @@ abstract class MongoRepository<I : ID<*>, E : Entity<I>>(
         }
     }
 
+    /**
+     * Closes the MongoDB client connection.
+     */
     fun close() {
         try {
             mongoClient.close()
@@ -194,7 +212,9 @@ abstract class MongoRepository<I : ID<*>, E : Entity<I>>(
     }
 }
 
-// Concrete implementation for DummyEntity
+/**
+ * Concrete implementation for DummyEntity
+ */
 class MongoDummyRepository(
     credentials: RepositoryCredentials
 ) : MongoRepository<DummyEntity.DummyId, DummyEntity>(
@@ -219,7 +239,9 @@ class MongoDummyRepository(
     }
 ), DummyRepository
 
-// Concrete implementation for CarePlanEntity
+/**
+ * Concrete implementation for CarePlanEntity
+ */
 class MongoCarePlanRepository(
     credentials: RepositoryCredentials
 ) : MongoRepository<CarePlanId, CarePlanEntity>(

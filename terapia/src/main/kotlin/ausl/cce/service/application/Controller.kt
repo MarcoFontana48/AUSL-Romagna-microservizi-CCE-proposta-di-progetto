@@ -8,6 +8,9 @@ import io.vertx.ext.web.RoutingContext
 import mf.cce.utils.HealthCheckMetricsProvider
 import mf.cce.utils.MetricsProvider
 
+/**
+ * Central interface that groups all the service controllers, handlers and metrics providers.
+ */
 interface ServiceController :
     HealthCheckHandler,
     MetricsHandler,
@@ -24,6 +27,9 @@ interface ServiceController :
 
 /* === CLIENT REPLY HANDLER === */
 
+/**
+ * Interface for handling JSON replies to clients.
+ */
 interface ClientJsonReplyHandler {
     fun sendResponse(ctx: RoutingContext, statusCode: Int, message: JsonObject)
     fun sendErrorResponse(ctx: RoutingContext, error: Throwable)
@@ -31,12 +37,18 @@ interface ClientJsonReplyHandler {
 
 /* === HEALTH CHECK HANDLER === */
 
+/**
+ * Interface for handling health check requests.
+ */
 interface HealthCheckHandler {
     fun healthCheckHandler(ctx: RoutingContext)
 }
 
 /* === METRICS HANDLER === */
 
+/**
+ * Interface for handling metrics requests.
+ */
 interface MetricsHandler {
     fun metricsHandler(ctx: RoutingContext)
 }
@@ -44,18 +56,30 @@ interface MetricsHandler {
 /* === DDD ENTITY HANDLERS AND METRICS PROVIDER === */
 // Dummy (a generic test entity, not to be used in production)
 
+/**
+ * CRUD interface for Dummy entity handlers.
+ */
 interface CRUDDummyHandler : QueryDummyHandler, CommandDummyHandler
 
+/**
+ * Interface for Query operations on Dummy entity.
+ */
 interface QueryDummyHandler {
     fun getDummyHandler(ctx: RoutingContext)
 }
 
+/**
+ * Interface for Command operations on Dummy entity.
+ */
 interface CommandDummyHandler {
     fun createDummyHandler(ctx: RoutingContext)
     fun updateDummyHandler(ctx: RoutingContext)
     fun deleteDummyHandler(ctx: RoutingContext)
 }
 
+/**
+ * Interface for providing metrics related to Dummy entity operations.
+ */
 interface DummyMetricsProvider {
     val meterRegistry: MeterRegistry
     val serviceName: String
@@ -113,19 +137,30 @@ interface DummyMetricsProvider {
             .register(meterRegistry)
 }
 
-// CarePlan
+/**
+ * CRUD interface for CarePlan entity handlers.
+ */
 interface CRUDCarePlanHandler : QueryCarePlanHandler, CommandCarePlanHandler
 
+/**
+ * Interface for Query operations on CarePlan entity.
+ */
 interface QueryCarePlanHandler {
     fun getCarePlanHandler(ctx: RoutingContext)
 }
 
+/**
+ * Interface for Command operations on CarePlan entity.
+ */
 interface CommandCarePlanHandler {
     fun createCarePlanHandler(ctx: RoutingContext)
     fun updateCarePlanHandler(ctx: RoutingContext)
     fun deleteCarePlanHandler(ctx: RoutingContext)
 }
 
+/**
+ * Interface for providing metrics related to CarePlan entity operations.
+ */
 interface CarePlanMetricsProvider {
     val meterRegistry: MeterRegistry
     val serviceName: String

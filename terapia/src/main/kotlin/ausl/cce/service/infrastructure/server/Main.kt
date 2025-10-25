@@ -14,10 +14,16 @@ import io.vertx.core.Verticle
 import io.vertx.core.Vertx
 import mf.cce.utils.RepositoryCredentials
 
+/**
+ * Main entry point for the terapia service server application.
+ */
 fun main() {
     runServer()
 }
 
+/**
+ * Function to initialize and run the server with necessary verticles and services.
+ */
 fun runServer() {
     val vertx: Vertx = Vertx.vertx()
 
@@ -48,6 +54,9 @@ fun runServer() {
     deployVerticles(vertx, serverVerticle, consumerVerticle, terapiaEventProducer)
 }
 
+/**
+ * Function to deploy multiple verticles on the given Vertx instance.
+ */
 private fun deployVerticles(vertx: Vertx, vararg verticles: Verticle) {
     println("Deploying ${verticles.size} verticles...")
     var counter = 0
@@ -64,6 +73,9 @@ private fun deployVerticles(vertx: Vertx, vararg verticles: Verticle) {
     }
 }
 
+/**
+ * Defines and configures the Prometheus meter registry with custom timers.
+ */
 private fun defineMeterRegistry(): PrometheusMeterRegistry {
     val config = PrometheusConfig.DEFAULT
     val res = PrometheusMeterRegistry(config)
@@ -101,6 +113,9 @@ private fun defineMeterRegistry(): PrometheusMeterRegistry {
     return res
 }
 
+/**
+ * Defines and configures the circuit breaker with specified options.
+ */
 private fun defineCircuitBreaker(vertx: Vertx): CircuitBreaker {
     val options = CircuitBreakerOptions()
         .setMaxFailures(5)
