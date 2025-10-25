@@ -7,6 +7,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.apache.logging.log4j.LogManager
 
+/**
+ * Test class for Encounter domain model and related classes.
+ */
 class EncounterTest {
     val logger = LogManager.getLogger(this::class.java)
 

@@ -8,7 +8,9 @@ import io.vertx.ext.web.RoutingContext
 import mf.cce.utils.HealthCheckMetricsProvider
 import mf.cce.utils.MetricsProvider
 
-// Updated ServiceController interface with Encounter handlers
+/**
+ * Central interface that groups all the service controllers, handlers and metrics providers.
+ */
 interface ServiceController :
     HealthCheckHandler,
     MetricsHandler,
@@ -25,6 +27,9 @@ interface ServiceController :
 
 /* === CLIENT REPLY HANDLER === */
 
+/**
+ * Interface for handling JSON replies to clients.
+ */
 interface ClientJsonReplyHandler {
     fun sendResponse(ctx: RoutingContext, statusCode: Int, message: JsonObject)
     fun sendErrorResponse(ctx: RoutingContext, error: Throwable)
@@ -32,32 +37,48 @@ interface ClientJsonReplyHandler {
 
 /* === HEALTH CHECK HANDLER === */
 
+/**
+ * Interface for handling health check requests.
+ */
 interface HealthCheckHandler {
     fun healthCheckHandler(ctx: RoutingContext)
 }
 
 /* === METRICS HANDLER === */
 
+/**
+ * Interface for handling metrics requests.
+ */
 interface MetricsHandler {
     fun metricsHandler(ctx: RoutingContext)
 }
 
 /* === DDD ENTITY HANDLERS AND METRICS PROVIDER === */
 
-// Dummy (a generic test entity, not to be used in production)
-
+/**
+ * CRUD interface for Dummy entity handlers.
+ */
 interface CRUDDummyHandler : QueryDummyHandler, CommandDummyHandler
 
+/**
+ * Interface for Query operations on Dummy entity.
+ */
 interface QueryDummyHandler {
     fun getDummyHandler(ctx: RoutingContext)
 }
 
+/**
+ * Interface for Command operations on Dummy entity.
+ */
 interface CommandDummyHandler {
     fun createDummyHandler(ctx: RoutingContext)
     fun updateDummyHandler(ctx: RoutingContext)
     fun deleteDummyHandler(ctx: RoutingContext)
 }
 
+/**
+ * Metrics provider for Dummy entity operations.
+ */
 interface DummyMetricsProvider {
     val meterRegistry: MeterRegistry
     val serviceName: String
@@ -115,19 +136,30 @@ interface DummyMetricsProvider {
             .register(meterRegistry)
 }
 
-// Encounter
+/**
+ * CRUD interface for Encounter entity handlers.
+ */
 interface CRUDEncounterHandler : QueryEncounterHandler, CommandEncounterHandler
 
+/**
+ * Interface for Query operations on Encounter entity.
+ */
 interface QueryEncounterHandler {
     fun getEncounterHandler(ctx: RoutingContext)
 }
 
+/**
+ * Interface for Command operations on Encounter entity.
+ */
 interface CommandEncounterHandler {
     fun createEncounterHandler(ctx: RoutingContext)
     fun updateEncounterHandler(ctx: RoutingContext)
     fun deleteEncounterHandler(ctx: RoutingContext)
 }
 
+/**
+ * Metrics provider for Encounter entity operations.
+ */
 interface EncounterMetricsProvider {
     val meterRegistry: MeterRegistry
     val serviceName: String

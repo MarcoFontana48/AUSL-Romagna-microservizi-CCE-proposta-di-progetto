@@ -41,6 +41,9 @@ fun runServer() {
     deployVerticles(vertx, serverVerticle, diarioEventProducer)
 }
 
+/**
+ * Function to deploy multiple verticles on the given Vertx instance.
+ */
 private fun deployVerticles(vertx: Vertx, vararg verticles: Verticle) {
     println("Deploying ${verticles.size} verticles...")
     var counter = 0
