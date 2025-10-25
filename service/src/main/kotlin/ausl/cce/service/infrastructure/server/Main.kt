@@ -7,10 +7,16 @@ import ausl.cce.service.infrastructure.persistence.MongoRepository
 import io.vertx.core.Vertx
 import mf.cce.utils.RepositoryCredentials
 
+/**
+ * Main entry point for the service server application.
+ */
 fun main() {
     runServer()
 }
 
+/**
+ * Function to initialize and run the server with necessary verticles and services.
+ */
 fun runServer() {
     val vertx: Vertx = Vertx.vertx()
 

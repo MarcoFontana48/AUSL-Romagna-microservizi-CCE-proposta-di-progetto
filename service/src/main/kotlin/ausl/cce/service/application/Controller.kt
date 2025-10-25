@@ -8,6 +8,9 @@ import io.vertx.ext.web.RoutingContext
 import mf.cce.utils.HealthCheckMetricsProvider
 import mf.cce.utils.MetricsProvider
 
+/**
+ * Central interface that groups all the service controllers, handlers and metrics providers.
+ */
 interface ServiceController :
     HealthCheckHandler,
     MetricsHandler,
@@ -19,6 +22,9 @@ interface ServiceController :
 
 /* === CLIENT REPLY HANDLER === */
 
+/**
+ * Interface for handling JSON replies to clients.
+ */
 interface ClientJsonReplyHandler {
     fun sendResponse(ctx: RoutingContext, statusCode: Int, message: JsonObject)
     fun sendErrorResponse(ctx: RoutingContext, error: Throwable)
@@ -26,30 +32,48 @@ interface ClientJsonReplyHandler {
 
 /* === HEALTH CHECK HANDLER === */
 
+/**
+ * Interface for handling health check requests.
+ */
 interface HealthCheckHandler {
     fun healthCheckHandler(ctx: RoutingContext)
 }
 
 /* === METRICS HANDLER === */
 
+/**
+ * Interface for handling metrics requests.
+ */
 interface MetricsHandler {
     fun metricsHandler(ctx: RoutingContext)
 }
 
 /* === DUMMY DDD ENTITY HANDLERS === */
 
+/**
+ * CRUD interface for Dummy entity handlers.
+ */
 interface CRUDDummyHandler : QueryDummyHandler, CommandDummyHandler
 
+/**
+ * Query interface for Dummy entity handlers.
+ */
 interface QueryDummyHandler {
     fun getDummyHandler(ctx: RoutingContext)
 }
 
+/**
+ * Command interface for Dummy entity handlers.
+ */
 interface CommandDummyHandler {
     fun createDummyHandler(ctx: RoutingContext)
     fun updateDummyHandler(ctx: RoutingContext)
     fun deleteDummyHandler(ctx: RoutingContext)
 }
 
+/**
+ * Interface for providing metrics related to Dummy entity operations.
+ */
 interface DummyMetricsProvider {
     val meterRegistry: MeterRegistry
     val serviceName: String

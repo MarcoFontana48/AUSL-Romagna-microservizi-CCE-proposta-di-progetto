@@ -13,6 +13,9 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.bson.Document
 
+/**
+ * MongoDB implementation of the DummyRepository.
+ */
 class MongoRepository(
     private val credentials: RepositoryCredentials
 ) : DummyRepository {
@@ -42,6 +45,9 @@ class MongoRepository(
         }
     }
 
+    /**
+     * Saves a DummyEntity to the MongoDB collection.
+     */
     override fun save(entity: DummyEntity) {
         try {
             logger.debug("Saving entity with id: ${entity.id.value}")
@@ -62,6 +68,9 @@ class MongoRepository(
         }
     }
 
+    /**
+     * Finds a DummyEntity by its ID in the MongoDB collection.
+     */
     override fun findById(id: DummyEntity.DummyId): DummyEntity? {
         return try {
             logger.debug("Finding entity with id: ${id.value}")
@@ -85,6 +94,9 @@ class MongoRepository(
         }
     }
 
+    /**
+     * Deletes a DummyEntity by its ID from the MongoDB collection.
+     */
     override fun deleteById(id: DummyEntity.DummyId): DummyEntity? {
         return try {
             logger.debug("Deleting entity with id: ${id.value}")
@@ -116,6 +128,9 @@ class MongoRepository(
         }
     }
 
+    /**
+     * Finds all DummyEntities in the MongoDB collection.
+     */
     override fun findAll(): Iterable<DummyEntity> {
         return try {
             logger.debug("Finding all entities")
@@ -146,6 +161,9 @@ class MongoRepository(
         }
     }
 
+    /**
+     * Updates a DummyEntity in the MongoDB collection.
+     */
     override fun update(entity: DummyEntity) {
         try {
             logger.debug("Updating entity with id: ${entity.id.value}")
@@ -171,6 +189,9 @@ class MongoRepository(
         }
     }
 
+    /**
+     * Closes the MongoDB client connection.
+     */
     override fun close() {
         try {
             mongoClient.close()
