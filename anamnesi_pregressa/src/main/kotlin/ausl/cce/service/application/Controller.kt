@@ -8,6 +8,9 @@ import io.vertx.ext.web.RoutingContext
 import mf.cce.utils.HealthCheckMetricsProvider
 import mf.cce.utils.MetricsProvider
 
+/**
+ * Central interface that groups all the service controllers, handlers and metrics providers.
+ */
 interface ServiceController :
     HealthCheckHandler,
     MetricsHandler,
@@ -24,6 +27,9 @@ interface ServiceController :
 
 /* === CLIENT REPLY HANDLER === */
 
+/**
+ * Interface for handling JSON replies to clients.
+ */
 interface ClientJsonReplyHandler {
     fun sendResponse(ctx: RoutingContext, statusCode: Int, message: JsonObject)
     fun sendErrorResponse(ctx: RoutingContext, error: Throwable)
@@ -31,12 +37,18 @@ interface ClientJsonReplyHandler {
 
 /* === HEALTH CHECK HANDLER === */
 
+/**
+ * Interface for handling health check requests.
+ */
 interface HealthCheckHandler {
     fun healthCheckHandler(ctx: RoutingContext)
 }
 
 /* === METRICS HANDLER === */
 
+/**
+ * Interface for handling metrics requests.
+ */
 interface MetricsHandler {
     fun metricsHandler(ctx: RoutingContext)
 }
@@ -44,18 +56,30 @@ interface MetricsHandler {
 /* === DDD ENTITY HANDLERS AND METRICS PROVIDER === */
 // Dummy (a generic test entity, not to be used in production)
 
+/**
+ * CRUD interface for Dummy entity handlers.
+ */
 interface CRUDDummyHandler : QueryDummyHandler, CommandDummyHandler
 
+/**
+ * Query interface for Dummy entity handlers.
+ */
 interface QueryDummyHandler {
     fun getDummyHandler(ctx: RoutingContext)
 }
 
+/**
+ * Command interface for Dummy entity handlers.
+ */
 interface CommandDummyHandler {
     fun createDummyHandler(ctx: RoutingContext)
     fun updateDummyHandler(ctx: RoutingContext)
     fun deleteDummyHandler(ctx: RoutingContext)
 }
 
+/**
+ * Metrics provider interface for Dummy entity operations.
+ */
 interface DummyMetricsProvider {
     val meterRegistry: MeterRegistry
     val serviceName: String
@@ -114,18 +138,30 @@ interface DummyMetricsProvider {
 }
 
 // AllergyIntolerance
+/**
+ * CRUD interface for AllergyIntolerance entity handlers.
+ */
 interface CRUDAllergyIntoleranceHandler : QueryAllergyIntoleranceHandler, CommandAllergyIntoleranceHandler
 
+/**
+ * Query interface for AllergyIntolerance entity handlers.
+ */
 interface QueryAllergyIntoleranceHandler {
     fun getAllergyIntoleranceHandler(ctx: RoutingContext)
 }
 
+/**
+ * Command interface for AllergyIntolerance entity handlers.
+ */
 interface CommandAllergyIntoleranceHandler {
     fun createAllergyIntoleranceHandler(ctx: RoutingContext)
     fun updateAllergyIntoleranceHandler(ctx: RoutingContext)
     fun deleteAllergyIntoleranceHandler(ctx: RoutingContext)
 }
 
+/**
+ * Metrics provider interface for AllergyIntolerance entity operations.
+ */
 interface AllergyIntoleranceMetricsProvider {
     val meterRegistry: MeterRegistry
     val serviceName: String

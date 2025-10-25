@@ -13,10 +13,16 @@ import io.vertx.core.Verticle
 import io.vertx.core.Vertx
 import mf.cce.utils.RepositoryCredentials
 
+/**
+ * Main entry point for the Anamnesi Pregressa Service server application.
+ */
 fun main() {
     runServer()
 }
 
+/**
+ * Function to initialize and run the server with necessary verticles and services.
+ */
 fun runServer() {
     val vertx: Vertx = Vertx.vertx()
 
@@ -41,6 +47,9 @@ fun runServer() {
     deployVerticles(vertx, serverVerticle, anamnesiEventProducer)
 }
 
+/**
+ * Function to deploy multiple verticles on the given Vertx instance.
+ */
 private fun deployVerticles(vertx: Vertx, vararg verticles: Verticle) {
     println("Deploying ${verticles.size} verticles...")
     var counter = 0

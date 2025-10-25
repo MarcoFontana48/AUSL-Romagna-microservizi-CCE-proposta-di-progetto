@@ -23,6 +23,9 @@ import org.apache.logging.log4j.LogManager
 import java.sql.SQLIntegrityConstraintViolationException
 import kotlin.reflect.KClass
 
+/**
+ * Standard implementation of the ServiceController interface to handle requests.
+ */
 class StandardController(
     private val dummyService: DummyService,              // 'service' here refers to the DDD service
     private val allergyIntoleranceService: AllergyIntoleranceService,              // 'service' here refers to the DDD service
@@ -35,9 +38,19 @@ class StandardController(
         registerModule(KotlinModule.Builder().build())
     }
 
+    /**
+     * Helper function to deserialize a JSON request body into an instance of the specified class.
+     *
+     * @param jsonRequestBody The JSON request body as a JsonObject.
+     * @param klass The KClass of the target type to deserialize into.
+     * @return An instance of the specified class populated with data from the JSON request body.
+     */
     private fun <C : Any> deserializeRequestFromClass(jsonRequestBody: JsonObject, klass: KClass<C>): C =
         mapper.readValue(jsonRequestBody.encode(), klass.java)
 
+    /**
+     * Handler for health check requests.
+     */
     override fun healthCheckHandler(ctx: RoutingContext) {
         healthCheckCounter.increment()
         metricsCounter.increment()
@@ -73,7 +86,9 @@ class StandardController(
         }
     }
 
-    // handler to expose Prometheus metrics
+    /**
+     * Handler for metrics requests.
+     */
     override fun metricsHandler(ctx: RoutingContext) {
         metricsCounter.increment()
         metricsReadRequestsCounter.increment()
@@ -101,6 +116,9 @@ class StandardController(
         }
     }
 
+    /**
+     * Handler for retrieving a Dummy entity by ID.
+     */
     override fun getDummyHandler(ctx: RoutingContext) {
         logger.debug("Received GET request for dummy entity")
 
@@ -147,6 +165,9 @@ class StandardController(
         }
     }
 
+    /**
+     * Handler for creating a new Dummy entity.
+     */
     override fun createDummyHandler(ctx: RoutingContext) {
         logger.debug("Received POST request to create dummy entity")
 
@@ -193,14 +214,23 @@ class StandardController(
         }
     }
 
+    /**
+     * Handler for updating an existing Dummy entity.
+     */
     override fun updateDummyHandler(ctx: RoutingContext) {
         TODO("Not yet implemented")
     }
 
+    /**
+     * Handler for deleting a Dummy entity by ID.
+     */
     override fun deleteDummyHandler(ctx: RoutingContext) {
         TODO("Not yet implemented")
     }
 
+    /**
+     * Handler for retrieving an AllergyIntolerance entity by ID.
+     */
     override fun getAllergyIntoleranceHandler(ctx: RoutingContext) {
         logger.debug("Received GET request for allergy intolerance entity")
 
@@ -249,6 +279,9 @@ class StandardController(
         }
     }
 
+    /**
+     * Handler for creating a new AllergyIntolerance entity.
+     */
     override fun createAllergyIntoleranceHandler(ctx: RoutingContext) {
         logger.debug("Received POST request to create allergy intolerance entity")
 
@@ -294,14 +327,27 @@ class StandardController(
         }
     }
 
+    /**
+     * Handler for updating an existing AllergyIntolerance entity.
+     */
     override fun updateAllergyIntoleranceHandler(ctx: RoutingContext) {
         TODO("Not yet implemented")
     }
 
+    /**
+     * Handler for deleting an AllergyIntolerance entity by ID.
+     */
     override fun deleteAllergyIntoleranceHandler(ctx: RoutingContext) {
         TODO("Not yet implemented")
     }
 
+    /**
+     * Sends a JSON response with the specified status code.
+     *
+     * @param ctx The routing context.
+     * @param statusCode The HTTP status code to send.
+     * @param message The JSON message to include in the response.
+     */
     override fun sendResponse(ctx: RoutingContext, statusCode: Int, message: JsonObject) {
         logger.trace("Adding service key to response: '{}'", "anamnesi-pregressa")
         message.put("service", "anamnesi-pregressa")
@@ -312,6 +358,12 @@ class StandardController(
             .end(message.encode())
     }
 
+    /**
+     * Sends an error response based on the type of the provided Throwable.
+     *
+     * @param ctx The routing context.
+     * @param error The Throwable representing the error.
+     */
     override fun sendErrorResponse(ctx: RoutingContext, error: Throwable) {
         logger.trace("Converting error message: '{}' to JsonObject", error.message)
 

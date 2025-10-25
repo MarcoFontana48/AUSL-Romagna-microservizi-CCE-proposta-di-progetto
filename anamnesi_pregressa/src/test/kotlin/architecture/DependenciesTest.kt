@@ -4,6 +4,9 @@ import com.tngtech.archunit.core.importer.ClassFileImporter
 import com.tngtech.archunit.library.Architectures.layeredArchitecture
 import org.junit.jupiter.api.Test
 
+/**
+ * Test class to verify that the architectural layer dependencies are respected.
+ */
 internal class DependenciesTest {
     @Test
     fun layerDependenciesAreRespected() {

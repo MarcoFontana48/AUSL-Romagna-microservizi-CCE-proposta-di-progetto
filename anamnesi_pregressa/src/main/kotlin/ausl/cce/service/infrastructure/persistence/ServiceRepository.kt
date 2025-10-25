@@ -63,6 +63,11 @@ abstract class MongoRepository<I : ID<*>, E : Entity<I>>(
         }
     }
 
+    /**
+     * Saves an entity to the MongoDB collection.
+     *
+     * @param entity The entity to save.
+     */
     override fun save(entity: E) {
         try {
             logger.debug("Saving entity with id: ${entity.id.value}")
@@ -81,6 +86,12 @@ abstract class MongoRepository<I : ID<*>, E : Entity<I>>(
         }
     }
 
+    /**
+     * Finds an entity by its ID.
+     *
+     * @param id The ID of the entity to find.
+     * @return The found entity or null if not found.
+     */
     override fun findById(id: I): E? {
         return try {
             logger.debug("Finding entity with id: ${id.value}")
@@ -102,6 +113,12 @@ abstract class MongoRepository<I : ID<*>, E : Entity<I>>(
         }
     }
 
+    /**
+     * Deletes an entity by its ID.
+     *
+     * @param id The ID of the entity to delete.
+     * @return The deleted entity or null if not found.
+     */
     override fun deleteById(id: I): E? {
         return try {
             logger.debug("Deleting entity with id: ${id.value}")
@@ -130,6 +147,11 @@ abstract class MongoRepository<I : ID<*>, E : Entity<I>>(
         }
     }
 
+    /**
+     * Finds all entities in the collection.
+     *
+     * @return An iterable of all entities.
+     */
     override fun findAll(): Iterable<E> {
         return try {
             logger.debug("Finding all entities")
@@ -153,6 +175,11 @@ abstract class MongoRepository<I : ID<*>, E : Entity<I>>(
         }
     }
 
+    /**
+     * Updates an existing entity in the MongoDB collection.
+     *
+     * @param entity The entity to update.
+     */
     override fun update(entity: E) {
         try {
             logger.debug("Updating entity with id: ${entity.id.value}")
@@ -184,6 +211,9 @@ abstract class MongoRepository<I : ID<*>, E : Entity<I>>(
         }
     }
 
+    /**
+     * Closes the MongoDB client connection.
+     */
     fun close() {
         try {
             mongoClient.close()
@@ -195,6 +225,11 @@ abstract class MongoRepository<I : ID<*>, E : Entity<I>>(
 }
 
 // Concrete implementation for DummyEntity
+/**
+ * MongoDB repository implementation for DummyEntity.
+ *
+ * @param credentials MongoDB connection credentials
+ */
 class MongoDummyRepository(
     credentials: RepositoryCredentials
 ) : MongoRepository<DummyEntity.DummyId, DummyEntity>(
@@ -220,6 +255,11 @@ class MongoDummyRepository(
 ), DummyRepository
 
 // Concrete implementation for AllergyIntoleranceEntity
+/**
+ * MongoDB repository implementation for AllergyIntoleranceEntity.
+ *
+ * @param credentials MongoDB connection credentials
+ */
 class MongoAllergyIntoleranceRepository(
     credentials: RepositoryCredentials
 ) : MongoRepository<AllergyIntoleranceId, AllergyIntoleranceEntity>(

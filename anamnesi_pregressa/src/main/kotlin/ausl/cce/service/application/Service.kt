@@ -7,6 +7,9 @@ import ausl.cce.service.domain.DummyEntity.DummyId
 import mf.cce.utils.AllergyDiagnosed
 import mf.cce.utils.Service
 
+/**
+ * interface for AllergyIntolerance entity services.
+ */
 interface AllergyIntoleranceService : Service {
     fun getAllergyIntoleranceById(id: AllergyIntoleranceId): AllergyIntoleranceEntity
     fun addAllergyIntolerance(entity: AllergyIntoleranceEntity)
@@ -14,6 +17,9 @@ interface AllergyIntoleranceService : Service {
     fun deleteAllergyIntolerance(id: AllergyIntoleranceId)
 }
 
+/**
+ * Implementation of the AllergyIntoleranceService interface.
+ */
 class AllergyIntoleranceServiceImpl(
     private val allergyIntoleranceRepository: AllergyIntoleranceRepository,
     private val allergyIntoleranceEventProducer: AnamnesiProducerVerticle,
@@ -36,6 +42,9 @@ class AllergyIntoleranceServiceImpl(
     }
 }
 
+/**
+ * interface for Dummy entity services.
+ */
 interface DummyService : Service {
     fun getDummyEntityById(id: DummyId): DummyEntity
     fun addDummyEntity(dummyEntity: DummyEntity)
@@ -43,6 +52,9 @@ interface DummyService : Service {
     fun deleteDummyEntity(id: DummyId)
 }
 
+/**
+ * Implementation of the DummyService interface.
+ */
 class DummyServiceImpl(
     private val dummyRepository: DummyRepository,
 ) : DummyService {

@@ -19,6 +19,9 @@ import mf.cce.utils.Ports
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
+/**
+ * Verticle responsible for setting up and running the HTTP server.
+ */
 class ServerVerticle(
     private val dummyService : DummyService,
     private val allergyIntoleranceService : AllergyIntoleranceService
@@ -41,6 +44,9 @@ class ServerVerticle(
         }
     }
 
+    /**
+     * Defines and configures the Prometheus meter registry with custom timers.
+     */
     private fun defineMeterRegistry(): PrometheusMeterRegistry {
         val config = PrometheusConfig.DEFAULT
 
@@ -77,6 +83,9 @@ class ServerVerticle(
         return res
     }
 
+    /**
+     * Defines and configures the circuit breaker for handling service failures.
+     */
     private fun defineCircuitBreaker(): CircuitBreaker {
         val options = CircuitBreakerOptions()
             .setMaxFailures(5)
@@ -86,6 +95,9 @@ class ServerVerticle(
         return CircuitBreaker.create("anamnesi-pregressa-circuit-breaker", this.vertx, options)
     }
 
+    /**
+     * Defines the HTTP endpoints and their corresponding handlers.
+     */
     private fun defineEndpoints(router: Router, controller: ServiceController) {
         router.route().handler(BodyHandler.create())
 
@@ -104,6 +116,9 @@ class ServerVerticle(
         router.post(Endpoints.ALLERGY_INTOLERANCES).handler { ctx -> controller.createAllergyIntoleranceHandler(ctx) }
     }
 
+    /**
+     * Runs the HTTP server with the given router.
+     */
     private fun runServer(router: Router): Future<HttpServer> {
         return this.vertx.createHttpServer()
             .requestHandler(router)
