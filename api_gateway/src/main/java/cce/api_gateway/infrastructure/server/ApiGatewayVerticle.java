@@ -21,6 +21,9 @@ import org.apache.logging.log4j.Logger;
 public final class ApiGatewayVerticle extends AbstractVerticle {
     private static final Logger LOGGER = LogManager.getLogger(ApiGatewayVerticle.class);
     
+    /**
+     * Starts the API gateway verticle and configures the HTTP server, routes, circuit breaker, and web client.
+     */
     @Override
     public void start() {
         LOGGER.debug("Starting API Gateway");

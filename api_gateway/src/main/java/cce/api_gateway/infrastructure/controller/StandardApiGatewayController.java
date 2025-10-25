@@ -20,6 +20,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * StandardApiGatewayController is the standard implementation of the ApiGatewayController interface.
+ * It provides functionalities for rerouting requests, handling health checks, and serving metrics.
+ */
 public class StandardApiGatewayController implements ApiGatewayController, HealthCheckMetricsProvider, MetricsProvider {
     private static final Logger LOGGER = LogManager.getLogger(StandardApiGatewayController.class);
     private final CircuitBreaker circuitBreaker;
@@ -30,6 +34,14 @@ public class StandardApiGatewayController implements ApiGatewayController, Healt
         this.circuitBreaker = circuitBreaker;
     }
     
+    /**
+     * Reroutes requests from a specified endpoint to a target host using the provided WebClient.
+     *
+     * @param router   The Vert.x Router to define routes.
+     * @param endpoint The endpoint pattern to reroute (e.g., "/api/*").
+     * @param host     The target host to which requests should be rerouted.
+     * @param client   The WebClient used to forward requests.
+     */
     @Override
     public void rerouteTo(Router router, String endpoint, String host, WebClient client) {
         LOGGER.debug("received request to reroute");
@@ -67,6 +79,12 @@ public class StandardApiGatewayController implements ApiGatewayController, Healt
         }));
     }
     
+    /**
+     * Handles health check requests.
+     *
+     * @param client The WebClient used for any necessary outbound requests.
+     * @return A Handler for RoutingContext to process health check requests.
+     */
     @Override
     public Handler<RoutingContext> healthCheckHandler(WebClient client) {
         return ctx -> {
@@ -99,6 +117,12 @@ public class StandardApiGatewayController implements ApiGatewayController, Healt
         };
     }
     
+    /**
+     * Handles metrics requests.
+     *
+     * @param client The WebClient used for any necessary outbound requests.
+     * @return A Handler for RoutingContext to process metrics requests.
+     */
     @Override
     public Handler<RoutingContext> metricsHandler(WebClient client) {
         return ctx -> {
@@ -134,6 +158,13 @@ public class StandardApiGatewayController implements ApiGatewayController, Healt
         };
     }
     
+    /**
+     * Sends a JSON response to the client with the specified status code.
+     *
+     * @param routingContext
+     * @param response
+     * @param statusCode
+     */
     private static void sendResponse(RoutingContext routingContext, JsonObject response, int statusCode) {
         LOGGER.trace("Adding 'service' key to response before sending it to client");
         response.put("service", "api-gateway");
@@ -145,17 +176,31 @@ public class StandardApiGatewayController implements ApiGatewayController, Healt
                 .end(response.encode());
     }
     
-    // Implementation of HealthCheckMetricsProvider interface
+    /**
+     * Gets the MeterRegistry instance.
+     *
+     * @return the MeterRegistry
+     */
     @Override
     public @NotNull MeterRegistry getMeterRegistry() {
         return this.meterRegistry;
     }
     
+    /**
+     * Gets the service name.
+     *
+     * @return the service name
+     */
     @Override
     public @NotNull String getServiceName() {
         return this.serviceName;
     }
     
+    /**
+     * Implementation of HealthCheckMetricsProvider interface
+     *
+     * @return the health check request counter
+     */
     @NotNull
     @Override
     public Counter getHealthCheckCounter() {
@@ -165,6 +210,11 @@ public class StandardApiGatewayController implements ApiGatewayController, Healt
                 .register(this.getMeterRegistry());
     }
     
+    /**
+     * Implementation of HealthCheckMetricsProvider interface
+     *
+     * @return the health check success counter
+     */
     @NotNull
     @Override
     public Counter getHealthCheckSuccessCounter() {
@@ -174,6 +224,11 @@ public class StandardApiGatewayController implements ApiGatewayController, Healt
                 .register(this.getMeterRegistry());
     }
     
+    /**
+     * Implementation of HealthCheckMetricsProvider interface
+     *
+     * @return the health check failure counter
+     */
     @NotNull
     @Override
     public Counter getHealthCheckFailureCounter() {
@@ -183,6 +238,11 @@ public class StandardApiGatewayController implements ApiGatewayController, Healt
                 .register(this.getMeterRegistry());
     }
     
+    /**
+     * Implementation of HealthCheckMetricsProvider interface
+     *
+     * @return the health check request timer
+     */
     @NotNull
     @Override
     public Timer getHealthCheckTimer() {
@@ -193,7 +253,11 @@ public class StandardApiGatewayController implements ApiGatewayController, Healt
                 .register(this.getMeterRegistry());
     }
     
-    // Implementation of MetricsProvider interface
+    /**
+     * Implementation of MetricsProvider interface
+     *
+     * @return the metrics request counter
+     */
     @NotNull
     @Override
     public Counter getMetricsCounter() {
@@ -203,6 +267,11 @@ public class StandardApiGatewayController implements ApiGatewayController, Healt
                 .register(this.getMeterRegistry());
     }
     
+    /**
+     * Implementation of MetricsProvider interface
+     *
+     * @return the metrics success counter
+     */
     @NotNull
     @Override
     public Counter getMetricsSuccessCounter() {
@@ -212,6 +281,11 @@ public class StandardApiGatewayController implements ApiGatewayController, Healt
                 .register(this.getMeterRegistry());
     }
     
+    /**
+     * Implementation of MetricsProvider interface
+     *
+     * @return the metrics failure counter
+     */
     @NotNull
     @Override
     public Counter getMetricsFailureCounter() {
@@ -221,6 +295,11 @@ public class StandardApiGatewayController implements ApiGatewayController, Healt
                 .register(this.getMeterRegistry());
     }
     
+    /**
+     * Implementation of MetricsProvider interface
+     *
+     * @return the metrics request timer
+     */
     @NotNull
     @Override
     public Timer getMetricsTimer() {
